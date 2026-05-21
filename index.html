@@ -49,16 +49,10 @@
 
     --font-display: 'Newsreader', 'DM Serif Display', Georgia, serif;
     --font-ui:      'Helvetica Neue', Helvetica, Arial, sans-serif;
-
-    /* ---- Cortadito Games vertical layout standard (shared by every
-       game; canonical values live in cortadito-games-design.md) ----
-       The rank bar always sits exactly --rank-gap below the header,
-       computed as --header-h + --rank-gap. Change one number to move
-       it; both games stay consistent "by position". */
-    --header-h:  56px;   /* fixed mobile header height */
-    --rank-gap:  10px;   /* gap from header bottom to the rank bar */
-    --rail-gap:   8px;   /* rhythm between rank bar / meta / board */
   }
+  /* Layout standard (see cortadito-games-design.md): in-game mobile
+     header is a fixed 56px box; the rank bar sits at 66px from the top
+     (10px below the header). Hardcoded, not variable-driven. */
 
   /* ---- Crema · opt-in warm reading surface (same accent pair) ---- */
   body[data-variant="crema"] {
