@@ -1445,7 +1445,9 @@
      no points/bonuses; a prominent count-up timer is the only stat.
      Shares the .cell look; box borders via .bb-right/.bb-bottom.
      ================================================================ */
-  .mini-page { display: none; position: relative; max-width: 460px; margin: 0 auto; }
+  /* --mini-w is the shared column width: the board, the meta row (timer/cog)
+     and the pad all use it, so everything lines up within the board edges. */
+  .mini-page { display: none; position: relative; max-width: 460px; margin: 0 auto; --mini-w: min(86vw, 340px); }
   body.mini-active { height: 100dvh; overflow: hidden; }
   body.mini-active .landing,
   body.mini-active .page,
@@ -1459,7 +1461,8 @@
   }
   .mini-meta {
     display: grid; grid-template-columns: 1fr auto 1fr;
-    align-items: center; gap: 8px; padding: 6px 4px 2px;
+    align-items: center; gap: 8px; padding: 6px 0 4px;
+    width: 100%; max-width: var(--mini-w); margin: 0 auto;   /* align to board */
     position: relative; z-index: 1;
   }
   .mini-meta-slot { display: flex; align-items: center; }
@@ -1488,7 +1491,7 @@
   }
   .mini-cog:hover { color: var(--accent-deep); transform: rotate(30deg); }
   .mini-cog svg { width: 100%; height: 100%; display: block; }
-  .mini-board-wrap { margin: 0 auto; max-width: min(82vw, 340px); width: 100%; position: relative; z-index: 1; }
+  .mini-board-wrap { margin: 0 auto; max-width: var(--mini-w); width: 100%; position: relative; z-index: 1; }
   .mini-board {
     display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(6, 1fr);
     aspect-ratio: 1 / 1; width: 100%;
@@ -1497,9 +1500,46 @@
     user-select: none; position: relative;
   }
   .mini-board .cell { font-size: clamp(22px, 8vw, 34px); }
-  .mini-pad-wrap { margin: 2px auto 0; max-width: min(92vw, 360px); width: 100%; position: relative; z-index: 1; }
-  .mini-number-pad { grid-template-columns: repeat(6, 1fr); }
-  .mini-tools { grid-template-columns: repeat(3, 1fr); }
+  .mini-pad-wrap { margin: 2px auto 0; max-width: var(--mini-w); width: 100%; position: relative; z-index: 1; }
+  .mini-number-pad { grid-template-columns: repeat(7, 1fr); }   /* 1–6 + erase */
+  .mini-tools { grid-template-columns: repeat(4, 1fr); }        /* Notas·Posibles·Deshacer·Pista */
+
+  /* ===== Mini Start gate — board sits covered until "Empezar" ===== */
+  .mini-start {
+    position: absolute; inset: 0; z-index: 5;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; border-radius: 4px;
+    background: var(--fog);
+    background-image: repeating-linear-gradient(
+      45deg, var(--fog), var(--fog) 6px,
+      color-mix(in oklab, var(--fog) 82%, var(--ink) 18%) 6px,
+      color-mix(in oklab, var(--fog) 82%, var(--ink) 18%) 12px);
+    transition: opacity 0.3s ease;
+  }
+  .mini-start[hidden] { display: none; }
+  .mini-start-target {
+    font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink);
+    background: var(--paper); padding: 6px 12px; border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  .mini-start-btn {
+    background: var(--accent); color: #fff; border: none;
+    font-family: var(--font-ui); font-size: 17px; font-weight: 700;
+    letter-spacing: 0.5px; padding: 12px 40px; border-radius: 999px;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+  .mini-start-btn:active { transform: scale(0.97); }
+  @media (hover: hover) { .mini-start-btn:hover { background: var(--accent-deep); } }
+
+  /* Mini completion modal — rank + reto rows */
+  .mini-rank-badge {
+    font-family: var(--font-display); font-style: italic; font-weight: 700;
+    font-size: 30px; color: var(--accent); line-height: 1.1; margin: 2px 0;
+  }
+  .mini-reto-line { font-size: 13px; color: var(--ink-soft); margin: 2px 0 0; }
+  .mini-reto-line.met { color: var(--success); font-weight: 700; }
 </style>
 </head>
 <body data-theme="white">
@@ -1638,7 +1678,6 @@
   <div class="mini-meta">
     <span class="mini-meta-slot is-left">
       <button class="mini-back" id="mini-back" type="button" aria-label="Volver al inicio">‹</button>
-      <span class="mini-eyebrow">Mini</span>
     </span>
     <span class="mini-meta-slot is-center">
       <span class="mini-timer" id="mini-timer">0:00</span>
@@ -1649,20 +1688,30 @@
       </button>
     </span>
   </div>
-  <div class="mini-board-wrap"><div class="mini-board" id="mini-board"></div></div>
+  <div class="mini-board-wrap">
+    <div class="mini-board" id="mini-board"></div>
+    <div class="mini-start" id="mini-start" hidden>
+      <div class="mini-start-target" id="mini-start-target"></div>
+      <button class="mini-start-btn" id="mini-start-btn" type="button">Empezar</button>
+    </div>
+  </div>
   <div class="mini-pad-wrap">
     <div class="tool-row mini-tools">
       <button class="tool-btn" id="mini-notes">
-        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>
         <span>Notas</span>
       </button>
-      <button class="tool-btn" id="mini-erase">
-        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.6 11.4 11.4 17.6a2 2 0 0 1-2.83 0L4 13a2 2 0 0 1 0-2.83l8-8a2 2 0 0 1 2.83 0l4 4a2 2 0 0 1 0 2.83z"/><path d="M22 21H7"/></svg>
-        <span>Borrar</span>
+      <button class="tool-btn" id="mini-posibles">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="6" cy="6" r="1.8"/><circle cx="12" cy="6" r="1.8"/><circle cx="18" cy="6" r="1.8"/><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="12" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg>
+        <span>Posibles</span>
       </button>
       <button class="tool-btn" id="mini-undo">
-        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg>
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 5V2L6 7l6 5V8.5c3 0 5.5 2.5 5.5 5.5S15 19.5 12 19.5 6.5 17 6.5 14H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z"/></svg>
         <span>Deshacer</span>
+      </button>
+      <button class="tool-btn" id="mini-hint">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 2a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5v1h6v-1c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 2z"/></svg>
+        <span>Pista</span>
       </button>
     </div>
     <div class="number-pad mini-number-pad" id="mini-pad"></div>
@@ -1862,10 +1911,12 @@
     <div class="big-emoji">☕</div>
     <h2>¡Listo!</h2>
     <p class="goal-sub">Resolviste el Mini de hoy.</p>
+    <div class="mini-rank-badge" id="mini-done-rank">—</div>
     <div class="goal-stats">
       <div class="goal-stat"><span class="goal-stat-value" id="mini-done-time">0:00</span><span class="goal-stat-label">Tu tiempo</span></div>
       <div class="goal-stat"><span class="goal-stat-value" id="mini-done-best">0:00</span><span class="goal-stat-label">Tu récord</span></div>
     </div>
+    <p class="mini-reto-line" id="mini-done-reto"></p>
     <p class="goal-body" id="mini-done-note">Un sorbo rápido, bien resuelto.</p>
     <div class="btn-row">
       <button class="primary" id="mini-share">Compartir</button>
@@ -3331,6 +3382,7 @@ document.getElementById('btn-undo').addEventListener('click', undo);
 // ---------- KEYBOARD ----------
 document.addEventListener('keydown', (e) => {
   if (overlay.classList.contains('open')) return;
+  if (document.body.classList.contains('mini-active')) return;   // Mini is touch-driven
   if (state.selected === null) return;
   if (/^[1-9]$/.test(e.key)) { placeNumber(parseInt(e.key, 10)); return; }
   if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { eraseSelected(); return; }
@@ -3734,6 +3786,52 @@ function miniGeneratePuzzle(solution, targetGivens, rng) {
 function miniProgressKey(iso) { return STORAGE_PREFIX + '-mini-' + iso; }
 function miniFmt(s) { const m = Math.floor(s / 60); return m + ':' + String(s % 60).padStart(2, '0'); }
 
+// ----- Mini ranking + reto (its own rules, but the SAME rank ladder as
+//       Diario so the names are standard everywhere — awarded by solve time
+//       instead of points: faster = higher rank). Cutoffs = max seconds.
+const MINI_RANK_CUTOFFS = [
+  { idx: 9, max: 50  },   // Maestro/a
+  { idx: 8, max: 65  },   // Eminente
+  { idx: 7, max: 80  },   // Brillante
+  { idx: 6, max: 100 },   // Increíble
+  { idx: 5, max: 120 },   // Excelente
+  { idx: 4, max: 150 },   // Admirable
+  { idx: 3, max: 190 },   // Diligente
+  { idx: 2, max: 240 },   // Constante
+  { idx: 1, max: 320 },   // Eficiente
+  { idx: 0, max: Infinity } // Debutante
+];
+function miniRankIndexForTime(t) {
+  for (const c of MINI_RANK_CUTOFFS) if (t <= c.max) return c.idx;
+  return 0;
+}
+function miniRankName(t) { return RANK_NAMES[miniRankIndexForTime(t)]; }
+
+// Daily target time (reto). Deterministic per date, snapped to 15s, in a
+// reachable window. Beating it earns ¡Buen sorbo! and feeds a Mini streak.
+const MINI_RETO_MIN = 120, MINI_RETO_MAX = 210;   // 2:00 – 3:30
+function miniRetoForDate(iso) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < iso.length; i++) { h ^= iso.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  const buckets = (MINI_RETO_MAX - MINI_RETO_MIN) / 15 + 1;
+  return MINI_RETO_MIN + (h % buckets) * 15;
+}
+const MINI_STREAK_KEY = STORAGE_PREFIX + '-mini-streak';
+function miniLoadStreak() {
+  try { return JSON.parse(localStorage.getItem(MINI_STREAK_KEY) || 'null') || { count: 0, last: '' }; }
+  catch (e) { return { count: 0, last: '' }; }
+}
+function miniRecordRetoMet(iso) {
+  const s = miniLoadStreak();
+  if (s.last === iso) return s.count;            // already counted today
+  const d = isoToDate(iso); d.setDate(d.getDate() - 1);
+  const y = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  s.count = (s.last === y) ? s.count + 1 : 1;
+  s.last = iso;
+  try { localStorage.setItem(MINI_STREAK_KEY, JSON.stringify(s)); } catch (e) {}
+  return s.count;
+}
+
 function initMini() {
   const iso = state.iso;
   const rng = mulberry32(hashString('mini-' + iso));
@@ -3743,8 +3841,9 @@ function initMini() {
     iso, solution, puzzle,
     values: puzzle.map(r => r.slice()),
     notes: {}, errors: {},
-    selected: null, notesMode: false, history: [],
+    selected: null, notesMode: false, autoCand: false, history: [],
     elapsed: 0, startedAt: null, timer: null, done: false,
+    started: false, hintCount: 0,
   };
   try {
     const saved = JSON.parse(localStorage.getItem(miniProgressKey(iso)) || 'null');
@@ -3753,6 +3852,8 @@ function initMini() {
       miniState.notes = saved.notes || {};
       miniState.elapsed = saved.elapsed || 0;
       miniState.done = !!saved.done;
+      miniState.started = !!saved.started || miniState.elapsed > 0 || miniState.done;
+      miniState.hintCount = saved.hintCount || 0;
       for (let r = 0; r < MINI_N; r++) for (let c = 0; c < MINI_N; c++) {
         const v = miniState.values[r][c];
         if (puzzle[r][c] === 0 && v !== 0 && v !== solution[r][c]) miniState.errors[r + ',' + c] = true;
@@ -3764,7 +3865,8 @@ function miniSave() {
   if (!miniState) return;
   try {
     localStorage.setItem(miniProgressKey(miniState.iso), JSON.stringify({
-      values: miniState.values, notes: miniState.notes, elapsed: miniState.elapsed, done: miniState.done
+      values: miniState.values, notes: miniState.notes, elapsed: miniState.elapsed,
+      done: miniState.done, started: miniState.started, hintCount: miniState.hintCount
     }));
   } catch (e) {}
 }
@@ -3811,15 +3913,18 @@ function miniRenderBoard() {
     if (miniState.errors[k] && settings.showErrors) el.classList.add('error');
     if (v !== 0) {
       el.textContent = v;
-    } else if (miniState.notes[k] && miniState.notes[k].length) {
-      const nd = document.createElement('div');
-      nd.className = 'notes';
-      for (let n = 1; n <= 6; n++) {
-        const s = document.createElement('span');
-        s.textContent = miniState.notes[k].includes(n) ? n : '';
-        nd.appendChild(s);
+    } else {
+      const list = miniState.autoCand ? miniComputeCandidates(r, c) : (miniState.notes[k] || []);
+      if (list.length) {
+        const nd = document.createElement('div');
+        nd.className = 'notes';
+        for (let n = 1; n <= 6; n++) {
+          const s = document.createElement('span');
+          s.textContent = list.includes(n) ? n : '';
+          nd.appendChild(s);
+        }
+        el.appendChild(nd);
       }
-      el.appendChild(nd);
     }
     el.addEventListener('click', () => { miniState.selected = { r, c }; miniRenderBoard(); });
     board.appendChild(el);
@@ -3833,11 +3938,17 @@ function miniRenderPad() {
   for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) { const v = miniState.values[r][c]; if (v) counts[v] = (counts[v] || 0) + 1; }
   for (let n = 1; n <= 6; n++) {
     const b = document.createElement('button');
+    b.className = 'num-btn';
     b.textContent = n;
     if ((counts[n] || 0) >= 6) b.classList.add('done');
     b.addEventListener('click', () => miniPlace(n));
     pad.appendChild(b);
   }
+  const eb = document.createElement('button');   // erase, in the pad like Diario
+  eb.className = 'num-btn erase';
+  eb.textContent = '⌫';
+  eb.addEventListener('click', miniErase);
+  pad.appendChild(eb);
 }
 function miniPlace(n) {
   if (!miniState || miniState.done) return;
@@ -3882,6 +3993,62 @@ function miniUndo() {
   if (h.prevNotes && h.prevNotes.length) miniState.notes[k] = h.prevNotes; else delete miniState.notes[k];
   miniRenderBoard(); miniRenderPad(); miniSave();
 }
+function miniComputeCandidates(r, c) {
+  if (!miniState || miniState.values[r][c] !== 0) return [];
+  const used = new Set();
+  for (let k = 0; k < 6; k++) { used.add(miniState.values[r][k]); used.add(miniState.values[k][c]); }
+  const br = Math.floor(r / MINI_BR) * MINI_BR, bc = Math.floor(c / MINI_BC) * MINI_BC;
+  for (let i = 0; i < MINI_BR; i++) for (let j = 0; j < MINI_BC; j++) used.add(miniState.values[br + i][bc + j]);
+  const cand = [];
+  for (let n = 1; n <= 6; n++) if (!used.has(n)) cand.push(n);
+  return cand;
+}
+function miniTogglePosibles() {
+  if (!miniState) return;
+  miniState.autoCand = !miniState.autoCand;
+  if (miniState.autoCand && miniState.notesMode) {   // mutually exclusive with Notas
+    miniState.notesMode = false;
+    document.getElementById('mini-notes').classList.remove('active');
+  }
+  document.getElementById('mini-posibles').classList.toggle('active', miniState.autoCand);
+  miniRenderBoard();
+}
+// Pista: in Mini there are no points, so a hint costs TIME (+30s) instead.
+function miniHint() {
+  if (!miniState || miniState.done || !miniState.started) return;
+  let target = null;
+  for (let r = 0; r < 6 && !target; r++) for (let c = 0; c < 6; c++) {
+    if (miniState.puzzle[r][c] !== 0) continue;
+    if (miniState.values[r][c] !== miniState.solution[r][c]) { target = [r, c]; break; }
+  }
+  if (!target) { flash('Sin pistas', 'error'); return; }
+  askConfirm('¿Pedir pista?', 'Revela una celda y suma 30s a tu tiempo.', () => {
+    const [r, c] = target, k = r + ',' + c;
+    miniState.values[r][c] = miniState.solution[r][c];
+    delete miniState.errors[k]; delete miniState.notes[k];
+    miniState.elapsed += 30;                         // time penalty
+    if (miniState.startedAt) miniState.startedAt -= 30000;
+    miniState.hintCount = (miniState.hintCount || 0) + 1;
+    miniState.selected = { r, c };
+    flash('Revelado · +30s', 'bonus');
+    miniUpdateTimer(); miniRenderBoard(); miniRenderPad(); miniSave();
+    miniCheckDone();
+  });
+}
+function miniRenderStart() {
+  if (!miniState) return;
+  const ov = document.getElementById('mini-start');
+  const tgt = document.getElementById('mini-start-target');
+  if (tgt) tgt.textContent = 'Objetivo de hoy · ≤ ' + miniFmt(miniRetoForDate(miniState.iso));
+  if (ov) ov.hidden = miniState.started || miniState.done;
+}
+function miniBegin() {
+  if (!miniState || miniState.started || miniState.done) return;
+  miniState.started = true;
+  const ov = document.getElementById('mini-start'); if (ov) ov.hidden = true;
+  miniSave();
+  miniStartTimer();
+}
 function miniCheckDone() {
   if (!miniState) return;
   for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++)
@@ -3895,6 +4062,22 @@ function miniCheckDone() {
   if (isNewBest) { best = t; try { localStorage.setItem(MINI_BEST_KEY, String(t)); } catch (e) {} }
   const timeEl = document.getElementById('mini-done-time'); if (timeEl) timeEl.textContent = miniFmt(t);
   const bestEl = document.getElementById('mini-done-best'); if (bestEl) bestEl.textContent = miniFmt(best);
+  // Rank (standard ladder, by time)
+  const rankEl = document.getElementById('mini-done-rank');
+  if (rankEl) rankEl.textContent = miniRankName(t);
+  // Daily reto (target time)
+  const target = miniRetoForDate(miniState.iso);
+  const met = t <= target;
+  const retoEl = document.getElementById('mini-done-reto');
+  if (retoEl) {
+    retoEl.classList.toggle('met', met);
+    if (met) {
+      const streak = miniRecordRetoMet(miniState.iso);
+      retoEl.textContent = '¡Reto del día logrado! (≤ ' + miniFmt(target) + ')' + (streak > 1 ? ' · Racha ' + streak : '');
+    } else {
+      retoEl.textContent = 'Reto del día: ≤ ' + miniFmt(target) + (miniState.hintCount ? ' · pista usada' : '');
+    }
+  }
   const note = document.getElementById('mini-done-note');
   if (note) note.textContent = isNewBest ? 'Tu mejor tiempo. ¡Buen sorbo!' : 'Un sorbo rápido, bien resuelto.';
   openModal('mini-done-modal');
@@ -3910,8 +4093,11 @@ function launchMini() {
   if (!miniState || miniState.iso !== state.iso) initMini();
   document.body.classList.add('mini-active');
   renderMiniStain();
-  miniRenderBoard(); miniRenderPad();
-  if (!miniState.done) miniStartTimer(); else miniUpdateTimer();
+  miniRenderBoard(); miniRenderPad(); miniRenderStart();
+  // Timer only runs once the player presses Empezar (or when resuming a
+  // game already in progress); a fresh puzzle sits behind the Start gate.
+  if (miniState.started && !miniState.done) miniStartTimer();
+  else miniUpdateTimer();
 }
 function exitMini() {
   miniStopTimer(); miniSave();
@@ -3928,13 +4114,20 @@ async function shareMini() {
 // Mini control wiring
 document.getElementById('mini-back').addEventListener('click', exitMini);
 document.getElementById('mini-cog').addEventListener('click', () => openModal('settings-modal'));
-document.getElementById('mini-erase').addEventListener('click', miniErase);
 document.getElementById('mini-undo').addEventListener('click', miniUndo);
 document.getElementById('mini-notes').addEventListener('click', () => {
   if (!miniState) return;
   miniState.notesMode = !miniState.notesMode;
+  if (miniState.notesMode && miniState.autoCand) {   // mutually exclusive with Posibles
+    miniState.autoCand = false;
+    document.getElementById('mini-posibles').classList.remove('active');
+  }
   document.getElementById('mini-notes').classList.toggle('active', miniState.notesMode);
+  miniRenderBoard();
 });
+document.getElementById('mini-posibles').addEventListener('click', miniTogglePosibles);
+document.getElementById('mini-hint').addEventListener('click', miniHint);
+document.getElementById('mini-start-btn').addEventListener('click', miniBegin);
 document.getElementById('mini-share').addEventListener('click', () => { shareMini(); });
 
 // ---------- BOOT ----------
