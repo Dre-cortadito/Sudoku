@@ -1447,7 +1447,7 @@
      ================================================================ */
   /* --mini-w is the shared column width: the board, the meta row (timer/cog)
      and the pad all use it, so everything lines up within the board edges. */
-  .mini-page { display: none; position: relative; max-width: 460px; margin: 0 auto; --mini-w: min(86vw, 340px); }
+  .mini-page { display: none; position: relative; max-width: 480px; margin: 0 auto; --mini-w: min(92vw, 400px); }
   body.mini-active { height: 100dvh; overflow: hidden; }
   body.mini-active .landing,
   body.mini-active .page,
@@ -1501,8 +1501,24 @@
   }
   .mini-board .cell { font-size: clamp(22px, 8vw, 34px); }
   .mini-pad-wrap { margin: 2px auto 0; max-width: var(--mini-w); width: 100%; position: relative; z-index: 1; }
-  .mini-number-pad { grid-template-columns: repeat(7, 1fr); }   /* 1–6 + erase */
+  .mini-number-pad { grid-template-columns: repeat(7, 1fr); gap: 6px; }   /* 1–6 + erase */
+  /* The board is a 6×6 mini, but the CONTROLS don't have to be — give the
+     pad + tools full, Diario-sized buttons so they're comfortable to tap. */
+  .mini-number-pad .num-btn { height: 52px; font-size: 26px; }
   .mini-tools { grid-template-columns: repeat(4, 1fr); }        /* Notas·Posibles·Deshacer·Pista */
+  .mini-tools .tool-btn { height: 42px; font-size: 11px; }
+  .mini-tools .tool-icon { width: 16px; height: 16px; }
+
+  /* Live rank bar — shows the rank you're on pace for by elapsed time,
+     draining from Maestro/a downward as the clock runs; locks on finish.
+     Reuses the Diario rank-track look so the ladder is standard everywhere. */
+  .mini-rank-bar {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; max-width: var(--mini-w); margin: 0 auto;
+    padding: 0 6px 2px; box-sizing: border-box;
+    position: relative; z-index: 1;
+  }
+  .mini-rank-bar .rank-label { min-width: 76px; }
 
   /* ===== Mini Start gate — board sits covered until "Empezar" ===== */
   .mini-start {
@@ -1687,6 +1703,10 @@
         <svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" aria-hidden="true"><path d="M22.86,10.25 L22.86,13.75 L19.67,13.40 L19.03,15.38 L21.82,16.97 L19.76,19.80 L17.39,17.64 L15.70,18.87 L17.02,21.79 L13.69,22.87 L13.04,19.73 L10.96,19.73 L10.31,22.87 L6.98,21.79 L8.30,18.87 L6.61,17.64 L4.24,19.80 L2.18,16.97 L4.97,15.38 L4.33,13.40 L1.14,13.75 L1.14,10.25 L4.33,10.60 L4.97,8.62 L2.18,7.03 L4.24,4.20 L6.61,6.36 L8.30,5.13 L6.98,2.21 L10.31,1.13 L10.96,4.27 L13.04,4.27 L13.69,1.13 L17.02,2.21 L15.70,5.13 L17.39,6.36 L19.76,4.20 L21.82,7.03 L19.03,8.62 L19.67,10.60 Z M15.20,12.00 A3.2,3.2 0 1,0 8.80,12.00 A3.2,3.2 0 1,0 15.20,12.00 Z"/></svg>
       </button>
     </span>
+  </div>
+  <div class="mini-rank-bar" id="mini-rank-bar" aria-label="Rango por tiempo">
+    <span class="rank-label" id="mini-rank-label">Maestro/a</span>
+    <div class="rank-track" id="mini-rank-track"></div>
   </div>
   <div class="mini-board-wrap">
     <div class="mini-board" id="mini-board"></div>
@@ -3684,7 +3704,7 @@ function setLandingTab(tab) {
     diffDesc.style.display = 'none';
     modeRow.style.display  = 'none';
     modeDesc.style.display = 'none';
-    playBtn.textContent = 'Empezar';
+    playBtn.textContent = 'Jugar';
     playBtn.classList.remove('is-soon');
     playBtn.classList.add('is-mini-cta');
     playBtn.disabled = false;
@@ -3879,6 +3899,7 @@ function miniStartTimer() {
   miniState.timer = setInterval(() => {
     miniState.elapsed = Math.floor((Date.now() - miniState.startedAt) / 1000);
     miniUpdateTimer();
+    miniRenderRankBar();      // drains the live rank as time passes
     if (miniState.elapsed % 5 === 0) miniSave();
   }, 1000);
   miniUpdateTimer();
@@ -4035,6 +4056,27 @@ function miniHint() {
     miniCheckDone();
   });
 }
+let _miniRankShown = -1;
+function miniRenderRankBar(force) {
+  const track = document.getElementById('mini-rank-track');
+  const labelEl = document.getElementById('mini-rank-label');
+  if (!track || !miniState) return;
+  const curIdx = miniRankIndexForTime(miniState.elapsed);
+  if (!force && curIdx === _miniRankShown) return;   // only rebuild when the rank changes
+  _miniRankShown = curIdx;
+  const topIdx = RANK_NAMES.length - 1;
+  track.innerHTML = '';
+  const line = document.createElement('div'); line.className = 'rank-track-line'; track.appendChild(line);
+  const fill = document.createElement('div'); fill.className = 'rank-track-fill';
+  fill.style.width = (curIdx / topIdx * 100) + '%'; track.appendChild(fill);
+  for (let i = 0; i < RANK_NAMES.length; i++) {
+    const dot = document.createElement('div'); dot.className = 'rank-dot';
+    if (i === curIdx) { dot.classList.add('current'); if (miniState.done) dot.classList.add('done'); }
+    dot.style.left = (i / topIdx * 100) + '%';
+    track.appendChild(dot);
+  }
+  if (labelEl) labelEl.textContent = RANK_NAMES[curIdx];
+}
 function miniRenderStart() {
   if (!miniState) return;
   const ov = document.getElementById('mini-start');
@@ -4055,6 +4097,7 @@ function miniCheckDone() {
     if (miniState.values[r][c] !== miniState.solution[r][c]) return;
   miniState.done = true;
   miniStopTimer();
+  miniRenderRankBar(true);   // lock the live bar to the final rank
   miniSave();
   const t = miniState.elapsed;
   let best = parseInt(localStorage.getItem(MINI_BEST_KEY) || '0', 10);
@@ -4093,7 +4136,7 @@ function launchMini() {
   if (!miniState || miniState.iso !== state.iso) initMini();
   document.body.classList.add('mini-active');
   renderMiniStain();
-  miniRenderBoard(); miniRenderPad(); miniRenderStart();
+  miniRenderBoard(); miniRenderPad(); miniRenderStart(); miniRenderRankBar(true);
   // Timer only runs once the player presses Empezar (or when resuming a
   // game already in progress); a fresh puzzle sits behind the Start gate.
   if (miniState.started && !miniState.done) miniStartTimer();
