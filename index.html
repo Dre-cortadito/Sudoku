@@ -163,6 +163,20 @@
     .page-header { position: static; padding: 8px 0 16px; height: auto; }
   }
   .title-block { display: flex; align-items: center; gap: 10px; }
+  /* Home: returns to the landing. Lives in the shared header, so it appears in
+     every game (standard — see _docs/GAME-UI-STANDARDS.md). */
+  .header-home {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; flex-shrink: 0;
+    border-radius: 50%; border: 1px solid var(--ink-line);
+    background: transparent; color: var(--ink); padding: 0; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .header-home svg { width: 17px; height: 17px; }
+  @media (hover: hover) {
+    .header-home:hover { background: var(--paper); color: var(--accent); border-color: var(--ink-soft); }
+  }
   .page-logo { width: 26px; height: 26px; }   /* spec: 26px, quiet header */
   .wordmark {
     margin: 0;
@@ -1608,6 +1622,9 @@
 <!-- ============ HEADER ============ -->
 <header class="page-header">
   <div class="title-block">
+    <button class="header-home" id="header-home" type="button" aria-label="Inicio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
+    </button>
     <svg class="page-logo" viewBox="0 0 36 36" aria-hidden="true"><g transform="rotate(-22 18 18)"><ellipse cx="18" cy="18" rx="14.85" ry="10.125" style="fill:var(--accent)"/><path d="M 5.85 19.62 Q 18 13.95 30.15 18.54" style="fill:none;stroke:var(--accent-2);stroke-width:2.7;stroke-linecap:round"/></g></svg>
     <h1 class="wordmark">Sudoku</h1>
   </div>
@@ -3625,6 +3642,7 @@ document.getElementById('check-puzzle').addEventListener('click', () => {
   askConfirm('¿Seguro?', 'Esto reducirá tus puntos en 3.', checkPuzzle);
 });
 document.getElementById('daily-cog').addEventListener('click', () => openModal('settings-modal'));
+document.getElementById('header-home').addEventListener('click', goHome);   // shared header → landing
 
 // ---------- SURFACE VARIANT (Sereno default · Crema opt-in) ----------
 // Sereno is the canonical look; Crema is a warm reading preference,
@@ -4193,6 +4211,12 @@ function launchMini() {
 function exitMini() {
   miniStopTimer(); miniSave();
   document.body.classList.remove('mini-active');
+}
+// Home — return to the landing from any game. Stops/saves both games' state.
+function goHome() {
+  dailyTimerStop(); saveProgress();
+  miniStopTimer(); miniSave();
+  document.body.classList.remove('game-active', 'mini-active');
 }
 function buildMiniShareText() {
   return `Sudoku Mini · ${formatPrettyDate(state.iso)}\n\n⏱️ ${miniFmt(miniState ? miniState.elapsed : 0)}\n\ncortadito.news`;
