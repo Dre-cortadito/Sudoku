@@ -166,6 +166,10 @@
   /* On mobile the in-game header shows only the bean logo (spec). */
   @media (max-width: 600px) {
     .wordmark { display: none; }
+    /* The bean artwork fills less of its viewBox than Racimo's cherry
+       cluster, so at the same px it reads smaller. Size it up to fill the
+       56px header with the same visual weight (still well within the box). */
+    body.game-active .page-logo { width: 36px; height: 36px; }
   }
   @media (min-width: 600px) {
     .wordmark { font-size: 22px; }   /* spec: keep header quiet, no upscale */
@@ -1058,6 +1062,30 @@
     .dropdown-menu button:hover,
     .dropdown-menu a.archive-item:hover { background: var(--cell-bg-peer); }
   }
+  /* Theme row: "Tema" label left, current theme name right (mirrors Racimo). */
+  .dropdown-menu button .more-theme-name {
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: capitalize;
+  }
+  /* CTA variant — "Suscribirse al boletín" at the bottom of the menu.
+     Terracota accent, bolder, with a divider above (mirrors Racimo's
+     more-item-cta but in Sudoku's accent color). */
+  .dropdown-menu button.more-item-cta {
+    color: var(--accent);
+    font-weight: 700;
+    border-top: 1px solid var(--ink-line);
+    border-radius: 0 0 8px 8px;
+    margin-top: 4px;
+    padding-top: 12px;
+  }
+  @media (hover: hover) {
+    .dropdown-menu button.more-item-cta:hover {
+      color: var(--accent-deep);
+      background: var(--paper);
+    }
+  }
 
   .hidden { display: none !important; }
 
@@ -1447,14 +1475,13 @@
         </svg>
       </button>
       <div class="dropdown-menu" id="more-menu">
-        <button id="more-theme">Tema: claro/oscuro</button>
-        <button id="more-variant">Superficie: Sereno</button>
+        <button id="more-theme"><span>Tema</span><span class="more-theme-name" id="more-theme-name">Claro</span></button>
         <button data-modal="settings-modal">Ajustes</button>
         <button id="more-check-cell">Verificar celda (−1 pt)</button>
         <button id="more-check-puzzle">Verificar tablero (−3 pts)</button>
         <button id="more-share">Compartir resultado</button>
         <button data-modal="about-modal">Sobre el juego</button>
-        <button id="more-subscribe">Suscribirse al boletín</button>
+        <button id="more-subscribe" class="more-item-cta">Suscribirse al boletín</button>
       </div>
     </span>
   </nav>
@@ -3186,12 +3213,18 @@ function refreshThemeIcon() {
   btn.innerHTML = isDark ? SUN_SVG : MOON_SVG;
   btn.setAttribute('aria-label', isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
 }
+function refreshMoreThemeName() {
+  const el = document.getElementById('more-theme-name');
+  if (!el) return;
+  el.textContent = document.body.getAttribute('data-theme') === 'black' ? 'Oscuro' : 'Claro';
+}
 function applyTheme(theme) {
   document.body.setAttribute('data-theme', theme);
   const tweaks = loadTweaks();
   tweaks.theme = theme;
   saveTweaks(tweaks);
   refreshThemeIcon();
+  refreshMoreThemeName();
 }
 function toggleTheme() {
   const cur = document.body.getAttribute('data-theme') || 'white';
@@ -3739,7 +3772,7 @@ function boot() {
   // Restore theme + settings
   const tweaks = loadTweaks();
   applyTheme(tweaks.theme || 'white');
-  applyVariant(tweaks.variant || 'sereno');
+  applyVariant('sereno');   /* Surface locked to Sereno (Crema retired) */
   loadSettings();
   refreshToggles();
 
