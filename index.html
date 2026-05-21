@@ -234,9 +234,9 @@
     background: var(--bg);
     z-index: 1000;
     display: flex;
-    align-items: flex-start;   /* top-align the column so the Diario/Mini tab
-                                  strip keeps a fixed position across toggles
-                                  instead of riding the re-centering content */
+    /* inner stretches to full height (default align-items:stretch) so the
+       content can be vertically centered BELOW the pinned toggle via the
+       auto-margins on .landing-logo-row / .landing-credit (see below). */
     padding: 18px 24px;
     overflow-y: auto;
   }
@@ -263,6 +263,9 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    /* Together with margin-bottom:auto on .landing-credit, this vertically
+       centers everything between the pinned toggle and the bottom edge. */
+    margin-top: auto;
   }
   .landing-logo {
     width: 90px; height: 90px;     /* trimmed from 110 so the landing fits one screen */
@@ -280,10 +283,11 @@
   }
   .landing-tagline {
     margin: 0;
-    font-size: 14px;
-    color: var(--ink-soft);
+    font-size: 19px;                     /* bumped from 14 — was much smaller
+                                            than Racimo's slogan */
+    color: var(--ink);
     max-width: 320px;
-    line-height: 1.4;
+    line-height: 1.35;
     font-family: var(--font-display);   /* spec: italic Newsreader */
     font-style: italic;
     font-weight: 400;
@@ -340,8 +344,8 @@
     color: var(--bg);
   }
   .landing-mode-desc {
-    color: var(--ink-soft);
-    font-size: 12px;
+    color: var(--ink);          /* was --ink-soft — too faint to read */
+    font-size: 14px;            /* was 12px */
     font-style: italic;
     font-family: var(--font-display);
     margin: 0;
@@ -383,6 +387,8 @@
     color: var(--ink-soft);
     font-size: 12px;
     margin-top: 8px;
+    margin-bottom: auto;   /* pairs with .landing-logo-row margin-top:auto to
+                              center the content block below the toggle */
     line-height: 1.5;
     letter-spacing: 0.2px;
   }
@@ -397,6 +403,8 @@
   .landing-theme {
     position: absolute;
     top: 18px; right: 18px;
+    z-index: 3;            /* above .landing-inner (z-index:1) so the button
+                              stays clickable now that the inner fills height */
     width: 42px; height: 42px;
     border-radius: 999px;
     background: transparent;
@@ -1255,8 +1263,8 @@
     color: var(--bg);
   }
   .landing-diff-desc {
-    color: var(--ink-soft);
-    font-size: 12px;
+    color: var(--ink);          /* was --ink-soft — too faint to read */
+    font-size: 14px;            /* was 12px */
     font-style: italic;
     font-family: var(--font-display);
     margin: 0;
