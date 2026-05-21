@@ -1260,6 +1260,12 @@
     pointer-events: none;
     z-index: 0;
   }
+  /* Game stain layers cover the full viewport (like the landing) so the
+     marks bleed off the screen edges, and the bottom mark drops into the
+     empty space below the number pad — not just the .page content box. */
+  #page-stain-layer, #mini-stain-layer {
+    position: fixed;
+  }
   .stain {
     position: absolute;
     background-image: var(--stain-src);
@@ -1275,7 +1281,7 @@
   .stain.s-landing  { top: -36px; left: -42px; width: 232px; height: 232px; }
   .stain.s-game-tl  { top: -36px; left: -42px; width: 176px; height: 176px; }
   /* Secondary slot (splatter pool): game bottom-right. */
-  .stain.s-game-br  { bottom: -28px; right: -48px; width: 198px; height: 198px; }
+  .stain.s-game-br  { bottom: -18px; right: -38px; width: 228px; height: 228px; }
   /* Keep landing content + game chrome above the stain layer. */
   .landing-inner { position: relative; z-index: 1; }
   .info-bar, .rank-bar, .board-wrap, .pad-wrap { position: relative; z-index: 1; }
