@@ -234,6 +234,9 @@
     background: var(--bg);
     z-index: 1000;
     display: flex;
+    align-items: flex-start;   /* top-align the column so the Diario/Mini tab
+                                  strip keeps a fixed position across toggles
+                                  instead of riding the re-centering content */
     padding: 18px 24px;
     overflow-y: auto;
   }
@@ -244,7 +247,9 @@
      taller than the screen — so the Diario/Mini tabs are never clipped
      above the viewport. */
   .landing-inner {
-    margin: auto;
+    margin: 0 auto;   /* was `auto` (vertically centered) — now top-aligned so
+                         the tab strip above never shifts when Diario↔Mini
+                         changes the content height below it. */
     width: 100%;
     max-width: 420px;
     text-align: center;
@@ -252,9 +257,6 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    /* Clears the now-pinned tab strip and compensates for the flow space it
-       used to take, so the centered content stays roughly where it was. */
-    padding-top: 40px;
   }
   .landing-logo-row {
     display: flex;
@@ -1271,16 +1273,8 @@
      underline, no pill chrome). Sits at the top of the landing. ---- */
   /* Tab strip flows as the first element of the landing column so it
      never overlaps the logo. Reads as page-level navigation. */
-  /* Pinned to the top of the landing rather than riding the vertically
-     centered column. Switching Diario↔Mini changes the column's height
-     (eyebrow appears, diff/mode rows hide, wordmark shrinks), which used to
-     re-center the column and drag this bar with it. Anchoring it keeps the
-     bar perfectly still while the rest of the page animates. */
   .landing-tabs {
-    position: absolute;
-    top: 18px; left: 0; right: 0;
     display: flex; gap: 32px; justify-content: center;
-    z-index: 2;
   }
   /* Uppercase label above each picker row (Dificultad / Modo). */
   .pickrow-label {
