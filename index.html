@@ -1277,11 +1277,13 @@
   }
   body[data-variant="crema"] .stain { opacity: 0.34; }
   body[data-theme="black"] .stain { mix-blend-mode: screen; opacity: 0.20; }
-  /* Hero slot (circular pool): landing + game top-left. */
-  .stain.s-landing  { top: -36px; left: -42px; width: 232px; height: 232px; }
-  .stain.s-game-tl  { top: -36px; left: -42px; width: 176px; height: 176px; }
-  /* Secondary slot (splatter pool): game bottom-right. */
-  .stain.s-game-br  { bottom: -18px; right: -38px; width: 228px; height: 228px; }
+  /* Hero slot (circular pool): same mark + size on landing AND game —
+     the game page mimics the landing exactly. */
+  .stain.s-landing,
+  .stain.s-game-tl  { top: -36px; left: -42px; width: 232px; height: 232px; }
+  /* Secondary slot (splatter pool): bottom-right, on landing AND game. */
+  .stain.s-game-br,
+  .stain.s-landing-br { bottom: -18px; right: -38px; width: 228px; height: 228px; }
   /* Keep landing content + game chrome above the stain layer. */
   .landing-inner { position: relative; z-index: 1; }
   .info-bar, .rank-bar, .board-wrap, .pad-wrap { position: relative; z-index: 1; }
@@ -3369,8 +3371,10 @@ function renderStains() {
   const pageLayer = document.getElementById('page-stain-layer');
   if (landingLayer) {
     landingLayer.innerHTML = '';
-    const s = makeStain(seed, 's-landing', STAIN_DATA.circular);
-    if (s) landingLayer.appendChild(s);
+    const top = makeStain(seed, 's-landing', STAIN_DATA.circular);
+    const bot = makeStain(seed + 'b', 's-landing-br', STAIN_DATA.splatter);
+    if (top) landingLayer.appendChild(top);
+    if (bot) landingLayer.appendChild(bot);
   }
   if (pageLayer) {
     pageLayer.innerHTML = '';
