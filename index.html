@@ -242,6 +242,9 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    /* Clears the now-pinned tab strip and compensates for the flow space it
+       used to take, so the centered content stays roughly where it was. */
+    padding-top: 40px;
   }
   .landing-logo-row {
     display: flex;
@@ -438,6 +441,19 @@
     margin: 6px 0 8px;
   }
   .daily-meta-spacer { display: block; }
+  /* Opt-in count-up timer — lives in the left meta slot, mirroring the cog
+     on the right so the diff·mode group stays centered. Hidden unless on. */
+  .daily-timer {
+    justify-self: start;
+    font-family: var(--font-ui);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: 0.5px;
+  }
+  .daily-timer[hidden] { display: none; }
   .info-bar {
     display: block;
     text-align: center;
@@ -547,6 +563,9 @@
     white-space: nowrap;
   }
   .rank-dot.current.done { background: var(--success); }
+  /* Negative score — espresso brown bubble (overrides the orange default).
+     Reto is always positive, so .done can't co-occur with .negative. */
+  .rank-dot.current.negative { background: var(--accent-2); }
   /* Goal marker (Reto del día) — vertical bar */
   .rank-meta {
     position: absolute;
@@ -617,8 +636,16 @@
     z-index: 1;
   }
   .cell.selected.given { color: #ffffff; }
-  .cell.selected.error { color: #ffb3b3; }
-  .cell.error { color: var(--error); }
+  /* Wrong number: the WHOLE tile goes solid red with a white digit, so a
+     mistake is unmistakable even when sitting right next to a correct
+     (terracota) entry. Correct entries keep terracota text on white —
+     "colored fill = wrong" reads far faster than "orange vs red text". */
+  .cell.error,
+  .cell.selected.error {
+    background: var(--error);
+    color: #ffffff;
+    font-weight: 700;
+  }
   /* Tier-1 Pista target — dashed rose outline that pulses to draw the eye */
   .cell.hint-target {
     outline: 3px dashed var(--accent-2);
@@ -676,6 +703,30 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
     margin-bottom: 8px;
+  }
+  /* Verify actions — promoted out of the hamburger to live under the pad.
+     Secondary (outline) styling so they don't compete with the number pad. */
+  .verify-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .verify-btn {
+    background: none;
+    border: 1px solid var(--ink-line);
+    color: var(--ink-soft);
+    padding: 9px 6px;
+    border-radius: 10px;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .verify-btn:active { transform: scale(0.97); }
+  @media (hover: hover) {
+    .verify-btn:hover { border-color: var(--accent); color: var(--accent); }
   }
   .tool-btn {
     background: none;
@@ -1210,8 +1261,16 @@
      underline, no pill chrome). Sits at the top of the landing. ---- */
   /* Tab strip flows as the first element of the landing column so it
      never overlaps the logo. Reads as page-level navigation. */
+  /* Pinned to the top of the landing rather than riding the vertically
+     centered column. Switching Diario↔Mini changes the column's height
+     (eyebrow appears, diff/mode rows hide, wordmark shrinks), which used to
+     re-center the column and drag this bar with it. Anchoring it keeps the
+     bar perfectly still while the rest of the page animates. */
   .landing-tabs {
+    position: absolute;
+    top: 18px; left: 0; right: 0;
     display: flex; gap: 32px; justify-content: center;
+    z-index: 2;
   }
   /* Uppercase label above each picker row (Dificultad / Modo). */
   .pickrow-label {
@@ -1491,8 +1550,6 @@
       <div class="dropdown-menu" id="more-menu">
         <button id="more-theme"><span>Tema</span><span class="more-theme-name" id="more-theme-name">Claro</span></button>
         <button data-modal="settings-modal">Ajustes</button>
-        <button id="more-check-cell">Verificar celda (−1 pt)</button>
-        <button id="more-check-puzzle">Verificar tablero (−3 pts)</button>
         <button id="more-share">Compartir resultado</button>
         <button data-modal="about-modal">Sobre el juego</button>
         <button id="more-subscribe" class="more-item-cta">Suscribirse al boletín</button>
@@ -1513,7 +1570,7 @@
   </div>
 
   <div class="daily-meta">
-    <span class="daily-meta-spacer"></span>
+    <span class="daily-meta-spacer"><span class="daily-timer" id="daily-timer" hidden>0:00</span></span>
     <button class="info-bar" id="info-bar" type="button" aria-label="Cambiar puzzle">
       <span id="info-diff">Medio</span>
       <span class="info-sep">·</span>
@@ -1548,6 +1605,10 @@
       </button>
     </div>
     <div class="number-pad" id="number-pad"></div>
+    <div class="verify-row">
+      <button class="verify-btn" id="check-cell" type="button">Verificar celda (−1 pt)</button>
+      <button class="verify-btn" id="check-puzzle" type="button">Verificar tablero (−3 pts)</button>
+    </div>
   </div>
 </div>
 
@@ -1844,10 +1905,10 @@
     </div>
     <div class="settings-row">
       <div class="settings-text">
-        <div class="settings-label">Modo notas automático</div>
-        <div class="settings-sublabel">Anota los candidatos posibles en cada celda vacía y los actualiza solo.</div>
+        <div class="settings-label">Cronómetro</div>
+        <div class="settings-sublabel">Mide tu tiempo mientras juegas. No afecta tu puntaje ni tu rango.</div>
       </div>
-      <div class="toggle" data-toggle="autoCandidates"></div>
+      <div class="toggle" data-toggle="timer"></div>
     </div>
   </div>
 
@@ -1913,7 +1974,8 @@ const SETTINGS_DEFAULTS = {
   highlightBox:   true,
   highlightSame:  true,
   showErrors:     true,
-  autoCandidates: false
+  autoCandidates: false,
+  timer:          false
 };
 let settings = Object.assign({}, SETTINGS_DEFAULTS);
 
@@ -2142,6 +2204,7 @@ const state = {
   hintCount: 0,
   checkCount: 0,
   correctCount: 0,
+  elapsed: 0,           // seconds played (only counts when the timer is on)
   selected: null,
   notesMode: false,
   history: [],
@@ -2205,6 +2268,7 @@ function saveProgress() {
       errorCount: state.errorCount,
       hintCount: state.hintCount,
       checkCount: state.checkCount,
+      elapsed: state.elapsed,
       hintedCells: Array.from(state.hintedCells),
       completed: state.completed
     };
@@ -2278,6 +2342,7 @@ function initPuzzle() {
   state.errorCount = 0;
   state.hintCount = 0;
   state.checkCount = 0;
+  state.elapsed = 0;
   state.pendingHint = null;
   state.history = [];
   state.completed = false;
@@ -2315,6 +2380,7 @@ function initPuzzle() {
     state.errorCount = saved.errorCount || 0;
     state.hintCount = saved.hintCount || 0;
     state.checkCount = saved.checkCount || 0;
+    state.elapsed = saved.elapsed || 0;
     state.hintedCells = new Set(saved.hintedCells || []);
     state.completed = !!saved.completed;
     // Rebuild errors + revealed
@@ -2345,6 +2411,11 @@ function initPuzzle() {
       }
     }
     state.correctCount = countCorrectPlayerCells();
+  }
+  // Re-sync the optional timer to this puzzle's elapsed time. Only runs once
+  // the game view is active (no-op on the initial landing-page load).
+  if (typeof dailyTimerStart === 'function' && document.body.classList.contains('game-active')) {
+    dailyTimerStart();
   }
 }
 function countCorrectPlayerCells() {
@@ -2432,8 +2503,15 @@ function renderBoard() {
         } else {
           // Auto candidates override manual notes when enabled.
           let displayNotes;
-          if (settings.autoCandidates) displayNotes = computeCandidates(r, c);
-          else displayNotes = state.notes[idx];
+          if (settings.autoCandidates) {
+            // Don't auto-fill candidates on the cell a hint is pointing at:
+            // hints target "naked singles" (one legal value), so the auto
+            // candidate would be the single solution digit — spoiling the
+            // answer before the player presses Revelar.
+            displayNotes = (state.pendingHint === idx) ? null : computeCandidates(r, c);
+          } else {
+            displayNotes = state.notes[idx];
+          }
           if (displayNotes && displayNotes.size > 0) {
             const notesEl = document.createElement('div');
             notesEl.className = 'notes';
@@ -2533,6 +2611,7 @@ function renderRankBar() {
     if (i === curIdx) {
       dot.classList.add('current');
       if (sc >= state.reto) dot.classList.add('done');
+      if (sc < 0) dot.classList.add('negative');
       dot.textContent = sc;
     }
     dot.style.left = pctFor(i) + '%';
@@ -2556,6 +2635,32 @@ function refreshHintButton() {
   const labelEl = btn.querySelector('span');
   if (!labelEl) return;
   labelEl.textContent = state.pendingHint !== null ? 'Revelar' : 'Pista';
+}
+
+// ---------- OPTIONAL TIMER (Daily) ----------
+// Purely cosmetic: counts up while playing, never touches score() or rank.
+// Off by default; toggled from Ajustes. Elapsed seconds persist in progress.
+let dailyTimerHandle = null;
+function dailyTimerUpdate() {
+  const el = document.getElementById('daily-timer');
+  if (!el) return;
+  if (!settings.timer) { el.hidden = true; return; }
+  el.hidden = false;
+  el.textContent = miniFmt(state.elapsed);
+}
+function dailyTimerStop() {
+  if (dailyTimerHandle) { clearInterval(dailyTimerHandle); dailyTimerHandle = null; }
+}
+function dailyTimerStart() {
+  dailyTimerStop();
+  if (!settings.timer || state.completed) { dailyTimerUpdate(); return; }
+  const startedAt = Date.now() - state.elapsed * 1000;
+  dailyTimerHandle = setInterval(() => {
+    state.elapsed = Math.floor((Date.now() - startedAt) / 1000);
+    dailyTimerUpdate();
+    if (state.elapsed % 5 === 0) saveProgress();
+  }, 1000);
+  dailyTimerUpdate();
 }
 
 // ---------- SELECTION & PLACEMENT ----------
@@ -2757,10 +2862,28 @@ function hint() {
   renderAll(); saveProgress();
 }
 
+// Pista always asks first — it costs points and reveals information, so it
+// shouldn't be tappable by accident. Copy adapts to the tier the button is in.
+function hintWithConfirm() {
+  if (state.pendingHint !== null) {
+    askConfirm('¿Revelar?', 'Esto mostrará la respuesta de esta celda (−2 pts).', hint);
+  } else {
+    askConfirm('¿Pedir pista?', 'Esto te señalará una celda y restará puntos (−1 pt).', hint);
+  }
+}
+
 function toggleNotes() {
   state.notesMode = !state.notesMode;
+  // Posibles (auto-candidates) already annotates every empty cell for you, so
+  // manual Notas would be invisible underneath it. Treat them as mutually
+  // exclusive: turning Notas on switches Posibles off.
+  if (state.notesMode && settings.autoCandidates) {
+    settings.autoCandidates = false;
+    saveSettingsToStorage();
+    refreshToggles();
+  }
   document.getElementById('btn-notes').classList.toggle('active', state.notesMode);
-  renderPad();
+  renderAll();
 }
 
 // ---------- FEEDBACK ----------
@@ -2812,7 +2935,9 @@ function checkCompletion() {
     if (state.hintCount === 0) lifetime.nohint = (lifetime.nohint || 0) + 1;
     if (isSinDescender()) lifetime.nodescend = (lifetime.nodescend || 0) + 1;
     saveLifetime();
+    dailyTimerStop();   // freeze the clock on completion
     saveProgress();
+    dailyTimerUpdate();
     if (!localStorage.getItem(completeKey())) {
       localStorage.setItem(completeKey(), '1');
       showCompleteModal();
@@ -3180,7 +3305,7 @@ document.querySelectorAll('.pill[data-mode]').forEach(btn => {
 
 // ---------- ACTION BUTTONS ----------
 document.getElementById('btn-notes').addEventListener('click', toggleNotes);
-document.getElementById('btn-hint').addEventListener('click', hint);
+document.getElementById('btn-hint').addEventListener('click', hintWithConfirm);
 document.getElementById('btn-undo').addEventListener('click', undo);
 
 // ---------- KEYBOARD ----------
@@ -3190,7 +3315,7 @@ document.addEventListener('keydown', (e) => {
   if (/^[1-9]$/.test(e.key)) { placeNumber(parseInt(e.key, 10)); return; }
   if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { eraseSelected(); return; }
   if (e.key === 'n' || e.key === 'N') { toggleNotes(); return; }
-  if (e.key === 'h' || e.key === 'H') { hint(); return; }
+  if (e.key === 'h' || e.key === 'H') { hintWithConfirm(); return; }
   const r = Math.floor(state.selected/9), c = state.selected%9;
   let nr = r, nc = c;
   if (e.key === 'ArrowUp') nr = (r + 8) % 9;
@@ -3301,6 +3426,7 @@ document.getElementById('landing-play').addEventListener('click', () => {
   }
   recordPlay();
   refreshStats();
+  dailyTimerStart();
 });
 
 // ---------- SETTINGS ----------
@@ -3328,11 +3454,17 @@ document.querySelectorAll('[data-toggle]').forEach(el => {
     saveSettingsToStorage();
     refreshToggles();
     renderAll();
+    if (key === 'timer') dailyTimerStart();   // start/stop + show/hide the clock
   });
 });
 // In-game Auto button (Notas automáticas) toggles autoCandidates and stays in sync with the Settings panel toggle.
 document.getElementById('btn-auto-cand').addEventListener('click', () => {
   settings.autoCandidates = !settings.autoCandidates;
+  // Mutually exclusive with manual Notas — turning Posibles on exits Notas.
+  if (settings.autoCandidates && state.notesMode) {
+    state.notesMode = false;
+    document.getElementById('btn-notes').classList.remove('active');
+  }
   saveSettingsToStorage();
   refreshToggles();
   renderAll();
@@ -3368,8 +3500,12 @@ function checkPuzzle() {
   else flash(`${wrongCount} ${wrongCount === 1 ? 'error' : 'errores'} (−3 pts)`, 'error');
   renderAll(); saveProgress();
 }
-document.getElementById('more-check-cell').addEventListener('click', () => { closeDropdowns(); checkCell(); });
-document.getElementById('more-check-puzzle').addEventListener('click', () => { closeDropdowns(); checkPuzzle(); });
+document.getElementById('check-cell').addEventListener('click', () => {
+  askConfirm('¿Seguro?', 'Esto reducirá tus puntos en 1.', checkCell);
+});
+document.getElementById('check-puzzle').addEventListener('click', () => {
+  askConfirm('¿Seguro?', 'Esto reducirá tus puntos en 3.', checkPuzzle);
+});
 document.getElementById('daily-cog').addEventListener('click', () => openModal('settings-modal'));
 
 // ---------- SURFACE VARIANT (Sereno default · Crema opt-in) ----------
