@@ -49,6 +49,15 @@
 
     --font-display: 'Newsreader', 'DM Serif Display', Georgia, serif;
     --font-ui:      'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+    /* ---- Cortadito Games vertical layout standard (shared by every
+       game; canonical values live in cortadito-games-design.md) ----
+       The rank bar always sits exactly --rank-gap below the header,
+       computed as --header-h + --rank-gap. Change one number to move
+       it; both games stay consistent "by position". */
+    --header-h:  56px;   /* fixed mobile header height */
+    --rank-gap:  10px;   /* gap from header bottom to the rank bar */
+    --rail-gap:   8px;   /* rhythm between rank bar / meta / board */
   }
 
   /* ---- Crema · opt-in warm reading surface (same accent pair) ---- */
@@ -125,7 +134,7 @@
     transition: opacity 0.25s ease;
   }
   body.ready { opacity: 1; }
-  body.game-active { height: 100dvh; overflow: hidden; }
+  body.game-active { height: 100dvh; overflow: hidden; padding-top: 0; }
   @media (min-width: 880px) {
     body { padding: 28px 48px 64px; height: auto !important; overflow: auto !important; }
   }
@@ -143,7 +152,7 @@
     top: 0; left: 0; right: 0;
     background: var(--bg);
     z-index: 1700;
-    height: 56px;
+    height: var(--header-h);
   }
   body.game-active .page-header { display: flex; }
   @media (min-width: 880px) {
@@ -208,7 +217,7 @@
   }
 
   /* spacer to push content below the fixed header on mobile */
-  .header-spacer { height: 50px; }
+  .header-spacer { height: calc(var(--header-h) + var(--rank-gap)); }
   @media (min-width: 880px) { .header-spacer { display: none; } }
 
   /* ============ LANDING ============ */
