@@ -732,23 +732,24 @@
     gap: 6px;
     margin-top: 6px;
   }
+  /* Same look as the .tool-btn row (Notas/Posibles/…): ink-line border, ink
+     text, uppercase lettering — but with an opaque surface so the coffee-stain
+     layer can't show through (the tool row sits over clear paper, this doesn't). */
   .verify-btn {
-    background: var(--paper);   /* opaque surface — was `none`, which let the
-                                   coffee-stain layer show through the buttons */
+    background: var(--paper);
     border: 1px solid var(--ink-line);
-    color: var(--ink-soft);
-    padding: 7px 6px;
+    color: var(--ink);
+    padding: 9px 6px;
     border-radius: 10px;
-    font-family: var(--font-ui);
-    font-size: 11.5px;
-    font-weight: 600;
+    font: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
     cursor: pointer;
-    transition: transform 0.1s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: transform 0.1s ease;
   }
-  .verify-btn:active { transform: scale(0.97); }
-  @media (hover: hover) {
-    .verify-btn:hover { border-color: var(--accent); color: var(--accent); }
-  }
+  .verify-btn:active { transform: scale(0.96); }
   .tool-btn {
     background: none;
     border: 1px solid var(--ink-line);
