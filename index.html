@@ -586,6 +586,10 @@
   /* Negative score — espresso brown bubble (overrides the orange default).
      Reto is always positive, so .done can't co-occur with .negative. */
   .rank-dot.current.negative { background: var(--accent-2); }
+  /* Maestro/a — the pinnacle is ALWAYS the brand orange (overrides the green
+     "done" state). Standard across games; matches how Racimo paints its top
+     rank in-accent. The label turns orange too via .rank-label.at-maestro. */
+  .rank-dot.current.at-maestro { background: var(--accent); }
   /* Goal marker (Reto del día) — vertical bar */
   .rank-meta {
     position: absolute;
@@ -2713,6 +2717,7 @@ function renderRankBar() {
       dot.classList.add('current');
       if (sc >= state.reto) dot.classList.add('done');
       if (sc < 0) dot.classList.add('negative');
+      if (curIdx === topIdx) dot.classList.add('at-maestro');   // pinnacle = orange
       dot.textContent = sc;
     }
     dot.style.left = pctFor(i) + '%';
@@ -4106,11 +4111,18 @@ function miniRenderRankBar(force) {
   fill.style.width = (curIdx / topIdx * 100) + '%'; track.appendChild(fill);
   for (let i = 0; i < RANK_NAMES.length; i++) {
     const dot = document.createElement('div'); dot.className = 'rank-dot';
-    if (i === curIdx) { dot.classList.add('current'); if (miniState.done) dot.classList.add('done'); }
+    if (i === curIdx) {
+      dot.classList.add('current');
+      if (miniState.done) dot.classList.add('done');
+      if (curIdx === topIdx) dot.classList.add('at-maestro');   // pinnacle = orange
+    }
     dot.style.left = (i / topIdx * 100) + '%';
     track.appendChild(dot);
   }
-  if (labelEl) labelEl.textContent = RANK_NAMES[curIdx];
+  if (labelEl) {
+    labelEl.textContent = RANK_NAMES[curIdx];
+    labelEl.classList.toggle('at-maestro', curIdx === topIdx);   // orange word at Maestro
+  }
 }
 function miniRenderStart() {
   if (!miniState) return;
