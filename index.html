@@ -345,7 +345,7 @@
   }
   .landing-mode-desc {
     color: var(--ink);          /* was --ink-soft — too faint to read */
-    font-size: 14px;            /* was 12px */
+    font-size: 13px;            /* readable, but a step below the heading */
     font-style: italic;
     font-family: var(--font-display);
     margin: 0;
@@ -733,7 +733,8 @@
     margin-top: 6px;
   }
   .verify-btn {
-    background: none;
+    background: var(--paper);   /* opaque surface — was `none`, which let the
+                                   coffee-stain layer show through the buttons */
     border: 1px solid var(--ink-line);
     color: var(--ink-soft);
     padding: 7px 6px;
@@ -1264,7 +1265,7 @@
   }
   .landing-diff-desc {
     color: var(--ink);          /* was --ink-soft — too faint to read */
-    font-size: 14px;            /* was 12px */
+    font-size: 13px;            /* readable, but a step below the heading */
     font-style: italic;
     font-family: var(--font-display);
     margin: 0;
@@ -1286,11 +1287,11 @@
   }
   /* Uppercase label above each picker row (Dificultad / Modo). */
   .pickrow-label {
-    font-size: 10px;
+    font-size: 11px;            /* was 10 — give the heading a touch more weight */
     text-transform: uppercase;
     letter-spacing: 1.6px;
     font-weight: 700;
-    color: var(--ink-soft);
+    color: var(--ink);          /* was --ink-soft — so it anchors above its description */
     text-align: center;
     margin: 8px 0 -2px;
   }
