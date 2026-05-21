@@ -797,7 +797,7 @@
   .num-btn:active { transform: scale(0.94); }
   .num-btn.exhausted { opacity: 0.35; }
   .num-btn.notes-mode { background: var(--accent-2); color: #ffffff; }
-  .num-btn.erase { color: var(--ink-soft); font-family: var(--font-ui); font-size: 20px; }
+  .num-btn.erase { color: var(--ink); font-family: var(--font-ui); font-size: 20px; }
 
   /* ============ FEEDBACK OVERLAY ============ */
   .feedback {
@@ -1509,16 +1509,10 @@
   .mini-tools .tool-btn { height: 42px; font-size: 11px; }
   .mini-tools .tool-icon { width: 16px; height: 16px; }
 
-  /* Live rank bar — shows the rank you're on pace for by elapsed time,
-     draining from Maestro/a downward as the clock runs; locks on finish.
-     Reuses the Diario rank-track look so the ladder is standard everywhere. */
-  .mini-rank-bar {
-    display: flex; align-items: center; gap: 10px;
-    width: 100%; max-width: var(--mini-w); margin: 0 auto;
-    padding: 0 6px 2px; box-sizing: border-box;
-    position: relative; z-index: 1;
-  }
-  .mini-rank-bar .rank-label { min-width: 76px; }
+  /* Live rank bar — identical to Diario's .rank-bar (same position, size and
+     styling), just aligned to the Mini board width. Shows the rank you're on
+     pace for by elapsed time, draining from Maestro/a down as the clock runs. */
+  .mini-rank-bar { max-width: var(--mini-w); position: relative; z-index: 1; }
 
   /* ===== Mini Start gate — board sits covered until "Empezar" ===== */
   .mini-start {
@@ -1691,6 +1685,11 @@
 <!-- ============ MINI PAGE (6×6, espresso shot) ============ -->
 <div class="mini-page" id="mini-page">
   <div class="stain-layer" id="mini-stain-layer" aria-hidden="true"></div>
+  <div class="rank-bar mini-rank-bar" id="mini-rank-bar" role="button" tabindex="0" aria-label="Ver rangos del Mini">
+    <span class="rank-label" id="mini-rank-label">Maestro/a</span>
+    <div class="rank-track" id="mini-rank-track"></div>
+    <span class="rank-chev">▾</span>
+  </div>
   <div class="mini-meta">
     <span class="mini-meta-slot is-left">
       <button class="mini-back" id="mini-back" type="button" aria-label="Volver al inicio">‹</button>
@@ -1703,10 +1702,6 @@
         <svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" aria-hidden="true"><path d="M22.86,10.25 L22.86,13.75 L19.67,13.40 L19.03,15.38 L21.82,16.97 L19.76,19.80 L17.39,17.64 L15.70,18.87 L17.02,21.79 L13.69,22.87 L13.04,19.73 L10.96,19.73 L10.31,22.87 L6.98,21.79 L8.30,18.87 L6.61,17.64 L4.24,19.80 L2.18,16.97 L4.97,15.38 L4.33,13.40 L1.14,13.75 L1.14,10.25 L4.33,10.60 L4.97,8.62 L2.18,7.03 L4.24,4.20 L6.61,6.36 L8.30,5.13 L6.98,2.21 L10.31,1.13 L10.96,4.27 L13.04,4.27 L13.69,1.13 L17.02,2.21 L15.70,5.13 L17.39,6.36 L19.76,4.20 L21.82,7.03 L19.03,8.62 L19.67,10.60 Z M15.20,12.00 A3.2,3.2 0 1,0 8.80,12.00 A3.2,3.2 0 1,0 15.20,12.00 Z"/></svg>
       </button>
     </span>
-  </div>
-  <div class="mini-rank-bar" id="mini-rank-bar" aria-label="Rango por tiempo">
-    <span class="rank-label" id="mini-rank-label">Maestro/a</span>
-    <div class="rank-track" id="mini-rank-track"></div>
   </div>
   <div class="mini-board-wrap">
     <div class="mini-board" id="mini-board"></div>
@@ -1886,6 +1881,21 @@
       <span>Puntaje mínimo</span>
     </div>
     <div class="ranks-list" id="rangos-list"></div>
+  </div>
+
+  <div class="modal" id="mini-rangos-modal" data-modal-content style="display:none">
+    <button class="modal-close" data-close>×</button>
+    <h2 class="modal-title">Rangos del Mini</h2>
+    <p class="blurb">En el Mini tu rango lo decide el <strong>tiempo</strong>: cuanto más rápido resuelvas, más alto el rango. Recibes tu rango al terminar — y la barra te muestra para qué rango vas mientras juegas.</p>
+    <p class="blurb">
+      <strong>Reto del día:</strong>
+      <strong style="color: var(--accent)" id="mini-rangos-reto">—</strong>
+    </p>
+    <div class="ranks-cols">
+      <span>Rango</span>
+      <span>Tiempo máximo</span>
+    </div>
+    <div class="ranks-list" id="mini-rangos-list"></div>
   </div>
 
   <div class="modal" id="about-modal" data-modal-content style="display:none">
@@ -2661,7 +2671,7 @@ function renderPad() {
   const eraseBtn = document.createElement('button');
   eraseBtn.className = 'num-btn erase';
   eraseBtn.title = 'Borrar';
-  eraseBtn.textContent = '✕';
+  eraseBtn.textContent = '⌫';
   eraseBtn.addEventListener('click', eraseSelected);
   padEl.appendChild(eraseBtn);
 }
@@ -2981,6 +2991,15 @@ function toggleNotes() {
 let feedbackTimer = null;
 function flash(text, cls) {
   const el = document.getElementById('feedback');
+  // Center the message over the ACTIVE board (Diario or Mini) instead of a
+  // fixed viewport spot, so feedback always sits inside the puzzle.
+  const board = document.getElementById(
+    document.body.classList.contains('mini-active') ? 'mini-board' : 'board');
+  if (board) {
+    const r = board.getBoundingClientRect();
+    el.style.left = (r.left + r.width / 2) + 'px';
+    el.style.top  = (r.top + r.height / 2) + 'px';
+  }
   el.className = 'feedback ' + (cls || '');
   el.textContent = text;
   requestAnimationFrame(() => el.classList.add('show'));
@@ -3166,6 +3185,7 @@ function openModal(id) {
   overlay.classList.add('open');
   if (id === 'stats-modal') refreshStats();
   if (id === 'rangos-modal') refreshRangos();
+  if (id === 'mini-rangos-modal') refreshMiniRangos();
 }
 function closeModal() { overlay.classList.remove('open'); }
 overlay.addEventListener('click', (e) => {
@@ -4056,6 +4076,21 @@ function miniHint() {
     miniCheckDone();
   });
 }
+function refreshMiniRangos() {
+  const list = document.getElementById('mini-rangos-list');
+  if (list) {
+    list.innerHTML = '';
+    for (const c of MINI_RANK_CUTOFFS) {   // highest rank (Maestro/a) first
+      const row = document.createElement('div'); row.className = 'rank-row';
+      const name = document.createElement('span'); name.className = 'name'; name.textContent = RANK_NAMES[c.idx];
+      const t = document.createElement('span'); t.className = 'score';
+      t.textContent = (c.max === Infinity) ? 'más lento' : '≤ ' + miniFmt(c.max);
+      row.appendChild(name); row.appendChild(t); list.appendChild(row);
+    }
+  }
+  const retoEl = document.getElementById('mini-rangos-reto');
+  if (retoEl && miniState) retoEl.textContent = '≤ ' + miniFmt(miniRetoForDate(miniState.iso));
+}
 let _miniRankShown = -1;
 function miniRenderRankBar(force) {
   const track = document.getElementById('mini-rank-track');
@@ -4170,6 +4205,7 @@ document.getElementById('mini-notes').addEventListener('click', () => {
 });
 document.getElementById('mini-posibles').addEventListener('click', miniTogglePosibles);
 document.getElementById('mini-hint').addEventListener('click', miniHint);
+document.getElementById('mini-rank-bar').addEventListener('click', () => openModal('mini-rangos-modal'));
 document.getElementById('mini-start-btn').addEventListener('click', miniBegin);
 document.getElementById('mini-share').addEventListener('click', () => { shareMini(); });
 
