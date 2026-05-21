@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+
+# Local deploy scripts — they contain your GitHub token. NEVER publish them.
+*.command
+
+# Local reference / design source — NOT part of the deployable game.
+Sudoku2.0/
+Comparison/
+index.html.engine-backup
+*.engine-backup
