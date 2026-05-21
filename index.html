@@ -859,6 +859,12 @@
     position: relative;
     color: var(--ink);
   }
+  /* The short ¿Seguro? / hint confirmation should sit vertically centered,
+     not top-aligned like the tall scrollable modals (Ajustes, Estadísticas). */
+  #confirm-modal {
+    align-self: center;
+    max-width: 420px;
+  }
   .modal h2 {
     font-family: var(--font-display);
     font-size: 28px;
