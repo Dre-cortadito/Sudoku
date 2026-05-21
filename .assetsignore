@@ -1,0 +1,7 @@
+# Files that must never be served publicly — only the game (index.html) ships.
+.git
+.gitignore
+.assetsignore
+wrangler.jsonc
+.wrangler
+*.command

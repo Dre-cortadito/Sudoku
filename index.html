@@ -112,6 +112,8 @@
     font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Kill double-tap-to-zoom on mobile (keeps normal taps + pinch-zoom). */
+    touch-action: manipulation;
   }
   body {
     min-height: 100vh;
@@ -157,6 +159,10 @@
     letter-spacing: -0.5px;
     color: var(--ink);
     line-height: 1;
+  }
+  /* On mobile the in-game header shows only the bean logo (spec). */
+  @media (max-width: 600px) {
+    .wordmark { display: none; }
   }
   @media (min-width: 600px) {
     .wordmark { font-size: 22px; }   /* spec: keep header quiet, no upscale */
@@ -1408,7 +1414,7 @@
 <!-- ============ HEADER ============ -->
 <header class="page-header">
   <div class="title-block">
-    <svg class="page-logo" viewBox="0 0 120 120" aria-hidden="true"><g transform="rotate(-28 22 22)"><ellipse cx="22" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 23.5 Q 22 18.25 33.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(14 60 22)"><ellipse cx="60" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 23.5 Q 60 18.25 71.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-18 98 22)"><ellipse cx="98" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 23.5 Q 98 18.25 109.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(22 22 60)"><ellipse cx="22" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 61.5 Q 22 56.25 33.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(0 60 60)"><ellipse cx="60" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent-2)"/><path d="M 48.75 61.5 Q 60 56.25 71.25 60.5" style="fill:none;stroke:var(--accent);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-22 98 60)"><ellipse cx="98" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 61.5 Q 98 56.25 109.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-14 22 98)"><ellipse cx="22" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 99.5 Q 22 94.25 33.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(24 60 98)"><ellipse cx="60" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 99.5 Q 60 94.25 71.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-30 98 98)"><ellipse cx="98" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 99.5 Q 98 94.25 109.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g></svg>
+    <svg class="page-logo" viewBox="0 0 36 36" aria-hidden="true"><g transform="rotate(-22 18 18)"><ellipse cx="18" cy="18" rx="14.85" ry="10.125" style="fill:var(--accent)"/><path d="M 5.85 19.62 Q 18 13.95 30.15 18.54" style="fill:none;stroke:var(--accent-2);stroke-width:2.7;stroke-linecap:round"/></g></svg>
     <h1 class="wordmark">Sudoku</h1>
   </div>
   <nav class="header-nav" aria-label="Más">
