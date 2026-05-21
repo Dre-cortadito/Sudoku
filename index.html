@@ -208,7 +208,7 @@
   }
 
   /* spacer to push content below the fixed header on mobile */
-  .header-spacer { height: 96px; }
+  .header-spacer { height: 50px; }
   @media (min-width: 880px) { .header-spacer { display: none; } }
 
   /* ============ LANDING ============ */
@@ -538,11 +538,11 @@
   .rank-meta {
     position: absolute;
     top: 50%;
-    width: 3px; height: 34px;       /* match Racimo — taller so it sticks out past the track */
+    width: 3px; height: 26px;       /* trimmed 25% from 34 — slimmer, classier */
     background: var(--accent);
     border-radius: 2px;
     transform: translate(-50%, -50%);
-    z-index: 4;                     /* above the dots/bubble, like Racimo */
+    z-index: 4;                     /* above the dots/bubble so it stays visible */
     pointer-events: none;
     opacity: 0.95;
     transition: background 0.25s ease;
