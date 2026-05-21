@@ -134,7 +134,7 @@
     transition: opacity 0.25s ease;
   }
   body.ready { opacity: 1; }
-  body.game-active { height: 100dvh; overflow: hidden; padding-top: 0; }
+  body.game-active { height: 100dvh; overflow: hidden; }
   @media (min-width: 880px) {
     body { padding: 28px 48px 64px; height: auto !important; overflow: auto !important; }
   }
@@ -152,7 +152,7 @@
     top: 0; left: 0; right: 0;
     background: var(--bg);
     z-index: 1700;
-    height: var(--header-h);
+    height: 56px;
   }
   body.game-active .page-header { display: flex; }
   @media (min-width: 880px) {
@@ -217,7 +217,7 @@
   }
 
   /* spacer to push content below the fixed header on mobile */
-  .header-spacer { height: calc(var(--header-h) + var(--rank-gap)); }
+  .header-spacer { height: 50px; }   /* proven good: 16px body top-padding + 50 = 66px below the 56px header */
   @media (min-width: 880px) { .header-spacer { display: none; } }
 
   /* ============ LANDING ============ */

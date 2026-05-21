@@ -11,6 +11,12 @@
 # Local deploy scripts — they contain your GitHub token. NEVER publish them.
 *.command
 
+# Reference images / screenshots dropped in the folder — never part of
+# the deployable game (the game is a single self-contained index.html).
+*.png
+*.jpg
+*.jpeg
+
 # Local reference / design source — NOT part of the deployable game.
 Sudoku2.0/
 Comparison/
