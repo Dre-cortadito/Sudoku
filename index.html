@@ -446,11 +446,15 @@
     color: var(--ink-soft);
     font-family: var(--font-display);
     font-style: italic;
-    font-size: 14px;
+    font-size: 16px;             /* bumped from 14 — there's room, reads clearer */
     cursor: pointer;
     padding: 4px 8px;
     margin: 0;
   }
+  /* Difficulty is the primary fact — paint it ink-black (mode + sep
+     stay soft grey via the .info-bar base color). Mirrors the
+     claude.ai Sudoku2.0 cn-meta-diff treatment. */
+  .info-bar #info-diff { color: var(--ink); }
   /* Chunky terracota cog — game settings (timer toggle, check board,
      auto-candidates). The hamburger ☰ stays for app-level nav. */
   .meta-cog {
@@ -656,6 +660,9 @@
     display: flex; align-items: center; justify-content: center;
   }
   .cell.has-value .notes { display: none; }
+  /* On the selected cell the background goes dark, so the soft-grey
+     candidate notes become near-invisible. Make them white there. */
+  .cell.selected .notes { color: #ffffff; }
 
   /* ============ TOOL ROW + NUMBER PAD ============ */
   .pad-wrap {
@@ -994,6 +1001,11 @@
     color: rgba(255,255,255,0.85);
     font-weight: 400; margin-top: 2px;
   }
+  /* Maestro/a is the pinnacle — always paint its name in the game's
+     accent (terracota). When it's also the current row the background
+     is accent, so keep that name white for contrast. */
+  .rank-row.is-top .name { color: var(--accent); font-weight: 700; }
+  .rank-row.current.is-top .name { color: #ffffff; }
 
   /* Archive — pill rows like rangos */
   .archive-list { display: flex; flex-direction: column; gap: 6px; }
@@ -2969,7 +2981,7 @@ function refreshRangos() {
   for (let i = topIdx; i >= 0; i--) {
     const row = document.createElement('div');
     const isCurrent = i === curIdx;
-    row.className = 'rank-row' + (isCurrent ? ' current' : '');
+    row.className = 'rank-row' + (isCurrent ? ' current' : '') + (i === topIdx ? ' is-top' : '');
     if (isCurrent) {
       const nextThreshold = (i < topIdx) ? RANK_THRESHOLDS[i + 1] : null;
       const toTop = Math.max(0, RANK_THRESHOLDS[topIdx] - sc);
