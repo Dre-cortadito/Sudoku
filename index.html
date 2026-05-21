@@ -1454,8 +1454,11 @@
   .mini-page { display: none; position: relative; max-width: 480px; margin: 0 auto; --mini-w: min(92vw, 400px); }
   body.mini-active { height: 100dvh; overflow: hidden; }
   body.mini-active .landing,
-  body.mini-active .page,
-  body.mini-active .page-header { display: none; }
+  body.mini-active .page { display: none; }
+  /* STANDARD: every game reuses Diario's header + rank bar (see
+     _docs/GAME-UI-STANDARDS.md). Mini shows the SAME .page-header element,
+     not a forked copy. */
+  body.mini-active .page-header { display: flex; }
   body.mini-active .mini-page {
     display: flex; flex-direction: column;
     justify-content: center;
@@ -1695,9 +1698,7 @@
     <span class="rank-chev">▾</span>
   </div>
   <div class="mini-meta">
-    <span class="mini-meta-slot is-left">
-      <button class="mini-back" id="mini-back" type="button" aria-label="Volver al inicio">‹</button>
-    </span>
+    <span class="mini-meta-slot is-left"></span>
     <span class="mini-meta-slot is-center">
       <span class="mini-timer" id="mini-timer">0:00</span>
     </span>
@@ -4202,7 +4203,6 @@ async function shareMini() {
   try { await navigator.clipboard.writeText(text); flash('Resultado copiado', 'success'); } catch (e) {}
 }
 // Mini control wiring
-document.getElementById('mini-back').addEventListener('click', exitMini);
 document.getElementById('mini-cog').addEventListener('click', () => openModal('settings-modal'));
 document.getElementById('mini-undo').addEventListener('click', miniUndo);
 document.getElementById('mini-notes').addEventListener('click', () => {
