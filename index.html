@@ -1903,7 +1903,8 @@
 
     <h3>Modo Niebla</h3>
     <p>El tablero empieza casi todo cubierto de niebla: sólo ves <strong>algunas pistas</strong> — el resto del tablero, y unas cuantas pistas más, están escondidas.</p>
-    <p>Coloca un número <strong>correcto</strong> y la niebla a su alrededor se despeja — eso confirma tu acierto <strong class="hl-accent">gratis</strong>, así que no necesitas gastar Verificar para saber que vas bien. Coloca uno <strong>equivocado</strong> y la niebla <strong>no</strong> se abre, y te cuesta <span class="hl-yellow">−2 puntos</span> (como una verificación). Así, "tantear hasta que se abra el tablero" sale más caro que simplemente verificar — y deducir bien no te cuesta nada.</p>
+    <p>Cada número que colocas —acertado o no— despeja la niebla a su alrededor, descubriendo más tablero (y a veces nuevas pistas). Pero despejar la niebla <strong class="hl-accent">no te dice si acertaste</strong>: igual que en Clásico, el juego no te corrige. Sólo <strong>Verificar</strong> revela si una celda está bien, y sólo cuando tú decides usarlo. Por eso "tantear hasta que se abra el tablero" descubre el mapa, no las respuestas.</p>
+    <p>Las <strong>notas</strong> sólo se pueden poner en celdas que ya ves; una celda en la niebla hay que destaparla primero (colocando un número).</p>
     <p>Las pistas que ves <strong class="hl-accent">siempre alcanzan para resolverlo con pura lógica</strong> — nunca tienes que adivinar.</p>
     <p>Niebla es el modo <strong class="hl-accent">más exigente</strong>: ves menos pistas y exploras casi a ciegas. Si empiezas en Niebla y cambias a Clásico a mitad de partida, verás el tablero completo — pero ese descenso te cuesta la medalla <strong class="hl-accent">Sin descender</strong> de hoy.</p>
     <p class="muted">Menos pistas a la vista, más tablero por descubrir.</p>
@@ -2221,9 +2222,6 @@ const COST_CHECK_CELL  = 2;   // Verificar una celda
 const COST_CHECK_BOARD = 8;   // Verificar todo el tablero (a big peek)
 const COST_HINT_NUDGE  = 3;   // Pista tier 1 — points you at a solvable cell
 const COST_HINT_REVEAL = 3;   // Pista tier 2 — fills the answer (3 + the 3 nudge = 6 total)
-const COST_NIEBLA_MISS = 2;   // Niebla only — a wrong placement (the fog won't
-                              // confirm a miss for free, so brute-forcing the
-                              // board is never cheaper than just using Verificar)
 
 const DIFFICULTY = {
   facil:   { label: 'Fácil',   givens: 36 },
@@ -2676,7 +2674,6 @@ const state = {
   errorCount: 0,
   hintCount: 0,
   checkCount: 0,
-  fogPenalty: 0,        // niebla: points lost to wrong placements (the fog's "check")
   correctCount: 0,
   elapsed: 0,           // seconds played (only counts when the timer is on)
   selected: null,
@@ -2745,7 +2742,6 @@ function saveProgress() {
       errorCount: state.errorCount,
       hintCount: state.hintCount,
       checkCount: state.checkCount,
-      fogPenalty: state.fogPenalty,
       elapsed: state.elapsed,
       revealedErrors: Array.from(state.revealedErrors),
       hintedCells: Array.from(state.hintedCells),
@@ -2823,7 +2819,6 @@ function initPuzzle() {
   state.errorCount = 0;
   state.hintCount = 0;
   state.checkCount = 0;
-  state.fogPenalty = 0;
   state.elapsed = 0;
   state.pendingHint = null;
   state.history = [];
@@ -2859,7 +2854,6 @@ function initPuzzle() {
     state.errorCount = saved.errorCount || 0;
     state.hintCount = saved.hintCount || 0;
     state.checkCount = saved.checkCount || 0;
-    state.fogPenalty = saved.fogPenalty || 0;
     state.elapsed = saved.elapsed || 0;
     state.revealedErrors = new Set(saved.revealedErrors || []);
     state.hintedCells = new Set(saved.hintedCells || []);
@@ -2925,7 +2919,7 @@ function revealAround(r, c) {
 // Correctness of placements does NOT move the score — that's what keeps the
 // board from leaking whether you're right.
 function score() {
-  return MAX_SCORE - (state.hintCount || 0) - (state.checkCount || 0) - (state.fogPenalty || 0);
+  return MAX_SCORE - (state.hintCount || 0) - (state.checkCount || 0);
 }
 
 function currentRankIndex() {
@@ -3154,17 +3148,11 @@ function placeNumber(n) {
   const idx = state.selected;
   const r = Math.floor(idx/9), c = idx%9;
   if (state.puzzle[r][c] !== 0) {
-    // Niebla: a fogged cell can be a hidden clue. Guess its value right and the
-    // fog clears around it (free, like any correct placement); guess wrong and
-    // it just uncovers that clue and costs points — same rule as empty cells.
+    // Niebla: a fogged cell can be a hidden clue. Probing it just clears the fog
+    // around it (like any placement) and the clue becomes visible — the game
+    // never says whether your guess matched.
     if (state.mode === 'niebla' && !state.revealed[idx]) {
-      state.revealed[idx] = true;
-      if (n === state.puzzle[r][c]) {
-        revealAround(r, c);
-      } else {
-        state.fogPenalty = (state.fogPenalty || 0) + COST_NIEBLA_MISS;
-        flash('Incorrecto · −' + COST_NIEBLA_MISS, 'error');
-      }
+      revealAround(r, c);
       renderAll(); saveProgress();
     }
     return; // given — never editable
@@ -3172,6 +3160,9 @@ function placeNumber(n) {
 
   if (state.notesMode) {
     if (state.values[r][c] !== 0) return;
+    // Niebla: you can only pencil notes on cells you can SEE. Tapping a fogged
+    // tile in notes mode does nothing — reveal it first by placing a number.
+    if (state.mode === 'niebla' && !state.revealed[idx]) return;
     const notes = state.notes[idx];
     if (notes.has(n)) notes.delete(n); else notes.add(n);
     state.history.push({ type: 'note', idx, n });
@@ -3196,30 +3187,21 @@ function placeNumber(n) {
   state.notes[idx].clear();
   state.revealedErrors.delete(idx);   // editing a cell clears its "verified wrong" flag
   const correct = state.solution[r][c] === n;
-  // Pen & paper (Clásico): correctness is tracked silently — no flash, no
-  // auto-red, no score change; Verificar is the only way to learn if you're
-  // right. Niebla is the exception (below): a right number clears the fog free,
-  // a wrong one costs points.
+  // Pen & paper: correctness is tracked silently — no flash, no auto-red, no
+  // score change. Verificar is the only way to learn if a placement is right,
+  // and only when YOU choose to use it (same in Clásico and Niebla).
   if (correct) {
     if (prev !== state.solution[r][c]) state.correctCount++;
     state.errors[idx] = false;
     if (state.pendingHint === idx) state.pendingHint = null;   // solved the nudged cell yourself
-    // Niebla: a CORRECT number clears the fog around it and confirms it for
-    // free — so you never have to spend Verificar just to know you're on track.
-    if (state.mode === 'niebla') revealAround(r, c);
   } else {
     state.errors[idx] = true;
     if (prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
-    // Niebla: a WRONG number does NOT open the surrounding fog (only your own
-    // cell shows, marked) and it costs points — so "press until the board opens"
-    // is always pricier than just using Verificar, while clean deduction is free.
-    if (state.mode === 'niebla') {
-      state.revealed[idx] = true;
-      state.revealedErrors.add(idx);
-      state.fogPenalty = (state.fogPenalty || 0) + COST_NIEBLA_MISS;
-      flash('Incorrecto · −' + COST_NIEBLA_MISS, 'error');
-    }
   }
+  // Niebla: ANY number you place — right or wrong — clears the fog around it,
+  // uncovering more board. The clearing never signals correctness, so it can't
+  // be brute-forced; only Verificar tells you if you're right.
+  if (state.mode === 'niebla') revealAround(r, c);
   state.history.push({ type: 'place', idx, prev, prevError });
   renderAll();
   saveProgress();
