@@ -967,7 +967,7 @@
   .modal p { line-height: 1.55; color: var(--ink); margin: 8px 0; font-size: 14px; }
   .modal .muted { color: var(--ink-soft); font-size: 13px; }
   .modal-close {
-    position: absolute; top: 16px; right: 18px;
+    position: absolute; top: 10px; right: 10px;
     background: none; border: none; font-size: 22px;
     cursor: pointer; color: var(--ink-soft);
     width: 32px; height: 32px;
@@ -2165,10 +2165,11 @@
 
   <div class="modal" id="confirm-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
-    <h2 id="confirm-title">¿Cambiar?</h2>
+    <h2 id="confirm-title" style="padding-right: 34px;">¿Cambiar?</h2>
     <p id="confirm-body" style="margin-bottom: 20px;"></p>
     <div class="btn-row" style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
       <button class="action-btn" data-close style="padding: 10px 22px;">Cancelar</button>
+      <button class="action-btn" id="confirm-skip" style="display:none; padding: 10px 22px;">No volver a preguntar</button>
       <button class="action-btn" id="confirm-yes" style="padding: 10px 22px; background: var(--ink); color: var(--bg); border-color: var(--ink);">Continuar</button>
     </div>
   </div>
@@ -3792,14 +3793,31 @@ function applyDifficulty(newDiff) {
   renderAll();
   syncDifficultyUI();
 }
-function askConfirm(title, body, onConfirm) {
+function askConfirm(title, body, onConfirm, skipKey) {
+  // If the user opted out of this kind of confirmation, just do it.
+  if (skipKey && localStorage.getItem(skipKey)) { onConfirm(); return; }
   document.getElementById('confirm-title').textContent = title;
-  document.getElementById('confirm-body').textContent = body;
+  document.getElementById('confirm-body').innerHTML = body;   // body may contain markup (e.g. orange costs)
   // Replace yes button to clear any previous handlers
   const yesBtn = document.getElementById('confirm-yes');
   const newYes = yesBtn.cloneNode(true);
   yesBtn.parentNode.replaceChild(newYes, yesBtn);
   newYes.addEventListener('click', () => { closeModal(); onConfirm(); });
+  // "No volver a preguntar" — only shown when a skipKey is given (e.g. verify).
+  const skipBtn = document.getElementById('confirm-skip');
+  if (skipBtn) {
+    const newSkip = skipBtn.cloneNode(true);
+    skipBtn.parentNode.replaceChild(newSkip, skipBtn);
+    if (skipKey) {
+      newSkip.style.display = '';
+      newSkip.addEventListener('click', () => {
+        try { localStorage.setItem(skipKey, '1'); } catch (e) {}
+        closeModal(); onConfirm();
+      });
+    } else {
+      newSkip.style.display = 'none';
+    }
+  }
   openModal('confirm-modal');
 }
 function syncDifficultyUI() {
@@ -4078,14 +4096,15 @@ function checkPuzzle() {
   else flash('Sin errores aún · faltan celdas (−8)', '');
   renderAll(); saveProgress();
 }
+const SKIP_VERIFY_CONFIRM = STORAGE_PREFIX + '-skip-verify-confirm';
 document.getElementById('check-cell').addEventListener('click', () => {
-  askConfirm('¿Verificar esta celda?', 'Te dice si está bien y resta 2 puntos.', checkCell);
+  askConfirm('¿Verificar esta celda?', 'Te dice si está bien y resta <span class="hl-accent">2 puntos</span>.', checkCell, SKIP_VERIFY_CONFIRM);
 });
 document.getElementById('check-puzzle').addEventListener('click', () => {
   if (boardIsFull() && !state.completed) {
-    askConfirm('¿Terminar?', 'Si está todo correcto, ¡ganas! (gratis). Si hay algún error, te lo marca en rojo y resta 8 puntos.', checkPuzzle);
+    askConfirm('¿Terminar?', 'Si está todo correcto, ¡ganas! (gratis). Si hay algún error, te lo marca en rojo y resta <span class="hl-accent">8 puntos</span>.', checkPuzzle, SKIP_VERIFY_CONFIRM);
   } else {
-    askConfirm('¿Verificar todo el tablero?', 'Marca en rojo todos tus errores y resta 8 puntos.', checkPuzzle);
+    askConfirm('¿Verificar todo el tablero?', 'Marca en rojo todos tus errores y resta <span class="hl-accent">8 puntos</span>.', checkPuzzle, SKIP_VERIFY_CONFIRM);
   }
 });
 document.getElementById('daily-cog').addEventListener('click', () => openModal('settings-modal'));
