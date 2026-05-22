@@ -992,7 +992,8 @@
     --accent:      #d9633b;
     --accent-deep: #ad4a26;
   }
-  .celebration h2 { color: var(--accent) !important; }   /* spec: terracota headline */
+  .celebration h2 { color: #1a1614 !important; }         /* celebration headlines are black… */
+  #maestro-modal h2 { color: var(--accent) !important; } /* …except Maestro/a, the pinnacle */
   #goal-modal h2 { font-size: 30px; }                    /* spec: 30px goal headline */
   .celebration p { color: #1a1614 !important; }
   .celebration .muted { color: #8a847f !important; }
@@ -1066,7 +1067,7 @@
     display: block;
     font-family: var(--font-display);
     font-weight: 700; font-size: 22px;
-    color: var(--accent); line-height: 1;
+    color: #1a1614; line-height: 1;
   }
   .goal-stat-label {
     display: block;
@@ -1083,8 +1084,8 @@
     font-size: 11px;
     padding: 4px 10px;
     border-radius: 999px;
-    background: color-mix(in oklab, var(--accent) 12%, #fff);
-    color: var(--accent);
+    background: color-mix(in oklab, #1a1614 8%, #fff);
+    color: #1a1614;
     font-weight: 700;
   }
 
@@ -1666,8 +1667,9 @@
   /* Mini completion modal — rank + reto rows */
   .mini-rank-badge {
     font-family: var(--font-display); font-style: italic; font-weight: 700;
-    font-size: 30px; color: var(--accent); line-height: 1.1; margin: 2px 0;
+    font-size: 30px; color: #1a1614; line-height: 1.1; margin: 2px 0;
   }
+  .mini-rank-badge.is-top { color: var(--accent); }   /* orange only at Maestro/a */
   .mini-reto-line { font-size: 13px; color: var(--ink-soft); margin: 2px 0 0; }
   .mini-reto-line.met { color: var(--success); font-weight: 700; }
 </style>
@@ -4676,7 +4678,10 @@ function miniCheckDone() {
   const bestEl = document.getElementById('mini-done-best'); if (bestEl) bestEl.textContent = miniFmt(best);
   // Rank (standard ladder, by time)
   const rankEl = document.getElementById('mini-done-rank');
-  if (rankEl) rankEl.textContent = miniRankName(t);
+  if (rankEl) {
+    rankEl.textContent = miniRankName(t);
+    rankEl.classList.toggle('is-top', miniRankName(t) === RANK_NAMES[RANK_NAMES.length - 1]);   // orange only at Maestro/a
+  }
   // Daily reto (target time)
   const target = miniRetoForDate(miniState.iso);
   const met = t <= target;
