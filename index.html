@@ -675,8 +675,10 @@
   .cell.selected {
     background: var(--cell-bg-sel);
     color: #ffffff;
-    outline: 2px solid var(--accent-2-deep);
-    outline-offset: -2px;
+    /* White inset ring (not dark) so it never merges with the black 3×3
+       separators into a thicker border — the block edges stay a clean 2px. */
+    outline: 2px solid #ffffff;
+    outline-offset: -3px;
     z-index: 1;
   }
   .cell.selected.given { color: #ffffff; }
@@ -1480,6 +1482,8 @@
      _docs/GAME-UI-STANDARDS.md). Mini shows the SAME .page-header element,
      not a forked copy. */
   body.mini-active .page-header { display: flex; }
+  /* The Cronómetro toggle is meaningless in Mini (it always times) — hide it. */
+  body.mini-active #setting-timer-row { display: none; }
   body.mini-active .mini-page {
     display: flex; flex-direction: column;
     gap: 10px;
@@ -1940,8 +1944,9 @@
     <h3>Cómo se juega</h3>
     <p>Toca <strong>Empezar</strong> para destapar el tablero y arrancar el cronómetro — no corre hasta que empiezas.<br>
     <strong>Notas</strong> y <strong>Posibles</strong> funcionan como en la versión Normal.<br>
+    Un número <strong>equivocado</strong> suma <span class="hl-yellow">+10 s</span> — no adivines al azar.<br>
     <strong>Pista</strong> revela una celda, pero suma <span class="hl-yellow">+30 s</span> a tu tiempo.<br>
-    La tecla de borrar (⌫) quita el número de la celda elegida.</p>
+    La tecla de borrar (⌫) quita el número de la celda elegida (no recupera el tiempo perdido).</p>
 
     <h3>Rango por tiempo</h3>
     <p>Aquí no hay puntos: tu rango lo decide <strong class="hl-accent">cuánto tardas</strong>. Cuanto más rápido resuelvas, más alto el rango (de <strong>Debutante</strong> a <strong>Maestro/a</strong>). La barra de arriba te muestra para qué rango vas y baja a medida que pasa el tiempo. Recibes tu rango al terminar.</p>
@@ -2057,7 +2062,7 @@
       </div>
       <div class="toggle" data-toggle="showErrors"></div>
     </div>
-    <div class="settings-row">
+    <div class="settings-row" id="setting-timer-row">
       <div class="settings-text">
         <div class="settings-label">Cronómetro</div>
         <div class="settings-sublabel">Mide tu tiempo mientras juegas. No afecta tu puntaje ni tu rango.</div>
@@ -3953,6 +3958,7 @@ function miniFmt(s) { const m = Math.floor(s / 60); return m + ':' + String(s % 
 // ----- Mini ranking + reto (its own rules, but the SAME rank ladder as
 //       Diario so the names are standard everywhere — awarded by solve time
 //       instead of points: faster = higher rank). Cutoffs = max seconds.
+const MINI_ERROR_PENALTY = 10;   // seconds added for each wrong number (deters brute-forcing)
 const MINI_RANK_CUTOFFS = [
   { idx: 9, max: 50  },   // Maestro/a
   { idx: 8, max: 65  },   // Eminente
@@ -4135,8 +4141,17 @@ function miniPlace(n) {
   miniState.history.push({ r, c, prev, prevErr: miniState.errors[k], prevNotes: (miniState.notes[k] || []).slice() });
   miniState.values[r][c] = (prev === n) ? 0 : n;
   if (miniState.values[r][c] !== 0) delete miniState.notes[k];
-  if (miniState.values[r][c] !== 0 && miniState.values[r][c] !== miniState.solution[r][c]) miniState.errors[k] = true;
-  else delete miniState.errors[k];
+  if (miniState.values[r][c] !== 0 && miniState.values[r][c] !== miniState.solution[r][c]) {
+    miniState.errors[k] = true;
+    // Wrong number costs time, so you can't brute-force by tapping every digit.
+    // The penalty is permanent — Deshacer reverts the number but not the time.
+    miniState.elapsed += MINI_ERROR_PENALTY;
+    if (miniState.startedAt) miniState.startedAt -= MINI_ERROR_PENALTY * 1000;
+    flash('+' + MINI_ERROR_PENALTY + ' s', 'error');
+    miniUpdateTimer(); miniRenderRankBar();
+  } else {
+    delete miniState.errors[k];
+  }
   miniRenderBoard(); miniRenderPad(); miniSave();
   miniCheckDone();
 }
