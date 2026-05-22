@@ -107,7 +107,7 @@
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html { height: 100%; overflow: hidden; }
+  html { height: 100%; overflow: hidden; overscroll-behavior: contain; }
   html, body {
     margin: 0; padding: 0;
     background: var(--bg);
@@ -128,7 +128,7 @@
     transition: opacity 0.25s ease;
   }
   body.ready { opacity: 1; }
-  body.game-active { height: 100dvh; overflow: hidden; }
+  body.game-active { height: 100dvh; overflow: hidden; overscroll-behavior: contain; }
   @media (min-width: 880px) {
     body { padding: 28px 48px 64px; height: auto !important; overflow: auto !important; }
   }
@@ -1477,7 +1477,7 @@
   /* --mini-w is the shared column width: the board, the meta row (timer/cog)
      and the pad all use it, so everything lines up within the board edges. */
   .mini-page { display: none; position: relative; max-width: 480px; margin: 0 auto; --mini-w: min(92vw, 400px); }
-  body.mini-active { height: 100dvh; overflow: hidden; }
+  body.mini-active { height: 100dvh; overflow: hidden; overscroll-behavior: contain; }
   body.mini-active .landing,
   body.mini-active .page { display: none; }
   /* STANDARD: every game reuses Diario's header + rank bar (see
@@ -3334,15 +3334,25 @@ function openModal(id) {
   if (!el) return;
   el.style.display = 'block';
   overlay.classList.add('open');
+  overlay.scrollTop = 0;             // always open the modal scrolled to its top
+  // Lock the background so it can't scroll/shift behind the modal — this is what
+  // was letting the rank bar slide up under the fixed header. Also covers the
+  // landing screen, where body isn't otherwise overflow-locked. (Racimo pattern.)
+  document.body.style.overflow = 'hidden';
   if (id === 'stats-modal') refreshStats();
   if (id === 'rangos-modal') refreshRangos();
   if (id === 'mini-rangos-modal') refreshMiniRangos();
 }
 function closeModal() {
   overlay.classList.remove('open');
-  // Snap the (locked) game back to the top in case mobile shifted it while
-  // the modal was open — keeps the rank bar from ending up under the header.
+  document.body.style.overflow = '';
+  // Snap the (locked) game back to the top in case mobile shifted it while the
+  // modal was open. With html{overflow:hidden} the scroller can be body OR the
+  // documentElement depending on state, so reset all of them — keeps the rank
+  // bar from ending up under the header.
   window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
 }
 overlay.addEventListener('click', (e) => {
   if (e.target === overlay || e.target.matches('[data-close]')) closeModal();
