@@ -2176,8 +2176,7 @@
   <div class="modal" id="verify-prompt-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">¡Llenaste el tablero!</h2>
-    <p>Para terminar, pulsa <strong class="hl-accent">Verificar tablero</strong> — el botón naranja, ahora <em>Terminar</em>. Si está todo bien, <strong>ganas</strong> (gratis). Si hay algún error, te lo marca en rojo y resta <span class="hl-accent">−8 pts</span>, así que repásalo con calma antes.</p>
-    <p>Durante el juego, <strong>Verificar celda</strong> revisa una sola celda y cuesta <span class="hl-accent">−2 pts</span>.</p>
+    <div id="verify-prompt-body"></div>
     <div class="btn-row">
       <button data-close>Entendido</button>
       <button id="verify-never">No volver a mostrar</button>
@@ -3468,6 +3467,16 @@ function finalizeWin() {
   }
 }
 function showVerifyPrompt() {
+  const body = document.getElementById('verify-prompt-body');
+  if (body) {
+    const niebla = state.mode === 'niebla';
+    const intro = niebla
+      ? `<p>En <strong class="hl-accent">Niebla</strong> la niebla nunca te dijo si acertabas, así que <strong>Verificar</strong> es tu única forma de comprobar.</p>`
+      : '';
+    body.innerHTML = intro
+      + `<p>Para terminar, pulsa <strong class="hl-accent">Verificar tablero</strong> — el botón naranja, ahora <em>Terminar</em>. Si está todo bien, <strong>ganas</strong> (gratis). Si hay algún error, te lo marca en rojo y resta <span class="hl-accent">−8 pts</span>, así que repásalo con calma antes.</p>`
+      + `<p>Durante el juego, <strong>Verificar celda</strong> revisa una sola celda y cuesta <span class="hl-accent">−2 pts</span>.</p>`;
+  }
   openModal('verify-prompt-modal');
 }
 // "No volver a mostrar" — disable the fill-the-board prompt permanently.
@@ -3556,6 +3565,16 @@ function buildShareText() {
   const lines = [];
   lines.push(`Sudoku · ${dateStr}`);
   lines.push('');
+  // Not finished yet — never claim a rank or the reto. (In the ceiling model the
+  // score starts at the top, so an untouched board would otherwise look solved.)
+  if (!state.completed) {
+    lines.push('⏳ Todavía sin terminar');
+    lines.push(`🎯 Reto del día: ${state.reto} pts`);
+    lines.push(`📐 ${diff} · ${modeLbl}`);
+    lines.push('');
+    lines.push('https://cortadito.news');
+    return lines.join('\n');
+  }
   // The RANK is the headline — in the clean-solve model it reflects how little
   // help you used (you start at the top and only drop when you lean on an aid).
   if (isMaestro) {
@@ -3588,7 +3607,10 @@ function buildShareText() {
 async function shareResult() {
   const text = buildShareText();
   if (navigator.share) {
-    try { await navigator.share({ text }); return; } catch (e) {}
+    // Use the native share sheet. If the user cancels (or it fails), do NOT fall
+    // back to clipboard/alert — that's what was surfacing the text after canceling.
+    try { await navigator.share({ text }); } catch (e) {}
+    return;
   }
   try {
     await navigator.clipboard.writeText(text);
@@ -4668,15 +4690,22 @@ function goHome() {
   saveSession();   // remember we're on the landing now
 }
 function buildMiniShareText() {
-  if (!miniState) return `Sudoku Mini · ${formatPrettyDate(state.iso)}\n\nhttps://cortadito.news`;
+  const dateStr = formatPrettyDate(state.iso);
+  if (!miniState || !miniState.done) {
+    const tgt = miniState ? ` (≤ ${miniFmt(miniRetoForDate(miniState.iso))})` : '';
+    return `Sudoku Mini · ${dateStr}\n\n⏳ Todavía sin terminar\n🎯 Reto del día${tgt}\n\nhttps://cortadito.news`;
+  }
   const t = miniState.elapsed;
   const target = miniRetoForDate(miniState.iso);
   const met = t <= target;
-  return `Sudoku Mini · ${formatPrettyDate(state.iso)}\n\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\nhttps://cortadito.news`;
+  return `Sudoku Mini · ${dateStr}\n\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\nhttps://cortadito.news`;
 }
 async function shareMini() {
   const text = buildMiniShareText();
-  if (navigator.share) { try { await navigator.share({ text }); return; } catch (e) {} }
+  if (navigator.share) {
+    try { await navigator.share({ text }); } catch (e) {}
+    return;   // canceled or failed → don't fall back to clipboard
+  }
   try { await navigator.clipboard.writeText(text); flash('Resultado copiado', 'success'); } catch (e) {}
 }
 // Mini control wiring
