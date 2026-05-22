@@ -4322,6 +4322,8 @@ function exitMini() {
 }
 // Home — return to the landing from any game. Stops/saves both games' state.
 function goHome() {
+  closeModal();        // close any open modal (Reglas, Rangos, Ajustes…) and
+  closeDropdowns();    // dropdowns, so they don't linger over the landing/game
   dailyTimerStop(); saveProgress();
   miniStopTimer(); miniSave();
   document.body.classList.remove('game-active', 'mini-active');
