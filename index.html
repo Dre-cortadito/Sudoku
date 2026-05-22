@@ -500,15 +500,14 @@
     justify-self: start;
     display: inline-flex; align-items: center; gap: 6px;
     background: none; border: none; padding: 2px 4px; margin: 0;
-    cursor: pointer; color: var(--ink-soft); font: inherit;
+    cursor: pointer; color: var(--ink); font: inherit;   /* black off-state — clearly visible */
     -webkit-tap-highlight-color: transparent;
   }
   .daily-timer-btn .dt-clock {
-    width: 18px; height: 18px; opacity: 0.45;
-    transition: opacity 0.15s ease, color 0.15s ease;
+    width: 18px; height: 18px; opacity: 1;
+    transition: color 0.15s ease;
   }
-  .daily-timer-btn.on { color: var(--accent); }
-  .daily-timer-btn.on .dt-clock { opacity: 1; }
+  .daily-timer-btn.on { color: var(--accent); }   /* accent when running */
   /* When off, show only the dim clock icon (a clear "tap to enable" affordance). */
   .daily-timer-btn:not(.on) .daily-timer { display: none; }
   .daily-timer {
@@ -995,6 +994,29 @@
     font-size: 14px;
   }
   .celebration button.primary { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+
+  /* Buttons in plain (non-celebration) modals — e.g. the Cronómetro info card.
+     Same pill aesthetic as the celebration buttons so they're on-brand. */
+  .modal .btn-row {
+    display: flex; gap: 10px; justify-content: center;
+    margin-top: 22px; flex-wrap: wrap;
+  }
+  .modal .btn-row button {
+    background: none;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    padding: 10px 24px;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+  }
+  .modal .btn-row button.primary {
+    background: var(--accent); border-color: var(--accent); color: #ffffff;
+  }
+  .modal .btn-row button:active { transform: scale(0.97); }
 
   /* ---- Goal card anatomy (spec: cn-goal-* ) ---- */
   .goal-sub {
@@ -1568,7 +1590,7 @@
     user-select: none; position: relative;
   }
   .mini-board .cell { font-size: clamp(22px, 8vw, 34px); }
-  .mini-pad-wrap { margin: 2px auto 0; max-width: var(--mini-w); width: 100%; position: relative; z-index: 1; }
+  .mini-pad-wrap { margin: 2px auto 0; max-width: var(--mini-w); width: 100%; position: relative; z-index: 1; background: var(--bg); }   /* opaque so the bottom stain can't show through the pad */
   .mini-number-pad { grid-template-columns: repeat(7, 1fr); gap: 6px; }   /* 1–6 + erase */
   /* The board is a 6×6 mini, but the CONTROLS don't have to be — give the
      pad + tools full, Diario-sized buttons so they're comfortable to tap. */
@@ -1584,6 +1606,10 @@
   /* Same size as Normal's rank bar (same width + the shared 24px bubble / 22px
      track). Margin reset to 0 so the Mini flex-column gap controls spacing. */
   .mini-rank-bar { max-width: var(--game-w); margin: 0 auto; position: relative; z-index: 1; }
+  /* Normal's bubble holds the score number, which fills the 24px chip. Mini's
+     bubble is empty (time-based), so the same 24px reads as an oversized blob —
+     use a smaller, refined marker for the current rank. */
+  .mini-rank-bar .rank-dot.current { width: 16px; height: 16px; font-size: 0; }
 
   /* ===== Mini Start gate — board sits covered until "Empezar" ===== */
   .mini-start {
@@ -1878,9 +1904,10 @@
     <p class="muted">Los tres niveles comparten la misma solución del día — sólo cambia cuántos números aparecen visibles al empezar.</p>
 
     <h3>Modo Niebla</h3>
-    <p>Las celdas empiezan ocultas bajo una capa de niebla — sólo ves los números iniciales. Cuando colocas un número correcto, se despeja esa celda y las ocho vecinas. Si colocas uno equivocado, se despeja sólo esa celda. (Niebla es la excepción a "el juego no te corrige": la niebla que se levanta te confirma los aciertos, y eso es parte de su mecánica.)</p>
-    <p>Niebla es el modo <strong class="hl-accent">más exigente</strong>. Si empiezas en Niebla y cambias a Clásico a mitad de partida, verás el tablero completo — pero ese descenso te cuesta la medalla <strong class="hl-accent">Sin descender</strong> de hoy.</p>
-    <p class="muted">Mismo rompecabezas que el clásico, sensación de exploración distinta.</p>
+    <p>El tablero empieza casi todo cubierto de niebla: sólo ves <strong>algunas pistas</strong> — el resto del tablero, y unas cuantas pistas más, están escondidas. Cuando colocas un número correcto, se despeja esa celda y las ocho vecinas, descubriendo más tablero (y a veces nuevas pistas). Si colocas uno equivocado, se despeja sólo esa celda. (Niebla es la excepción a "el juego no te corrige": la niebla que se levanta te confirma los aciertos, y eso es parte de su mecánica.)</p>
+    <p>Las pistas que sí ves <strong class="hl-accent">siempre alcanzan para resolverlo con pura lógica</strong> — nunca tienes que adivinar. ¿Tocaste una celda en la niebla y no pasó nada? Quizás escondía una pista: vuelve a intentarlo y la descubrirás.</p>
+    <p>Niebla es el modo <strong class="hl-accent">más exigente</strong>: ves menos pistas y exploras casi a ciegas. Si empiezas en Niebla y cambias a Clásico a mitad de partida, verás el tablero completo — pero ese descenso te cuesta la medalla <strong class="hl-accent">Sin descender</strong> de hoy.</p>
+    <p class="muted">Menos pistas a la vista, más tablero por descubrir.</p>
 
     <h3>Rangos</h3>
     <p>Hay diez rangos, desde <em>Debutante</em> hasta <strong class="hl-accent">Maestro/a</strong>. Empiezas en lo más alto y bajas con cada ayuda. Toca la barra de rangos arriba para ver toda la escalera.</p>
@@ -2017,14 +2044,14 @@
     <p>Es solo para tu seguimiento personal — <strong>no afecta tu puntaje ni tu rango</strong>.</p>
     <p>Cuenta desde que <strong>entraste al sudoku de hoy</strong>, no desde que lo enciendes. Por eso, al activarlo verás el tiempo real que llevas (si ya llevabas un rato, aparecerá ese tiempo, no <em>0:00</em>).</p>
     <p>Puedes prenderlo y apagarlo cuando quieras; tu preferencia se recuerda.</p>
-    <div class="btn-row"><button class="primary" data-close>Entendido</button></div>
+    <div class="btn-row"><button data-close>Entendido</button></div>
   </div>
 
   <div class="modal" id="about-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2>Sobre Sudoku</h2>
     <p>Un acertijo diario de <strong>Cortadito News</strong>. Cada día, un nuevo sudoku en tres dificultades y dos modos de juego.</p>
-    <p>El sudoku clásico es un puzzle de lógica pura. El modo niebla añade una capa de exploración: el tablero se despeja a medida que vas resolviendo. Mismo rompecabezas, sensación distinta.</p>
+    <p>El sudoku clásico es un puzzle de lógica pura. El modo niebla esconde casi todo el tablero —y algunas pistas— y lo vas descubriendo a medida que resuelves; las pistas visibles siempre bastan para resolverlo sin adivinar.</p>
     <p class="muted">¡Lo esencial en un sorbo!</p>
   </div>
 
@@ -2472,6 +2499,158 @@ function retoForDate(iso) {
   return 32 + (seed % 9); // 32..40
 }
 
+// ---------- NIEBLA — true fog of war ----------
+// Niebla hides MOST of the board: every empty cell PLUS a handful of the clues
+// themselves. Placing a correct number lifts the 3x3 fog around it, uncovering
+// more board and any hidden clues sitting there. Fairness guarantee: a clue is
+// only hidden if the clues that REMAIN visible still pin down a UNIQUE solution
+// — so the player can always finish by pure logic and is never forced to guess
+// because of something they can't see. Each hidden clue is also kept adjacent
+// to at least one empty cell, so it always re-surfaces as you solve around it.
+const NIEBLA_FLOOR = { facil: 30, medio: 25, dificil: 20 };
+const _nieblaSeedCache = {};
+// Fast unique-solution test — MRV (most-constrained cell first) + bitmask
+// backtracking, stops counting at `cap`. Much faster than the generic
+// countSolutions on the sparse boards that hiding produces.
+function countSolutionsFast(board, cap) {
+  const rows = new Array(9).fill(0), cols = new Array(9).fill(0), boxes = new Array(9).fill(0);
+  const g = board.map(r => r.slice());
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+    const v = g[r][c];
+    if (v) { const b = Math.floor(r/3)*3 + Math.floor(c/3); const bit = 1 << v; rows[r] |= bit; cols[c] |= bit; boxes[b] |= bit; }
+  }
+  let count = 0;
+  function rec() {
+    if (count >= cap) return;
+    let br = -1, bc = -1, bcand = 0, bn = 10;
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+      if (g[r][c]) continue;
+      const b = Math.floor(r/3)*3 + Math.floor(c/3);
+      const used = rows[r] | cols[c] | boxes[b];
+      let cand = 0, n = 0;
+      for (let v = 1; v <= 9; v++) if (!(used & (1 << v))) { cand |= (1 << v); n++; }
+      if (n === 0) return;                 // dead end
+      if (n < bn) { bn = n; br = r; bc = c; bcand = cand; if (n === 1) { r = 9; break; } }
+    }
+    if (br === -1) { count++; return; }     // full grid → one solution
+    const b = Math.floor(br/3)*3 + Math.floor(bc/3);
+    for (let v = 1; v <= 9; v++) {
+      if (bcand & (1 << v)) {
+        const bit = 1 << v;
+        g[br][bc] = v; rows[br] |= bit; cols[bc] |= bit; boxes[b] |= bit;
+        rec();
+        g[br][bc] = 0; rows[br] &= ~bit; cols[bc] &= ~bit; boxes[b] &= ~bit;
+        if (count >= cap) return;
+      }
+    }
+  }
+  rec();
+  return count;
+}
+function _hasEmptyNeighbor(puzzle, r, c) {
+  for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+    const nr = r + dr, nc = c + dc;
+    if ((dr || dc) && nr >= 0 && nr < 9 && nc >= 0 && nc < 9 && puzzle[nr][nc] === 0) return true;
+  }
+  return false;
+}
+// The 27 units (rows, cols, boxes) as [r,c] lists — used by the human-technique
+// solver below.
+const _SOLVE_UNITS = (function () {
+  const u = [];
+  for (let r = 0; r < 9; r++) { const a = []; for (let c = 0; c < 9; c++) a.push([r, c]); u.push(a); }
+  for (let c = 0; c < 9; c++) { const a = []; for (let r = 0; r < 9; r++) a.push([r, c]); u.push(a); }
+  for (let b = 0; b < 9; b++) { const br = Math.floor(b/3)*3, bc = (b%3)*3, a = []; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) a.push([br+i, bc+j]); u.push(a); }
+  return u;
+})();
+// Returns true iff `board` is solvable using only standard human techniques —
+// naked singles, hidden singles, locked candidates (pointing/claiming),
+// naked pairs/triples and hidden pairs — i.e. with NO guessing/backtracking.
+// We require this of every hidden-clue Niebla layout so the player is never
+// forced into trial-and-error.
+function logicSolveStrong(board) {
+  const g = board.map(r => r.slice());
+  const cand = [];
+  for (let r = 0; r < 9; r++) { cand.push([]); for (let c = 0; c < 9; c++) cand[r].push(null); }
+  function peerVals(r, c) { const s = new Set(); for (let k = 0; k < 9; k++) { if (g[r][k]) s.add(g[r][k]); if (g[k][c]) s.add(g[k][c]); } const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (g[br+i][bc+j]) s.add(g[br+i][bc+j]); return s; }
+  function rebuild() { for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) { if (g[r][c]) { cand[r][c] = null; continue; } const u = peerVals(r, c); const s = new Set(); for (let n = 1; n <= 9; n++) if (!u.has(n)) s.add(n); if (s.size === 0) return false; cand[r][c] = s; } return true; }
+  function place(r, c, n) { g[r][c] = n; cand[r][c] = null; for (let k = 0; k < 9; k++) { if (cand[r][k]) cand[r][k].delete(n); if (cand[k][c]) cand[k][c].delete(n); } const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (cand[br+i][bc+j]) cand[br+i][bc+j].delete(n); }
+  if (!rebuild()) return false;
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) { if (cand[r][c] && cand[r][c].size === 1) { place(r, c, [...cand[r][c]][0]); changed = true; } }
+    if (changed) continue;
+    for (const u of _SOLVE_UNITS) { for (let n = 1; n <= 9; n++) { let spot = null, cnt = 0, present = false; for (const [r, c] of u) { if (g[r][c] === n) { present = true; break; } if (cand[r][c] && cand[r][c].has(n)) { spot = [r, c]; cnt++; } } if (!present && cnt === 1) { place(spot[0], spot[1], n); changed = true; } } if (changed) break; }
+    if (changed) continue;
+    for (const u of _SOLVE_UNITS) {
+      for (let n = 1; n <= 9; n++) {
+        const cells = u.filter(([r, c]) => cand[r][c] && cand[r][c].has(n));
+        if (cells.length < 2 || cells.length > 3) continue;
+        const rows = new Set(cells.map(x => x[0])), cols = new Set(cells.map(x => x[1])), boxes = new Set(cells.map(x => Math.floor(x[0]/3)*3 + Math.floor(x[1]/3)));
+        const inU = new Set(cells.map(x => x[0]*9 + x[1]));
+        const elim = (line) => { for (const [r, c] of line) { if (inU.has(r*9 + c)) continue; if (cand[r][c] && cand[r][c].has(n)) { cand[r][c].delete(n); changed = true; } } };
+        if (rows.size === 1) { const r = [...rows][0], line = []; for (let c = 0; c < 9; c++) line.push([r, c]); elim(line); }
+        if (cols.size === 1) { const c = [...cols][0], line = []; for (let r = 0; r < 9; r++) line.push([r, c]); elim(line); }
+        if (boxes.size === 1) { const b = [...boxes][0], br = Math.floor(b/3)*3, bc = (b%3)*3, box = []; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) box.push([br+i, bc+j]); elim(box); }
+      }
+    }
+    if (changed) continue;
+    for (const u of _SOLVE_UNITS) {
+      const empt = u.filter(([r, c]) => cand[r][c]);
+      for (let size = 2; size <= 3; size++) {
+        const n = empt.length;
+        const rec = (start, pick) => {
+          if (pick.length === size) { const union = new Set(); for (const p of pick) for (const v of cand[p[0]][p[1]]) union.add(v); if (union.size === size) { const setCells = new Set(pick.map(p => p[0]*9 + p[1])); for (const [r, c] of u) { if (setCells.has(r*9 + c)) continue; if (cand[r][c]) for (const v of union) if (cand[r][c].has(v)) { cand[r][c].delete(v); changed = true; } } } return; }
+          for (let i = start; i < n; i++) { if (cand[empt[i][0]][empt[i][1]].size <= size) { pick.push(empt[i]); rec(i + 1, pick); pick.pop(); } }
+        };
+        rec(0, []);
+      }
+    }
+    if (changed) continue;
+    for (const u of _SOLVE_UNITS) {
+      const pos = {}; for (let n = 1; n <= 9; n++) pos[n] = [];
+      for (const [r, c] of u) if (cand[r][c]) for (const v of cand[r][c]) pos[v].push([r, c]);
+      for (let a = 1; a <= 9; a++) for (let b = a + 1; b <= 9; b++) {
+        if (pos[a].length !== 2 || pos[b].length !== 2) continue;
+        const sa = pos[a].map(x => x[0]*9 + x[1]).sort().join(','), sb = pos[b].map(x => x[0]*9 + x[1]).sort().join(',');
+        if (sa === sb) { for (const [r, c] of pos[a]) for (let v = 1; v <= 9; v++) if (v !== a && v !== b && cand[r][c].has(v)) { cand[r][c].delete(v); changed = true; } }
+      }
+    }
+  }
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (!g[r][c]) return false;
+  return true;
+}
+// Returns the initial revealed mask (boolean[81]) for a Niebla puzzle: true for
+// the clues that start visible, false for everything fogged. Deterministic per
+// date+difficulty and cached.
+function computeNieblaSeed(puzzle, solution, difficulty, cacheKey) {
+  if (cacheKey && _nieblaSeedCache[cacheKey]) return _nieblaSeedCache[cacheKey];
+  const vis = puzzle.map(r => r.slice());          // 0 = hidden/empty; visible clues kept
+  const givens = [];
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (puzzle[r][c] !== 0) givens.push([r, c]);
+  const floor = NIEBLA_FLOOR[difficulty] || 22;
+  // Deterministic order to consider hiding clues (seeded by the clue layout).
+  let s = 0;
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) s = (Math.imul(s, 31) + (puzzle[r][c] | 0)) >>> 0;
+  const order = shuffle(givens, mulberry32(s >>> 0));
+  let visibleCount = givens.length;
+  for (const [r, c] of order) {
+    if (visibleCount <= floor) break;
+    if (!_hasEmptyNeighbor(puzzle, r, c)) continue;   // keep clues that couldn't re-reveal
+    const save = vis[r][c];
+    vis[r][c] = 0;
+    // Hide only if the remaining clues are BOTH unique AND solvable by standard
+    // human techniques — never forcing the player into trial-and-error.
+    if (countSolutionsFast(vis, 2) === 1 && logicSolveStrong(vis)) visibleCount--;
+    else vis[r][c] = save;                                  // needed → keep visible
+  }
+  const revealed = new Array(81).fill(false);
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (vis[r][c] !== 0) revealed[r * 9 + c] = true;
+  if (cacheKey) _nieblaSeedCache[cacheKey] = revealed;
+  return revealed;
+}
+
 // ---------- GAME STATE ----------
 const state = {
   iso: todayISO(),
@@ -2556,6 +2735,7 @@ function saveProgress() {
       elapsed: state.elapsed,
       revealedErrors: Array.from(state.revealedErrors),
       hintedCells: Array.from(state.hintedCells),
+      revealed: state.revealed,            // niebla fog state (incl. probed clues)
       completed: state.completed
     };
     localStorage.setItem(progressKey(), JSON.stringify(data));
@@ -2641,17 +2821,14 @@ function initPuzzle() {
   state.minMode = localStorage.getItem(minModeKey());
   for (let i = 0; i < 81; i++) state.notes.push(new Set());
 
-  // Compute initial visibility for niebla:
-  // Givens are VISIBLE so the player has a starting point, but givens
-  // do NOT reveal their neighbors. Fog only lifts where the player
-  // correctly places a number. This is the canonical Fog of War rule
-  // (Cracking the Cryptic convention).
+  // Compute initial visibility for niebla (true fog of war): only a
+  // self-sufficient subset of the clues starts visible — the rest of the board,
+  // including a handful of hidden clues, begins under fog. Fog lifts in a 3x3
+  // around each correct placement. computeNieblaSeed guarantees the visible
+  // clues still uniquely determine the solution, so the player never has to
+  // guess. Everything else is fully revealed.
   if (state.mode === 'niebla') {
-    for (let r = 0; r < 9; r++) {
-      for (let c = 0; c < 9; c++) {
-        if (puzzle[r][c] !== 0) state.revealed[r * 9 + c] = true;
-      }
-    }
+    state.revealed = computeNieblaSeed(puzzle, solution, state.difficulty, state.iso + '-' + state.difficulty).slice();
   } else {
     state.revealed.fill(true);
   }
@@ -2681,19 +2858,19 @@ function initPuzzle() {
       }
     }
     if (state.mode === 'niebla') {
-      // Re-derive revealed: givens themselves are visible (no neighbor reveal),
-      // and correct player placements reveal their 3x3 neighborhood.
-      state.revealed.fill(false);
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          if (puzzle[r][c] !== 0) state.revealed[r * 9 + c] = true;
-        }
-      }
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          const v = state.values[r][c];
-          if (puzzle[r][c] === 0 && v !== 0 && v === solution[r][c]) {
-            revealAround(r, c);
+      if (Array.isArray(saved.revealed) && saved.revealed.length === 81) {
+        // Restore the exact fog state (includes any clues the player probed).
+        state.revealed = saved.revealed.map(Boolean);
+      } else {
+        // Legacy save (pre-true-fog): rebuild from the fog seed + the player's
+        // correct placements, each of which lifts its 3x3 neighborhood.
+        state.revealed = computeNieblaSeed(puzzle, solution, state.difficulty, state.iso + '-' + state.difficulty).slice();
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            const v = state.values[r][c];
+            if (puzzle[r][c] === 0 && v !== 0 && v === solution[r][c]) {
+              revealAround(r, c);
+            }
           }
         }
       }
@@ -2739,10 +2916,14 @@ function score() {
 // Used for Auto Candidate Mode.
 function computeCandidates(r, c) {
   if (state.values[r][c] !== 0) return new Set();
+  // In Niebla, "Posibles" may only use clues/placements the player can SEE — a
+  // fogged cell contributes nothing, so the aid never leaks a hidden clue.
+  const fog = state.mode === 'niebla';
+  const vis = (rr, cc) => !fog || state.revealed[rr * 9 + cc];
   const used = new Set();
-  for (let k = 0; k < 9; k++) { used.add(state.values[r][k]); used.add(state.values[k][c]); }
+  for (let k = 0; k < 9; k++) { if (vis(r, k)) used.add(state.values[r][k]); if (vis(k, c)) used.add(state.values[k][c]); }
   const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
-  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) used.add(state.values[br+i][bc+j]);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (vis(br+i, bc+j)) used.add(state.values[br+i][bc+j]);
   if (state.mode === 'diagonales') {
     if (r === c)     for (let k = 0; k < 9; k++) used.add(state.values[k][k]);
     if (r + c === 8) for (let k = 0; k < 9; k++) used.add(state.values[k][8-k]);
@@ -2984,7 +3165,17 @@ function placeNumber(n) {
   if (state.selected === null) return;
   const idx = state.selected;
   const r = Math.floor(idx/9), c = idx%9;
-  if (state.puzzle[r][c] !== 0) return; // given
+  if (state.puzzle[r][c] !== 0) {
+    // Niebla: a fogged cell can be a hidden clue. Since the player can't tell,
+    // probing it uncovers the clue — and if the number you tried matches it,
+    // the surrounding fog lifts too, just like a correct placement.
+    if (state.mode === 'niebla' && !state.revealed[idx]) {
+      state.revealed[idx] = true;
+      if (n === state.puzzle[r][c]) revealAround(r, c);
+      renderAll(); saveProgress();
+    }
+    return; // given — never editable
+  }
 
   if (state.notesMode) {
     if (state.values[r][c] !== 0) return;
@@ -3339,38 +3530,33 @@ function buildShareText() {
   const sc = score();
   const diff = DIFFICULTY[realDifficulty()].label;
   const modeLbl = MODES[realMode()].label;
+  const rank = RANK_NAMES[currentRankIndex()];
+  const isMaestro = currentRankIndex() === RANK_NAMES.length - 1;
   const lines = [];
   lines.push(`Sudoku · ${dateStr}`);
   lines.push('');
-  const isMaestro = currentRankIndex() === RANK_NAMES.length - 1;
+  // The RANK is the headline — in the clean-solve model it reflects how little
+  // help you used (you start at the top and only drop when you lean on an aid).
   if (isMaestro) {
-    lines.push('👑 ¡MAESTRO/A DEL SUDOKU!');
-    lines.push('   Llegué al rango más alto.');
-    lines.push('');
-  }
-  if (sc >= state.reto) {
-    lines.push('✅ ¡Reto del día logrado!');
-    lines.push(`   ${sc} / ${state.reto} pts  (+${sc - state.reto})`);
+    lines.push(`👑 Rango: ${rank}`);
+    lines.push('   Lo resolví sin ninguna ayuda.');
   } else {
-    lines.push('📌 Reto del día');
-    lines.push(`   ${sc} / ${state.reto} pts  (−${state.reto - sc})`);
+    lines.push(`🏆 Rango: ${rank}  ·  ${sc} pts`);
   }
   lines.push('');
-  lines.push(`🔢 ${state.correctCount} celdas`);
-  // Time is flavor only (never affects rank): include it if the player had the
-  // optional timer running.
-  if (state.completed && settings.timer && state.elapsed > 0) {
-    lines.push(`⏱ ${miniFmt(state.elapsed)}`);
-  }
+  if (sc >= state.reto) lines.push('✅ Reto del día logrado');
+  else lines.push(`📌 Reto del día: ${state.reto} pts`);
+  // Clean-solve badges
   const bonuses = [];
   if (state.completed && (state.checkCount || 0) === 0) bonuses.push('Sin verificar');
   if (state.completed && (state.hintCount || 0) === 0) bonuses.push('Sin pistas');
   if (state.completed && isSinDescender()) bonuses.push('Sin descender');
   if (bonuses.length) lines.push(`✨ ${bonuses.join(' · ')}`);
-  if (!isMaestro) lines.push(`🏆 Rango: ${RANK_NAMES[currentRankIndex()]}`);
+  // Time is flavor only (never affects rank): include it if the timer was on.
+  if (state.completed && settings.timer && state.elapsed > 0) lines.push(`⏱ ${miniFmt(state.elapsed)}`);
   lines.push(`📐 ${diff} · ${modeLbl}`);
   lines.push('');
-  lines.push('cortadito.news');
+  lines.push('https://cortadito.news');
   return lines.join('\n');
 }
 async function shareResult() {
@@ -4439,8 +4625,12 @@ function renderMiniStain() {
   const layer = document.getElementById('mini-stain-layer');
   if (!layer) return;
   layer.innerHTML = '';
-  const s = makeStain(state.iso, 's-game-tl', STAIN_DATA.circular);
-  if (s) layer.appendChild(s);
+  // Same two marks as the Normal page: circular pool top-left + splatter
+  // bottom-right (the bottom one drops into the space under the pad).
+  const tl = makeStain(state.iso, 's-game-tl', STAIN_DATA.circular);
+  const br = makeStain(state.iso + 'b', 's-game-br', STAIN_DATA.splatter);
+  if (tl) layer.appendChild(tl);
+  if (br) layer.appendChild(br);
 }
 function launchMini() {
   if (!miniState || miniState.iso !== state.iso) initMini();
@@ -4468,11 +4658,11 @@ function goHome() {
   saveSession();   // remember we're on the landing now
 }
 function buildMiniShareText() {
-  if (!miniState) return `Sudoku Mini · ${formatPrettyDate(state.iso)}\n\ncortadito.news`;
+  if (!miniState) return `Sudoku Mini · ${formatPrettyDate(state.iso)}\n\nhttps://cortadito.news`;
   const t = miniState.elapsed;
   const target = miniRetoForDate(miniState.iso);
   const met = t <= target;
-  return `Sudoku Mini · ${formatPrettyDate(state.iso)}\n\n⏱️ ${miniFmt(t)} · ${miniRankName(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\ncortadito.news`;
+  return `Sudoku Mini · ${formatPrettyDate(state.iso)}\n\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\nhttps://cortadito.news`;
 }
 async function shareMini() {
   const text = buildMiniShareText();
