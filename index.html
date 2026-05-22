@@ -2103,6 +2103,27 @@
 (function() {
 'use strict';
 
+// Storage safety — some mobile browsers (privacy / blocked site-data settings,
+// seen on certain Samsung Chrome installs) make localStorage THROW on access.
+// Shadow it with a guarded version (in-memory fallback when blocked) so the
+// game always loads instead of dying on a blank screen. Every localStorage
+// call below transparently uses this.
+const localStorage = (function () {
+  try {
+    const t = '__cn_ls_test__';
+    window.localStorage.setItem(t, '1');
+    window.localStorage.removeItem(t);
+    return window.localStorage;            // real storage works — persist normally
+  } catch (e) {
+    const mem = {};                         // blocked — keep data in memory this session
+    return {
+      getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
+      setItem: function (k, v) { mem[k] = String(v); },
+      removeItem: function (k) { delete mem[k]; }
+    };
+  }
+})();
+
 // ---------- CONSTANTS ----------
 const RANK_NAMES = [
   'Debutante','Eficiente','Constante','Diligente','Admirable',
@@ -4403,6 +4424,7 @@ function saveSession() {
 }
 
 function boot() {
+ try {
   // Restore theme + settings
   const tweaks = loadTweaks();
   applyTheme(tweaks.theme || 'white');
@@ -4444,8 +4466,8 @@ function boot() {
     dailyTimerStart();
   }
   _booted = true;
-
-  document.body.classList.add('ready');
+ } catch (e) { /* never strand the user on a blank screen */ }
+  document.body.classList.add('ready');   // always reveal the page
 }
 boot();
 
