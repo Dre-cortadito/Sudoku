@@ -623,7 +623,8 @@
     transition: background 0.25s ease;
   }
   .rank-meta.done {
-    background: var(--success);
+    background: var(--accent-2);   /* orange → espresso brown once passed
+                                      (like Racimo's line changing colour) */
     opacity: 1;
     z-index: 5;
   }
@@ -1224,7 +1225,7 @@
     font-size: 1.1em;
     margin-right: 2px;
   }
-  .line-marker.done { color: var(--success); }
+  .line-marker.done { color: var(--accent-2); }
 
   /* ============ SETTINGS PANEL ============ */
   .settings-row {
@@ -1803,7 +1804,7 @@
 
     <h3>Reto del día</h3>
     <p>Cada día hay una <strong class="hl-accent">meta de puntos</strong> que cambia según el sudoku. Si la alcanzas, completas el <strong class="hl-accent">reto del día</strong> y tu racha sigue. La meta exacta de hoy aparece en la página inicial y dentro del panel de rangos.</p>
-    <p>En la barra de rangos, la <span class="line-marker">|</span> <strong class="hl-accent">línea azul</strong> marca esa meta. Cuando tu puntaje pasa esa línea, la línea <span class="hl-yellow">cambia a rosa</span> como señal de que ya lo lograste — y se prende un <em>¡Buen sorbo!</em> de celebración.</p>
+    <p>En la barra de rangos, la <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> marca esa meta. Cuando tu puntaje pasa esa línea, <strong>cambia a marrón</strong> como señal de que ya lo lograste — y se prende un <em>¡Buen sorbo!</em> de celebración.</p>
 
     <h3>Medallas</h3>
     <p><strong class="hl-accent">✨ Sin errores</strong>: completa el sudoku sin colocar ni un solo número equivocado.<br>
@@ -1946,7 +1947,7 @@
     <p>Aquí no hay puntos: tu rango lo decide <strong class="hl-accent">cuánto tardas</strong>. Cuanto más rápido resuelvas, más alto el rango (de <strong>Debutante</strong> a <strong>Maestro/a</strong>). La barra de arriba te muestra para qué rango vas y baja a medida que pasa el tiempo. Recibes tu rango al terminar.</p>
 
     <h3>Reto del día</h3>
-    <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. La <span class="line-marker">|</span> línea en la barra de rangos marca ese objetivo.</p>
+    <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. La <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> en la barra de rangos marca ese objetivo — la misma que en el modo Normal — y se pone <strong>marrón</strong> mientras vas en camino de lograrlo.</p>
   </div>
 
   <div class="modal" id="about-modal" data-modal-content style="display:none">
