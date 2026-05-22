@@ -1587,7 +1587,7 @@
   <button class="landing-theme" id="landing-theme-btn" type="button" aria-label="Cambiar tema"></button>
   <div class="landing-inner">
     <div class="landing-tabs" role="tablist">
-      <button class="landing-tab active" id="tab-diario" data-tab="diario" role="tab">Diario</button>
+      <button class="landing-tab active" id="tab-diario" data-tab="diario" role="tab">Normal</button>
       <button class="landing-tab" id="tab-mini" data-tab="mini" role="tab">Mini</button>
     </div>
     <div class="landing-logo-row">
@@ -1613,7 +1613,9 @@
     <div class="landing-mode-row" id="landing-mode-row">
       <button class="landing-mode-btn active" data-landing-mode="clasico">Clásico</button>
       <button class="landing-mode-btn" data-landing-mode="niebla">Niebla</button>
-      <button class="landing-mode-btn" data-landing-mode="diagonales">Diagonales</button>
+      <!-- Diagonales (Sudoku-X) is fully built in the engine but hidden from
+           the UI for now. Re-add this button to bring it back. -->
+      <!-- <button class="landing-mode-btn" data-landing-mode="diagonales">Diagonales</button> -->
     </div>
     <div class="landing-mode-desc" id="landing-mode-desc">El sudoku de toda la vida.</div>
     <button class="landing-play" id="landing-play">Jugar</button>
@@ -1784,7 +1786,7 @@
     <p><strong>Notas</strong>: anota pequeños candidatos en una celda. Útil cuando todavía no estás seguro.<br>
     <strong>Posibles</strong>: el juego anota los candidatos posibles por ti en cada celda vacía y los actualiza solo.<br>
     <strong>Deshacer</strong>: revierte tu última jugada. El puntaje no se recupera: si cometiste un error o usaste una pista, esos puntos siguen restados.<br>
-    <strong>✕</strong>: la última tecla del teclado borra la celda seleccionada.</p>
+    <strong>⌫</strong>: la última tecla del teclado borra la celda seleccionada.</p>
 
     <h3>Pista</h3>
     <p>La pista funciona en dos pasos:</p>
@@ -1816,6 +1818,7 @@
 
     <h3>Modo Niebla</h3>
     <p>Las celdas empiezan ocultas bajo una capa de niebla — sólo ves los números iniciales. Cuando colocas un número correcto, se despeja esa celda y las ocho vecinas. Si colocas un número equivocado, se despeja sólo esa celda y pierdes el punto.</p>
+    <p>Niebla es el modo <strong class="hl-accent">más exigente</strong>. Si empiezas en Niebla y cambias a Clásico a mitad de partida, verás el tablero completo — pero ese descenso te cuesta la medalla <strong class="hl-accent">Sin descender</strong> de hoy.</p>
     <p class="muted">Mismo rompecabezas que el clásico, sensación de exploración distinta.</p>
 
     <h3>Rangos</h3>
@@ -1928,14 +1931,14 @@
   <div class="modal" id="mini-reglas-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">Cómo jugar — Mini</h2>
-    <p>El Mini es un sudoku de <strong>6 × 6</strong> dividido en bloques de <strong>2 × 3</strong>. Más pequeño y rápido que el Diario — un sorbo de café.</p>
+    <p>El Mini es un sudoku de <strong>6 × 6</strong> dividido en bloques de <strong>2 × 3</strong>. Más pequeño y rápido que la versión Normal — un sorbo de café.</p>
 
     <h3>Las reglas</h3>
     <p>Cada <strong class="hl-accent">fila</strong>, cada <strong class="hl-accent">columna</strong> y cada <strong class="hl-accent">bloque de 2 × 3</strong> lleva los números del <strong>1 al 6</strong>, sin repetir.</p>
 
     <h3>Cómo se juega</h3>
     <p>Toca <strong>Empezar</strong> para destapar el tablero y arrancar el cronómetro — no corre hasta que empiezas.<br>
-    <strong>Notas</strong> y <strong>Posibles</strong> funcionan como en el Diario.<br>
+    <strong>Notas</strong> y <strong>Posibles</strong> funcionan como en la versión Normal.<br>
     <strong>Pista</strong> revela una celda, pero suma <span class="hl-yellow">+30 s</span> a tu tiempo.<br>
     La tecla de borrar (⌫) quita el número de la celda elegida.</p>
 
@@ -2016,7 +2019,7 @@
     <div class="pill-row">
       <button class="pill" data-mode="clasico">Clásico</button>
       <button class="pill" data-mode="niebla">Niebla</button>
-      <button class="pill" data-mode="diagonales">Diagonales</button>
+      <!-- <button class="pill" data-mode="diagonales">Diagonales</button>  (Diagonales hidden — engine kept) -->
     </div>
   </div>
 
@@ -2107,6 +2110,8 @@ const DIFFICULTY = {
 const MODES = {
   clasico:    { label: 'Clásico' },
   niebla:     { label: 'Niebla' },
+  // Diagonales (Sudoku-X) is fully implemented but its UI buttons are
+  // commented out for now. Kept here so re-enabling is just uncommenting.
   diagonales: { label: 'Diagonales' }
 };
 
