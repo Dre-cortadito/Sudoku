@@ -535,8 +535,8 @@
      stay soft grey via the .info-bar base color). Mirrors the
      claude.ai Sudoku2.0 cn-meta-diff treatment. */
   .info-bar #info-diff { color: var(--ink); }
-  /* Chunky terracota cog — game settings (timer toggle, check board,
-     auto-candidates). The hamburger ☰ stays for app-level nav. */
+  /* Chunky terracota cog — game settings (timer toggle, highlighting).
+     The hamburger ☰ stays for app-level nav. */
   .meta-cog {
     justify-self: end;
     background: transparent; border: 0; padding: 0; cursor: pointer;
@@ -779,7 +779,7 @@
   }
   .tool-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);   /* Notas · Deshacer · Pista */
     gap: 6px;
     margin-bottom: 8px;
   }
@@ -791,7 +791,7 @@
     gap: 6px;
     margin-top: 6px;
   }
-  /* Same look as the .tool-btn row (Notas/Posibles/…): ink-line border, ink
+  /* Same look as the .tool-btn row (Notas/Deshacer/Pista): ink-line border, ink
      text, uppercase lettering — but with an opaque surface so the coffee-stain
      layer can't show through (the tool row sits over clear paper, this doesn't). */
   .verify-btn {
@@ -1596,7 +1596,7 @@
      pad + tools full, Diario-sized buttons so they're comfortable to tap. */
   .mini-number-pad .num-btn { height: 62px; font-size: 28px; }
   .mini-number-pad .num-btn.erase svg { width: 30px; height: 30px; }
-  .mini-tools { grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 10px; }        /* Notas·Posibles·Deshacer·Pista */
+  .mini-tools { grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 10px; }        /* Notas·Deshacer·Pista */
   .mini-tools .tool-btn { height: 52px; font-size: 11px; }
   .mini-tools .tool-icon { width: 18px; height: 18px; }
 
@@ -1765,10 +1765,6 @@
         <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>
         <span>Notas</span>
       </button>
-      <button class="tool-btn" id="btn-auto-cand">
-        <svg class="tool-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="6" cy="6" r="1.8"/><circle cx="12" cy="6" r="1.8"/><circle cx="18" cy="6" r="1.8"/><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="12" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg>
-        <span>Posibles</span>
-      </button>
       <button class="tool-btn" id="btn-undo">
         <svg class="tool-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 5V2L6 7l6 5V8.5c3 0 5.5 2.5 5.5 5.5S15 19.5 12 19.5 6.5 17 6.5 14H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z"/></svg>
         <span>Deshacer</span>
@@ -1818,10 +1814,6 @@
         <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>
         <span>Notas</span>
       </button>
-      <button class="tool-btn" id="mini-posibles">
-        <svg class="tool-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="6" cy="6" r="1.8"/><circle cx="12" cy="6" r="1.8"/><circle cx="18" cy="6" r="1.8"/><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="12" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg>
-        <span>Posibles</span>
-      </button>
       <button class="tool-btn" id="mini-undo">
         <svg class="tool-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 5V2L6 7l6 5V8.5c3 0 5.5 2.5 5.5 5.5S15 19.5 12 19.5 6.5 17 6.5 14H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z"/></svg>
         <span>Deshacer</span>
@@ -1859,8 +1851,7 @@
     <p>Igual que con lápiz y papel, el tablero <strong>no te dice</strong> si un número está bien o mal cuando lo colocas. Resuelves con pura lógica. La única forma de comprobar es usar <strong class="hl-accent">Verificar</strong> — y eso cuesta puntos.</p>
 
     <h3>Cómo se juega acá</h3>
-    <p><strong>Notas</strong>: anota pequeños candidatos en una celda. Útil cuando todavía no estás seguro/a.<br>
-    <strong>Posibles</strong>: el juego anota los candidatos posibles por ti en cada celda vacía y los actualiza solo.<br>
+    <p><strong>Notas</strong>: anota a mano los candidatos en una celda. Tú llevas el control de las posibilidades — como en papel.<br>
     <strong>Deshacer</strong>: revierte tu última jugada. El puntaje no se recupera: si usaste una pista o una verificación, esos puntos siguen restados.<br>
     <strong>⌫</strong>: la última tecla del teclado borra la celda seleccionada.</p>
 
@@ -2026,7 +2017,7 @@
 
     <h3>Cómo se juega</h3>
     <p>Toca <strong>Empezar</strong> para destapar el tablero y arrancar el cronómetro — no corre hasta que empiezas.<br>
-    <strong>Notas</strong> y <strong>Posibles</strong> funcionan como en la versión Normal.<br>
+    <strong>Notas</strong> funciona como en la versión Normal: anotas los candidatos a mano.<br>
     Un número <strong>equivocado</strong> suma <span class="hl-yellow">+10 s</span> — no adivines al azar.<br>
     <strong>Pista</strong> revela una celda, pero suma <span class="hl-yellow">+30 s</span> a tu tiempo.<br>
     La tecla de borrar (⌫) quita el número de la celda elegida (no recupera el tiempo perdido).</p>
@@ -2243,7 +2234,6 @@ const SETTINGS_DEFAULTS = {
   highlightLine:  true,
   highlightBox:   true,
   highlightSame:  true,
-  autoCandidates: false,
   timer:          false
 };
 let settings = Object.assign({}, SETTINGS_DEFAULTS);
@@ -2912,26 +2902,6 @@ function score() {
   return MAX_SCORE - (state.hintCount || 0) - (state.checkCount || 0);
 }
 
-// Compute candidate digits for an empty cell, based on the current board.
-// Used for Auto Candidate Mode.
-function computeCandidates(r, c) {
-  if (state.values[r][c] !== 0) return new Set();
-  // In Niebla, "Posibles" may only use clues/placements the player can SEE — a
-  // fogged cell contributes nothing, so the aid never leaks a hidden clue.
-  const fog = state.mode === 'niebla';
-  const vis = (rr, cc) => !fog || state.revealed[rr * 9 + cc];
-  const used = new Set();
-  for (let k = 0; k < 9; k++) { if (vis(r, k)) used.add(state.values[r][k]); if (vis(k, c)) used.add(state.values[k][c]); }
-  const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
-  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (vis(br+i, bc+j)) used.add(state.values[br+i][bc+j]);
-  if (state.mode === 'diagonales') {
-    if (r === c)     for (let k = 0; k < 9; k++) used.add(state.values[k][k]);
-    if (r + c === 8) for (let k = 0; k < 9; k++) used.add(state.values[k][8-k]);
-  }
-  const cand = new Set();
-  for (let n = 1; n <= 9; n++) if (!used.has(n)) cand.add(n);
-  return cand;
-}
 function currentRankIndex() {
   const s = score();
   let r = 0;
@@ -2981,17 +2951,8 @@ function renderBoard() {
         if (v !== 0) {
           el.textContent = v;
         } else {
-          // Auto candidates override manual notes when enabled.
-          let displayNotes;
-          if (settings.autoCandidates) {
-            // Don't auto-fill candidates on the cell a hint is pointing at:
-            // hints target "naked singles" (one legal value), so the auto
-            // candidate would be the single solution digit — spoiling the
-            // answer before the player presses Revelar.
-            displayNotes = (state.pendingHint === idx) ? null : computeCandidates(r, c);
-          } else {
-            displayNotes = state.notes[idx];
-          }
+          // Manual pencil marks only — the player tracks their own candidates.
+          const displayNotes = state.notes[idx];
           if (displayNotes && displayNotes.size > 0) {
             const notesEl = document.createElement('div');
             notesEl.className = 'notes';
@@ -3366,14 +3327,6 @@ function hintWithConfirm() {
 
 function toggleNotes() {
   state.notesMode = !state.notesMode;
-  // Posibles (auto-candidates) already annotates every empty cell for you, so
-  // manual Notas would be invisible underneath it. Treat them as mutually
-  // exclusive: turning Notas on switches Posibles off.
-  if (state.notesMode && settings.autoCandidates) {
-    settings.autoCandidates = false;
-    saveSettingsToStorage();
-    refreshToggles();
-  }
   document.getElementById('btn-notes').classList.toggle('active', state.notesMode);
   renderAll();
 }
@@ -3975,8 +3928,6 @@ function refreshToggles() {
   document.querySelectorAll('[data-toggle]').forEach(el => {
     el.classList.toggle('on', !!settings[el.dataset.toggle]);
   });
-  const autoBtn = document.getElementById('btn-auto-cand');
-  if (autoBtn) autoBtn.classList.toggle('active', !!settings.autoCandidates);
 }
 document.querySelectorAll('[data-toggle]').forEach(el => {
   el.addEventListener('click', (e) => {
@@ -3989,19 +3940,6 @@ document.querySelectorAll('[data-toggle]').forEach(el => {
     if (key === 'timer') dailyTimerStart();   // start/stop + show/hide the clock
   });
 });
-// In-game Auto button (Notas automáticas) toggles autoCandidates and stays in sync with the Settings panel toggle.
-document.getElementById('btn-auto-cand').addEventListener('click', () => {
-  settings.autoCandidates = !settings.autoCandidates;
-  // Mutually exclusive with manual Notas — turning Posibles on exits Notas.
-  if (settings.autoCandidates && state.notesMode) {
-    state.notesMode = false;
-    document.getElementById('btn-notes').classList.remove('active');
-  }
-  saveSettingsToStorage();
-  refreshToggles();
-  renderAll();
-});
-
 // ---------- CHECK CELL / CHECK PUZZLE ----------
 function checkCell() {
   if (state.selected === null) { flash('Toca una celda primero', 'error'); return; }
@@ -4318,7 +4256,7 @@ function initMini() {
     iso, solution, puzzle,
     values: puzzle.map(r => r.slice()),
     notes: {}, errors: {},
-    selected: null, notesMode: false, autoCand: false, history: [],
+    selected: null, notesMode: false, history: [],
     elapsed: 0, startedAt: null, timer: null, done: false,
     started: false, hintCount: 0,
   };
@@ -4392,7 +4330,7 @@ function miniRenderBoard() {
     if (v !== 0) {
       el.textContent = v;
     } else {
-      const list = miniState.autoCand ? miniComputeCandidates(r, c) : (miniState.notes[k] || []);
+      const list = miniState.notes[k] || [];
       if (list.length) {
         const nd = document.createElement('div');
         nd.className = 'notes';
@@ -4479,26 +4417,6 @@ function miniUndo() {
   if (h.prevErr) miniState.errors[k] = true; else delete miniState.errors[k];
   if (h.prevNotes && h.prevNotes.length) miniState.notes[k] = h.prevNotes; else delete miniState.notes[k];
   miniRenderBoard(); miniRenderPad(); miniSave();
-}
-function miniComputeCandidates(r, c) {
-  if (!miniState || miniState.values[r][c] !== 0) return [];
-  const used = new Set();
-  for (let k = 0; k < 6; k++) { used.add(miniState.values[r][k]); used.add(miniState.values[k][c]); }
-  const br = Math.floor(r / MINI_BR) * MINI_BR, bc = Math.floor(c / MINI_BC) * MINI_BC;
-  for (let i = 0; i < MINI_BR; i++) for (let j = 0; j < MINI_BC; j++) used.add(miniState.values[br + i][bc + j]);
-  const cand = [];
-  for (let n = 1; n <= 6; n++) if (!used.has(n)) cand.push(n);
-  return cand;
-}
-function miniTogglePosibles() {
-  if (!miniState) return;
-  miniState.autoCand = !miniState.autoCand;
-  if (miniState.autoCand && miniState.notesMode) {   // mutually exclusive with Notas
-    miniState.notesMode = false;
-    document.getElementById('mini-notes').classList.remove('active');
-  }
-  document.getElementById('mini-posibles').classList.toggle('active', miniState.autoCand);
-  miniRenderBoard();
 }
 // Pista: in Mini there are no points, so a hint costs TIME (+30s) instead.
 function miniHint() {
@@ -4675,14 +4593,9 @@ document.getElementById('mini-undo').addEventListener('click', miniUndo);
 document.getElementById('mini-notes').addEventListener('click', () => {
   if (!miniState) return;
   miniState.notesMode = !miniState.notesMode;
-  if (miniState.notesMode && miniState.autoCand) {   // mutually exclusive with Posibles
-    miniState.autoCand = false;
-    document.getElementById('mini-posibles').classList.remove('active');
-  }
   document.getElementById('mini-notes').classList.toggle('active', miniState.notesMode);
   miniRenderBoard();
 });
-document.getElementById('mini-posibles').addEventListener('click', miniTogglePosibles);
 document.getElementById('mini-hint').addEventListener('click', miniHint);
 document.getElementById('mini-rank-bar').addEventListener('click', () => openModal('mini-rangos-modal'));
 document.getElementById('mini-start-btn').addEventListener('click', miniBegin);
