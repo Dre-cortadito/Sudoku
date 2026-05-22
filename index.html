@@ -1895,8 +1895,9 @@
     <p class="muted">Los tres niveles comparten la misma solución del día — sólo cambia cuántos números aparecen visibles al empezar.</p>
 
     <h3>Modo Niebla</h3>
-    <p>El tablero empieza casi todo cubierto de niebla: sólo ves <strong>algunas pistas</strong> — el resto del tablero, y unas cuantas pistas más, están escondidas. Cuando colocas un número correcto, se despeja esa celda y las ocho vecinas, descubriendo más tablero (y a veces nuevas pistas). Si colocas uno equivocado, se despeja sólo esa celda. (Niebla es la excepción a "el juego no te corrige": la niebla que se levanta te confirma los aciertos, y eso es parte de su mecánica.)</p>
-    <p>Las pistas que sí ves <strong class="hl-accent">siempre alcanzan para resolverlo con pura lógica</strong> — nunca tienes que adivinar. ¿Tocaste una celda en la niebla y no pasó nada? Quizás escondía una pista: vuelve a intentarlo y la descubrirás.</p>
+    <p>El tablero empieza casi todo cubierto de niebla: sólo ves <strong>algunas pistas</strong> — el resto del tablero, y unas cuantas pistas más, están escondidas. <strong>Cada número que colocas —acertado o no— despeja esa celda y las ocho vecinas</strong>, descubriendo más tablero (y a veces nuevas pistas).</p>
+    <p>La niebla <strong class="hl-accent">no te dice si acertaste</strong>: igual que en Clásico, el juego no te corrige, y sólo <strong>Verificar</strong> revela si una celda está bien. Así que no sirve "tantear hasta que se abra el tablero" — despejar la niebla no confirma nada.</p>
+    <p>Las pistas que sí ves <strong class="hl-accent">siempre alcanzan para resolverlo con pura lógica</strong> — nunca tienes que adivinar.</p>
     <p>Niebla es el modo <strong class="hl-accent">más exigente</strong>: ves menos pistas y exploras casi a ciegas. Si empiezas en Niebla y cambias a Clásico a mitad de partida, verás el tablero completo — pero ese descenso te cuesta la medalla <strong class="hl-accent">Sin descender</strong> de hoy.</p>
     <p class="muted">Menos pistas a la vista, más tablero por descubrir.</p>
 
@@ -2486,7 +2487,8 @@ function getPuzzleFor(iso, difficulty, mode) {
 // Daily reto target (between 32 and 40, deterministic per date).
 function retoForDate(iso) {
   const seed = hashString('reto-' + iso);
-  return 32 + (seed % 9); // 32..40
+  return 28 + (seed % 9); // 28..36 — eased from 32..40 once Posibles (the free
+                          // crutch) was removed, so daily streaks stay reachable.
 }
 
 // ---------- NIEBLA — true fog of war ----------
@@ -3127,12 +3129,11 @@ function placeNumber(n) {
   const idx = state.selected;
   const r = Math.floor(idx/9), c = idx%9;
   if (state.puzzle[r][c] !== 0) {
-    // Niebla: a fogged cell can be a hidden clue. Since the player can't tell,
-    // probing it uncovers the clue — and if the number you tried matches it,
-    // the surrounding fog lifts too, just like a correct placement.
+    // Niebla: a fogged cell can be a hidden clue. Probing it lifts the fog
+    // around it — like any placement — without revealing whether your guess was
+    // right. (The clue itself appears; the game still never confirms your digit.)
     if (state.mode === 'niebla' && !state.revealed[idx]) {
-      state.revealed[idx] = true;
-      if (n === state.puzzle[r][c]) revealAround(r, c);
+      revealAround(r, c);
       renderAll(); saveProgress();
     }
     return; // given — never editable
@@ -3164,19 +3165,21 @@ function placeNumber(n) {
   state.notes[idx].clear();
   state.revealedErrors.delete(idx);   // editing a cell clears its "verified wrong" flag
   const correct = state.solution[r][c] === n;
-  // Pen & paper: correctness is tracked silently (for Niebla reveal, completion
-  // and stats) but never shown to the player — no flash, no auto-red, no score
-  // change. Verificar is the only way to find out if a placement is right.
+  // Pen & paper: correctness is tracked silently (for completion + stats) but
+  // never shown to the player — no flash, no auto-red, no score change.
+  // Verificar is the only way to find out if a placement is right.
   if (correct) {
     if (prev !== state.solution[r][c]) state.correctCount++;
     state.errors[idx] = false;
     if (state.pendingHint === idx) state.pendingHint = null;   // solved the nudged cell yourself
-    if (state.mode === 'niebla') revealAround(r, c);           // fog mechanic (intrinsic to Niebla)
   } else {
     state.errors[idx] = true;
     if (prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
-    if (state.mode === 'niebla') state.revealed[idx] = true;   // see your own pen mark in the fog
   }
+  // Niebla: ANY placement — right OR wrong — lifts the fog around it. The fog
+  // never signals correctness, so it can't be brute-forced ("press until the
+  // board opens"): only Verificar reveals if you're right, exactly like Clásico.
+  if (state.mode === 'niebla') revealAround(r, c);
   state.history.push({ type: 'place', idx, prev, prevError });
   renderAll();
   saveProgress();
@@ -3495,6 +3498,11 @@ function buildShareText() {
     lines.push('   Lo resolví sin ninguna ayuda.');
   } else {
     lines.push(`🏆 Rango: ${rank}  ·  ${sc} pts`);
+  }
+  // Niebla seal — prestige for clearing the fog-of-war mode. The rank itself
+  // stays mode-agnostic (how little help you used); this is recognition only.
+  if (state.completed && realMode() === 'niebla') {
+    lines.push(isMaestro ? '   🌫️ …y en plena niebla.' : '🌫️ Resuelto en Niebla');
   }
   lines.push('');
   if (sc >= state.reto) lines.push('✅ Reto del día logrado');
