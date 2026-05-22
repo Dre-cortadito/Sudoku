@@ -1727,8 +1727,8 @@
     </div>
     <div class="number-pad" id="number-pad"></div>
     <div class="verify-row">
-      <button class="verify-btn" id="check-cell" type="button">Verificar celda (−1 pt)</button>
-      <button class="verify-btn" id="check-puzzle" type="button">Verificar tablero (−3 pts)</button>
+      <button class="verify-btn" id="check-cell" type="button">Verificar celda (−2 pts)</button>
+      <button class="verify-btn" id="check-puzzle" type="button">Verificar tablero (−8 pts)</button>
     </div>
   </div>
 </div>
@@ -1802,33 +1802,47 @@
     <p>Para llenar una celda, mira su <strong>fila</strong>, su <strong>columna</strong> y su <strong>bloque</strong>. Los números que ya aparecen ahí no pueden ir en esa celda. A veces sólo queda un número posible — ese es tu próximo movimiento.</p>
     <p>Otra técnica: elige un bloque de 3 × 3 y fíjate qué número le falta. Después mira las celdas vacías del bloque y, una por una, descarta las que ya tienen ese número en su fila o columna. Si sólo queda una celda posible, ahí va.</p>
 
+    <h3>Como en papel: el juego no te corrige</h3>
+    <p>Igual que con lápiz y papel, el tablero <strong>no te dice</strong> si un número está bien o mal cuando lo colocas. Resuelves con pura lógica. La única forma de comprobar es usar <strong class="hl-accent">Verificar</strong> — y eso cuesta puntos.</p>
+
     <h3>Cómo se juega acá</h3>
-    <p><strong>Notas</strong>: anota pequeños candidatos en una celda. Útil cuando todavía no estás seguro.<br>
+    <p><strong>Notas</strong>: anota pequeños candidatos en una celda. Útil cuando todavía no estás seguro/a.<br>
     <strong>Posibles</strong>: el juego anota los candidatos posibles por ti en cada celda vacía y los actualiza solo.<br>
-    <strong>Deshacer</strong>: revierte tu última jugada. El puntaje no se recupera: si cometiste un error o usaste una pista, esos puntos siguen restados.<br>
+    <strong>Deshacer</strong>: revierte tu última jugada. El puntaje no se recupera: si usaste una pista o una verificación, esos puntos siguen restados.<br>
     <strong>⌫</strong>: la última tecla del teclado borra la celda seleccionada.</p>
+
+    <h3>Verificar</h3>
+    <p>Como el tablero no te corrige solo, <strong class="hl-accent">Verificar</strong> es tu forma de revisar — a cambio de puntos:</p>
+    <p><strong>Verificar celda</strong> — te dice si la celda seleccionada está bien; si está mal, la marca en rojo. Cuesta <span class="hl-yellow">−2 pts</span>.<br>
+    <strong>Verificar tablero</strong> — marca en rojo <em>todos</em> tus errores de una vez. Es un vistazo grande: cuesta <span class="hl-yellow">−8 pts</span>.</p>
+    <p class="muted">El rojo desaparece en cuanto cambias esa celda; vuelve a verificar si quieres confirmar.</p>
 
     <h3>Pista</h3>
     <p>La pista funciona en dos pasos:</p>
-    <p><strong>1ª vez</strong> — el juego busca una celda donde sólo hay una opción posible y la marca con un borde rosa. Tienes que deducir qué número va. Cuesta <span class="hl-yellow">−1 pt</span>.<br>
-    <strong>2ª vez sobre esa misma celda</strong> — si todavía no la resolviste, el juego rellena la respuesta. Cuesta <span class="hl-yellow">−2 pts más</span> (total <span class="hl-yellow">−3 pts</span>).</p>
-    <p>Si la resuelves tú mismo/a sin pedir el segundo paso, sólo pierdes <span class="hl-yellow">−1 pt</span>. El botón cambia de <em>Pista</em> a <em>Revelar</em> cuando hay una pista activa, así sabes qué va a pasar al tocarlo.</p>
-    <p>En <strong class="hl-accent">modo Niebla</strong>, la primera pista también despeja la niebla de esa sola celda — la <em>fog of war</em> que te tapa el tablero se levanta justo donde el juego te pide que mires.</p>
+    <p><strong>1ª vez</strong> — el juego busca una celda donde sólo hay una opción posible y la marca con un borde rosa. Tienes que deducir qué número va. Cuesta <span class="hl-yellow">−3 pts</span>.<br>
+    <strong>2ª vez sobre esa misma celda</strong> — si todavía no la resolviste, el juego rellena la respuesta. Cuesta <span class="hl-yellow">−3 pts más</span> (total <span class="hl-yellow">−6 pts</span>).</p>
+    <p>Si la resuelves tú mismo/a sin pedir el segundo paso, sólo pierdes <span class="hl-yellow">−3 pts</span>. El botón cambia de <em>Pista</em> a <em>Revelar</em> cuando hay una pista activa, así sabes qué va a pasar al tocarlo.</p>
+    <p>En <strong class="hl-accent">modo Niebla</strong>, la primera pista también despeja la niebla de esa sola celda.</p>
 
     <h3>Puntaje</h3>
-    <p><span class="hl-yellow">+1</span> punto por cada celda correcta.<br>
-    <span class="hl-yellow">−1</span> punto por cada número equivocado.<br>
-    <span class="hl-yellow">−1</span> punto por cada pista que uses.</p>
-    <p class="muted">¿Puedes adivinar al azar? Sí, pero cada intento equivocado te resta. El juego premia la deducción.</p>
+    <p>Empiezas el día con la <strong>puntuación máxima</strong> — o sea, en <strong class="hl-accent">Maestro/a</strong>. Cada ayuda que usas te <strong>baja</strong>:</p>
+    <p><span class="hl-yellow">−2</span> verificar una celda · <span class="hl-yellow">−8</span> verificar el tablero.<br>
+    <span class="hl-yellow">−3</span> una pista · <span class="hl-yellow">−6</span> revelar una respuesta.</p>
+    <p class="muted">Resuelve el sudoku entero sin ayuda y terminas en Maestro/a. Mientras menos te apoyes, más alto quedas. Como no hay correcciones automáticas, adivinar al azar no sirve: para saber si acertaste tendrías que gastar una verificación.</p>
+
+    <h3>El tablero lleno</h3>
+    <p>Cuando llenas todas las celdas correctamente, ganas y se guarda tu rango. Si lo llenas pero todavía hay errores, el juego no te dice cuáles — usa <strong>Verificar</strong> para encontrarlos.</p>
 
     <h3>Reto del día</h3>
-    <p>Cada día hay una <strong class="hl-accent">meta de puntos</strong> que cambia según el sudoku. Si la alcanzas, completas el <strong class="hl-accent">reto del día</strong> y tu racha sigue. La meta exacta de hoy aparece en la página inicial y dentro del panel de rangos.</p>
-    <p>En la barra de rangos, la <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> marca esa meta. Cuando tu puntaje pasa esa línea, <strong>cambia a marrón</strong> como señal de que ya lo lograste — y se prende un <em>¡Buen sorbo!</em> de celebración.</p>
+    <p>El <strong class="hl-accent">reto del día</strong> es terminar en cierto rango o mejor. En la barra de rangos, la <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> marca esa meta. Como empiezas arriba, el objetivo es <strong>no bajar de la línea</strong>: termina en o por encima de ella y completas el reto, y tu racha sigue.</p>
 
     <h3>Medallas</h3>
-    <p><strong class="hl-accent">✨ Sin errores</strong>: completa el sudoku sin colocar ni un solo número equivocado.<br>
-    <strong class="hl-accent">✨ Sin pistas</strong>: complétalo sin pedir ayuda.<br>
+    <p><strong class="hl-accent">✨ Sin verificar</strong>: completa el sudoku sin usar Verificar ni una sola vez.<br>
+    <strong class="hl-accent">✨ Sin pistas</strong>: complétalo sin pedir ninguna pista.<br>
     <strong class="hl-accent">✨ Sin descender</strong>: termina en la dificultad y el modo en los que empezaste, sin pasar a una versión más fácil (ni de Difícil a Medio, ni de Niebla a Clásico).</p>
+
+    <h3>El tiempo (opcional)</h3>
+    <p>Puedes encender un <strong>cronómetro</strong> en Ajustes. Es sólo para tu gusto: <strong>no afecta tu rango</strong>. Si lo tienes activado, tu tiempo aparece en el mensaje que compartes.</p>
 
     <h3>Dificultad</h3>
     <p><strong>Fácil</strong>: muchos números dados al inicio. Buena para empezar.<br>
@@ -1837,12 +1851,12 @@
     <p class="muted">Los tres niveles comparten la misma solución del día — sólo cambia cuántos números aparecen visibles al empezar.</p>
 
     <h3>Modo Niebla</h3>
-    <p>Las celdas empiezan ocultas bajo una capa de niebla — sólo ves los números iniciales. Cuando colocas un número correcto, se despeja esa celda y las ocho vecinas. Si colocas un número equivocado, se despeja sólo esa celda y pierdes el punto.</p>
+    <p>Las celdas empiezan ocultas bajo una capa de niebla — sólo ves los números iniciales. Cuando colocas un número correcto, se despeja esa celda y las ocho vecinas. Si colocas uno equivocado, se despeja sólo esa celda. (Niebla es la excepción a "el juego no te corrige": la niebla que se levanta te confirma los aciertos, y eso es parte de su mecánica.)</p>
     <p>Niebla es el modo <strong class="hl-accent">más exigente</strong>. Si empiezas en Niebla y cambias a Clásico a mitad de partida, verás el tablero completo — pero ese descenso te cuesta la medalla <strong class="hl-accent">Sin descender</strong> de hoy.</p>
     <p class="muted">Mismo rompecabezas que el clásico, sensación de exploración distinta.</p>
 
     <h3>Rangos</h3>
-    <p>Hay diez rangos, desde <em>Debutante</em> hasta <strong class="hl-accent">Maestro/a</strong>. Tu rango sube con los puntos. Toca la barra de rangos arriba para ver toda la escalera.</p>
+    <p>Hay diez rangos, desde <em>Debutante</em> hasta <strong class="hl-accent">Maestro/a</strong>. Empiezas en lo más alto y bajas con cada ayuda. Toca la barra de rangos arriba para ver toda la escalera.</p>
   </div>
 
   <div class="modal" id="stats-modal" data-modal-content style="display:none">
@@ -1904,7 +1918,7 @@
       <div class="stats-grid">
         <div class="stat-block">
           <div class="stat-value" id="stat-perfect">0</div>
-          <div class="stat-label">✨ Sin errores</div>
+          <div class="stat-label">✨ Sin verificar</div>
         </div>
         <div class="stat-block">
           <div class="stat-value" id="stat-nohint">0</div>
@@ -1921,7 +1935,7 @@
   <div class="modal" id="rangos-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">Rangos</h2>
-    <p class="blurb">Tu rango sube con los puntos. Los umbrales son fijos y no dependen de la dificultad ni del modo.</p>
+    <p class="blurb">Empiezas en lo más alto y bajas con cada ayuda (pista o verificación). Los umbrales son fijos y no dependen de la dificultad ni del modo.</p>
     <p class="blurb">
       <strong>Reto del día:</strong>
       <strong style="color: var(--accent)" id="rangos-reto">— pts</strong>
@@ -1986,7 +2000,7 @@
     <p class="goal-body" id="goal-body">—</p>
     <div class="goal-stats">
       <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-pts">0</span><span class="goal-stat-label">Pts</span></div>
-      <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-err">0</span><span class="goal-stat-label">Errores</span></div>
+      <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-err">0</span><span class="goal-stat-label">Verificaciones</span></div>
       <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-diff">—</span><span class="goal-stat-label">Dificultad</span></div>
     </div>
     <div class="goal-bonuses" id="goal-bonuses"></div>
@@ -2070,13 +2084,6 @@
       <div class="toggle" data-toggle="highlightSame"></div>
     </div>
     <h3>Juego</h3>
-    <div class="settings-row">
-      <div class="settings-text">
-        <div class="settings-label">Mostrar errores al instante</div>
-        <div class="settings-sublabel">Marca en rojo los números equivocados al colocarlos. Si lo apagas, usa Verificar para revisar.</div>
-      </div>
-      <div class="toggle" data-toggle="showErrors"></div>
-    </div>
     <div class="settings-row" id="setting-timer-row">
       <div class="settings-text">
         <div class="settings-label">Cronómetro</div>
@@ -2143,6 +2150,16 @@ const RANK_NAMES = [
   'Excelente','Increíble','Brillante','Eminente','Maestro/a'
 ];
 const RANK_THRESHOLDS = [0, 5, 10, 15, 20, 25, 30, 34, 38, 42];
+// Clean-solve scoring: you START at the top (Maestro) and only DROP when you
+// lean on an aid. Solve with no help → finish at MAX_SCORE = Maestro. There is
+// no per-cell right/wrong feedback (pen & paper), so the board never reveals
+// whether a placement is correct; the only way to check is to spend a Verificar.
+const MAX_SCORE = RANK_THRESHOLDS[RANK_THRESHOLDS.length - 1];   // 42 = Maestro
+// Aid costs (in points off the ceiling). Tuned so each aid bites in rank-steps.
+const COST_CHECK_CELL  = 2;   // Verificar una celda
+const COST_CHECK_BOARD = 8;   // Verificar todo el tablero (a big peek)
+const COST_HINT_NUDGE  = 3;   // Pista tier 1 — points you at a solvable cell
+const COST_HINT_REVEAL = 3;   // Pista tier 2 — fills the answer (3 + the 3 nudge = 6 total)
 
 const DIFFICULTY = {
   facil:   { label: 'Fácil',   givens: 36 },
@@ -2171,7 +2188,6 @@ const SETTINGS_DEFAULTS = {
   highlightLine:  true,
   highlightBox:   true,
   highlightSame:  true,
-  showErrors:     true,
   autoCandidates: false,
   timer:          false
 };
@@ -2437,7 +2453,8 @@ const state = {
   puzzle: null,         // initial givens (0 for blanks)
   values: null,         // current player values (0 for blanks)
   notes: null,          // Set of numbers per cell
-  errors: null,         // boolean per cell — true if currently wrong value placed
+  errors: null,         // boolean per cell — true if current value != solution (tracked silently)
+  revealedErrors: null, // Set of idx the player has *paid to reveal* via Verificar (shown red)
   revealed: null,       // boolean per cell — for niebla, true if visible
   hintedCells: null,    // Set of cell indices revealed via hint
   errorCount: 0,
@@ -2509,6 +2526,7 @@ function saveProgress() {
       hintCount: state.hintCount,
       checkCount: state.checkCount,
       elapsed: state.elapsed,
+      revealedErrors: Array.from(state.revealedErrors),
       hintedCells: Array.from(state.hintedCells),
       completed: state.completed
     };
@@ -2577,6 +2595,7 @@ function initPuzzle() {
   state.values = puzzle.map(r => r.slice());
   state.notes = [];
   state.errors = new Array(81).fill(false);
+  state.revealedErrors = new Set();
   state.revealed = new Array(81).fill(false);
   state.hintedCells = new Set();
   state.errorCount = 0;
@@ -2621,6 +2640,7 @@ function initPuzzle() {
     state.hintCount = saved.hintCount || 0;
     state.checkCount = saved.checkCount || 0;
     state.elapsed = saved.elapsed || 0;
+    state.revealedErrors = new Set(saved.revealedErrors || []);
     state.hintedCells = new Set(saved.hintedCells || []);
     state.completed = !!saved.completed;
     // Rebuild errors + revealed
@@ -2680,8 +2700,11 @@ function revealAround(r, c) {
 }
 
 // ---------- SCORING ----------
+// Ceiling model: full marks minus the points spent on aids (hints + checks).
+// Correctness of placements does NOT move the score — that's what keeps the
+// board from leaking whether you're right.
 function score() {
-  return state.correctCount - state.errorCount - state.hintCount - (state.checkCount || 0);
+  return MAX_SCORE - (state.hintCount || 0) - (state.checkCount || 0);
 }
 
 // Compute candidate digits for an empty cell, based on the current board.
@@ -2732,7 +2755,7 @@ function renderBoard() {
 
       if (given) el.classList.add('given');
       if (v !== 0) el.classList.add('has-value');
-      if (state.errors[idx] && settings.showErrors) el.classList.add('error');
+      if (state.revealedErrors.has(idx)) el.classList.add('error');   // only cells you paid to check
       if (state.pendingHint === idx) el.classList.add('hint-target');
 
       // Block separators
@@ -2805,7 +2828,9 @@ function renderPad() {
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       const v = state.values[r][c];
-      if (v !== 0 && v === state.solution[r][c]) remaining[v]--;
+      // Count what's been WRITTEN (not what's correct) so the pad never leaks
+      // which digits are right.
+      if (v !== 0) remaining[v]--;
     }
   }
   for (let n = 1; n <= 9; n++) {
@@ -2941,50 +2966,29 @@ function placeNumber(n) {
   // If placing same, treat as erase
   if (prev === n) {
     state.values[r][c] = 0;
-    if (prevError) state.errors[idx] = false;
-    if (!prevError && prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
+    state.errors[idx] = false;
+    state.revealedErrors.delete(idx);
+    if (prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
     state.history.push({ type: 'place', idx, prev, prevError });
     renderAll(); saveProgress(); return;
   }
 
   state.values[r][c] = n;
   state.notes[idx].clear();
+  state.revealedErrors.delete(idx);   // editing a cell clears its "verified wrong" flag
   const correct = state.solution[r][c] === n;
+  // Pen & paper: correctness is tracked silently (for Niebla reveal, completion
+  // and stats) but never shown to the player — no flash, no auto-red, no score
+  // change. Verificar is the only way to find out if a placement is right.
   if (correct) {
-    if (prev === state.solution[r][c]) {
-      // was already correct (shouldn't happen since we erased above)
-    } else {
-      state.correctCount++;
-      if (prevError) state.errors[idx] = false;
-    }
-    // If they figured out the hint themselves, clear it (no tier-2 cost).
-    if (state.pendingHint === idx) state.pendingHint = null;
-    flash('¡Correcto!', 'success');
-    if (state.mode === 'niebla') revealAround(r, c);
+    if (prev !== state.solution[r][c]) state.correctCount++;
+    state.errors[idx] = false;
+    if (state.pendingHint === idx) state.pendingHint = null;   // solved the nudged cell yourself
+    if (state.mode === 'niebla') revealAround(r, c);           // fog mechanic (intrinsic to Niebla)
   } else {
     state.errors[idx] = true;
-    state.errorCount++;
     if (prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
-    // Identify conflict source for richer feedback
-    let conflict = '';
-    for (let k = 0; k < 9; k++) {
-      if (k !== c && state.values[r][k] === n) { conflict = 'Repetida en la fila'; break; }
-      if (k !== r && state.values[k][c] === n) { conflict = 'Repetida en la columna'; break; }
-    }
-    if (!conflict) {
-      const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
-      outer: for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
-        if ((br+i)!==r && (bc+j)!==c && state.values[br+i][bc+j] === n) { conflict = 'Repetida en el bloque'; break outer; }
-      }
-    }
-    if (!conflict && state.mode === 'diagonales') {
-      if (r === c)     for (let k = 0; k < 9; k++) { if (k !== r && state.values[k][k] === n) { conflict = 'Repetida en la diagonal'; break; } }
-      if (!conflict && r + c === 8) for (let k = 0; k < 9; k++) { if (k !== r && state.values[k][8-k] === n) { conflict = 'Repetida en la diagonal'; break; } }
-    }
-    flash(conflict || 'No coincide', 'error');
-    // Reveal just this cell in Niebla so the player can see their mistake
-    // (wrong placements do NOT reveal neighbors — only correct ones do).
-    if (state.mode === 'niebla') state.revealed[idx] = true;
+    if (state.mode === 'niebla') state.revealed[idx] = true;   // see your own pen mark in the fog
   }
   state.history.push({ type: 'place', idx, prev, prevError });
   renderAll();
@@ -3003,6 +3007,7 @@ function eraseSelected() {
   state.values[r][c] = 0;
   if (prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
   state.errors[idx] = false;
+  state.revealedErrors.delete(idx);
   const prevNotes = new Set(state.notes[idx]);
   state.notes[idx].clear();
   state.history.push({ type: 'erase', idx, prev, prevError, prevNotes });
@@ -3096,12 +3101,13 @@ function hint() {
       state.values[r][c] = state.solution[r][c];
       state.correctCount++;
     }
-    state.hintCount += 2;                   // tier 2 costs 2 points
+    state.revealedErrors.delete(idx);
+    state.hintCount += COST_HINT_REVEAL;    // tier 2 — fills the answer (3 + the 3 nudge = 6 total)
     state.hintedCells.add(idx);
     if (state.mode === 'niebla') revealAround(r, c);
     state.pendingHint = null;
     state.history.push({ type: 'hint', idx, prev, prevError });
-    flash('Revelado · −2 pts', 'bonus');
+    flash('Revelado · −3', 'bonus');
     renderAll(); saveProgress(); checkCompletion();
     return;
   }
@@ -3111,14 +3117,14 @@ function hint() {
   const [r, c] = found;
   const idx = r * 9 + c;
   state.pendingHint = idx;
-  state.hintCount += 1;                     // tier 1 costs 1 point
+  state.hintCount += COST_HINT_NUDGE;       // tier 1 — points you at a solvable cell
   let fogLifted = false;
   if (state.mode === 'niebla' && !state.revealed[idx]) {
     state.revealed[idx] = true;
     fogLifted = true;
   }
   state.history.push({ type: 'hint-nudge', idx, fogLifted });
-  flash('Mira esta celda · −1 pt', 'bonus');
+  flash('Mira esta celda · −3', 'bonus');
   renderAll(); saveProgress();
 }
 
@@ -3126,9 +3132,9 @@ function hint() {
 // shouldn't be tappable by accident. Copy adapts to the tier the button is in.
 function hintWithConfirm() {
   if (state.pendingHint !== null) {
-    askConfirm('¿Revelar?', 'Esto mostrará la respuesta de esta celda (−2 pts).', hint);
+    askConfirm('¿Revelar?', 'Esto mostrará la respuesta de esta celda (−3 pts).', hint);
   } else {
-    askConfirm('¿Pedir pista?', 'Esto te señalará una celda y restará puntos (−1 pt).', hint);
+    askConfirm('¿Pedir pista?', 'Esto te señalará una celda y restará puntos (−3 pts).', hint);
   }
 }
 
@@ -3167,50 +3173,59 @@ function flash(text, cls) {
 }
 
 // ---------- COMPLETION & MODALS ----------
-let goalShown = false, maestroShown = false, completeShown = false;
+let goalShown = false, maestroShown = false, completeShown = false, fullWarned = false;
 function checkCompletion() {
-  const sc = score();
-  // Goal modal
-  if (sc >= state.reto && !goalShown && !localStorage.getItem(goalKey())) {
-    goalShown = true;
-    localStorage.setItem(goalKey(), '1');
-    showGoalModal();
-  }
-  // Maestro
-  if (currentRankIndex() === RANK_NAMES.length - 1 && !maestroShown && !localStorage.getItem(maestroKey())) {
-    maestroShown = true;
-    localStorage.setItem(maestroKey(), '1');
-    showMaestroModal();
-  }
-  // Complete
-  let done = true;
+  // Completion = every cell matches the solution. Because the ceiling starts at
+  // Maestro, we celebrate ONLY on completion (a mid-game reto/Maestro check
+  // would fire instantly), and we show just the highest tier that applies.
+  let done = true, full = true;
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
-      if (state.values[r][c] !== state.solution[r][c]) { done = false; break; }
+      const v = state.values[r][c];
+      if (v === 0) full = false;
+      if (v !== state.solution[r][c]) done = false;
     }
-    if (!done) break;
   }
-  // Always track the best rank achieved so far across the lifetime,
-  // regardless of completion — even partial play counts toward your record.
+  if (!full) fullWarned = false;   // reset once the grid has an empty cell again
+  if (state.completed) return;
+  if (!done) {
+    // Grid is full but still wrong — say so once (not a leak: only fires when
+    // every cell is filled). Don't reveal WHICH cells; that's Verificar's job.
+    if (full && !fullWarned) {
+      fullWarned = true;
+      flash('Tablero lleno · usa Verificar para hallar errores', '');
+    }
+    return;
+  }
+
+  state.completed = true;
+  const sc = score();
   const curIdx = currentRankIndex();
-  if (typeof lifetime.bestRankIdx !== 'number' || curIdx > lifetime.bestRankIdx) {
-    lifetime.bestRankIdx = curIdx;
-    saveLifetime();
-  }
-  if (done && !state.completed) {
-    state.completed = true;
-    lifetime.completed = (lifetime.completed || 0) + 1;
-    if (state.errorCount === 0) lifetime.perfect = (lifetime.perfect || 0) + 1;
-    if (state.hintCount === 0) lifetime.nohint = (lifetime.nohint || 0) + 1;
-    if (isSinDescender()) lifetime.nodescend = (lifetime.nodescend || 0) + 1;
-    saveLifetime();
-    dailyTimerStop();   // freeze the clock on completion
-    saveProgress();
-    dailyTimerUpdate();
-    if (!localStorage.getItem(completeKey())) {
-      localStorage.setItem(completeKey(), '1');
-      showCompleteModal();
-    }
+  lifetime.completed = (lifetime.completed || 0) + 1;
+  if ((state.checkCount || 0) === 0) lifetime.perfect = (lifetime.perfect || 0) + 1;   // never peeked
+  if ((state.hintCount || 0) === 0)  lifetime.nohint  = (lifetime.nohint  || 0) + 1;   // no hints
+  if (isSinDescender())              lifetime.nodescend = (lifetime.nodescend || 0) + 1;
+  if (typeof lifetime.bestRankIdx !== 'number' || curIdx > lifetime.bestRankIdx) lifetime.bestRankIdx = curIdx;
+  saveLifetime();
+  dailyTimerStop();   // freeze the clock on completion
+  saveProgress();
+  dailyTimerUpdate();
+
+  // One celebration, highest tier first: Maestro > Reto del día met > Complete.
+  if (curIdx === RANK_NAMES.length - 1 && !localStorage.getItem(maestroKey())) {
+    maestroShown = true;
+    localStorage.setItem(maestroKey(), '1');
+    localStorage.setItem(completeKey(), '1');
+    showMaestroModal();
+  } else if (sc >= state.reto && !localStorage.getItem(goalKey())) {
+    goalShown = true;
+    localStorage.setItem(goalKey(), '1');
+    localStorage.setItem(completeKey(), '1');
+    showGoalModal();
+  } else if (!localStorage.getItem(completeKey())) {
+    completeShown = true;
+    localStorage.setItem(completeKey(), '1');
+    showCompleteModal();
   }
 }
 
@@ -3222,7 +3237,7 @@ function showGoalModal() {
   // Body names the rank reached + a warm closing line.
   const body = document.getElementById('goal-body');
   if (body) {
-    body.innerHTML = `Llegaste a <strong>${rank}</strong> y cruzaste la meta de hoy con <strong>${sc}</strong> ${sc === 1 ? 'punto' : 'puntos'}. Pocos saborean cada cifra como tú.`;
+    body.innerHTML = `Terminaste en <strong>${rank}</strong> y cruzaste la meta de hoy con <strong>${sc}</strong> ${sc === 1 ? 'punto' : 'puntos'}. Pocos saborean cada cifra como tú.`;
   }
 
   // Stat block: Pts · Errores · Dificultad (no multiplier — the engine
@@ -3230,16 +3245,14 @@ function showGoalModal() {
   // cells to solve, so difficulty is the honest third axis here).
   const setStat = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   setStat('goal-stat-pts', sc);
-  setStat('goal-stat-err', state.errorCount);
+  setStat('goal-stat-err', state.checkCount || 0);
   setStat('goal-stat-diff', diffLabel);
 
-  // Bonus pills — show only the ones still intact at goal time
-  // (mirrors the share-text bonus rules, but without requiring the
-  // puzzle to be fully completed, since the reto can be crossed first).
+  // Bonus pills — the clean-solve badges still intact at the finish.
   const pills = [];
-  if (state.errorCount === 0) pills.push('Limpio');
-  if (state.hintCount === 0)  pills.push('Sin pistas');
-  if (isSinDescender())       pills.push('Sin descender');
+  if ((state.checkCount || 0) === 0) pills.push('Sin verificar');
+  if ((state.hintCount || 0) === 0)  pills.push('Sin pistas');
+  if (isSinDescender())              pills.push('Sin descender');
   const bonusWrap = document.getElementById('goal-bonuses');
   if (bonusWrap) {
     bonusWrap.innerHTML = pills.map(p => `<span class="goal-bonus">✨ ${p}</span>`).join('');
@@ -3249,14 +3262,14 @@ function showGoalModal() {
 }
 function showMaestroModal() { openModal('maestro-modal'); }
 function showCompleteModal() {
-  const perfect = state.errorCount === 0;
-  const noHint = state.hintCount === 0;
-  const emoji = (perfect && noHint) ? '👑' : (perfect ? '✨' : '☕');
+  const clean = (state.checkCount || 0) === 0;   // never spent a Verificar
+  const noHint = (state.hintCount || 0) === 0;
+  const emoji = (clean && noHint) ? '👑' : (clean ? '✨' : '☕');
   document.getElementById('complete-emoji').textContent = emoji;
-  document.getElementById('complete-title').textContent = perfect && noHint ? '¡Perfecto!' : '¡Sudoku completo!';
+  document.getElementById('complete-title').textContent = clean && noHint ? '¡Perfecto!' : '¡Sudoku completo!';
   let bonusText = '';
-  if (perfect && noHint) bonusText = '✨ Sin errores · ✨ Sin pistas';
-  else if (perfect) bonusText = '✨ Sin errores';
+  if (clean && noHint) bonusText = '✨ Sin verificar · ✨ Sin pistas';
+  else if (clean) bonusText = '✨ Sin verificar';
   else if (noHint) bonusText = '✨ Sin pistas';
   document.getElementById('complete-bonus').textContent = bonusText;
   openModal('complete-modal');
@@ -3309,9 +3322,14 @@ function buildShareText() {
   }
   lines.push('');
   lines.push(`🔢 ${state.correctCount} celdas`);
+  // Time is flavor only (never affects rank): include it if the player had the
+  // optional timer running.
+  if (state.completed && settings.timer && state.elapsed > 0) {
+    lines.push(`⏱ ${miniFmt(state.elapsed)}`);
+  }
   const bonuses = [];
-  if (state.completed && state.errorCount === 0) bonuses.push('Sin errores');
-  if (state.completed && state.hintCount === 0) bonuses.push('Sin pistas');
+  if (state.completed && (state.checkCount || 0) === 0) bonuses.push('Sin verificar');
+  if (state.completed && (state.hintCount || 0) === 0) bonuses.push('Sin pistas');
   if (state.completed && isSinDescender()) bonuses.push('Sin descender');
   if (bonuses.length) lines.push(`✨ ${bonuses.join(' · ')}`);
   if (!isMaestro) lines.push(`🏆 Rango: ${RANK_NAMES[currentRankIndex()]}`);
@@ -3400,13 +3418,13 @@ function refreshRangos() {
     const isCurrent = i === curIdx;
     row.className = 'rank-row' + (isCurrent ? ' current' : '') + (i === topIdx ? ' is-top' : '');
     if (isCurrent) {
-      const nextThreshold = (i < topIdx) ? RANK_THRESHOLDS[i + 1] : null;
-      const toTop = Math.max(0, RANK_THRESHOLDS[topIdx] - sc);
+      // Ceiling model: you only drop. Show how much margin is left before you
+      // fall to the rank below (i.e. points above THIS rank's threshold).
       let progText;
-      if (i === topIdx) progText = '¡Lo lograste!';
+      if (i === topIdx) progText = '¡En la cima!';
       else {
-        const diff = Math.max(0, nextThreshold - sc);
-        progText = `${diff} al próximo rango · ${toTop} al ${RANK_NAMES[topIdx]}`;
+        const margin = Math.max(0, sc - RANK_THRESHOLDS[i]);
+        progText = `${margin} ${margin === 1 ? 'pt' : 'pts'} de margen antes de bajar`;
       }
       row.innerHTML = `
         <div style="display:flex;flex-direction:column;flex:1">
@@ -3771,33 +3789,35 @@ function checkCell() {
   if (state.puzzle[r][c] !== 0) { flash('Es un número inicial', 'error'); return; }
   const v = state.values[r][c];
   if (v === 0) { flash('Esa celda está vacía', 'error'); return; }
-  state.checkCount = (state.checkCount || 0) + 1;
+  state.checkCount = (state.checkCount || 0) + COST_CHECK_CELL;
   if (v === state.solution[r][c]) {
-    flash('✓ Correcto (−1 pt)', 'success');
+    flash('✓ Correcto (−2)', 'success');
+    state.revealedErrors.delete(idx);
   } else {
-    flash('✗ Incorrecto (−1 pt)', 'error');
-    if (settings.showErrors) state.errors[idx] = true;
+    flash('✗ Incorrecto (−2)', 'error');
+    state.revealedErrors.add(idx);   // mark it red so the player can find & fix it
   }
   renderAll(); saveProgress();
 }
 function checkPuzzle() {
   let wrongCount = 0;
   for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+    const idx = r * 9 + c;
     if (state.puzzle[r][c] === 0 && state.values[r][c] !== 0 && state.values[r][c] !== state.solution[r][c]) {
       wrongCount++;
-      if (settings.showErrors) state.errors[r*9+c] = true;
+      state.revealedErrors.add(idx);   // light up every wrong cell you paid to find
     }
   }
-  state.checkCount = (state.checkCount || 0) + 3;
-  if (wrongCount === 0) flash('✓ Todo correcto (−3 pts)', 'success');
-  else flash(`${wrongCount} ${wrongCount === 1 ? 'error' : 'errores'} (−3 pts)`, 'error');
+  state.checkCount = (state.checkCount || 0) + COST_CHECK_BOARD;
+  if (wrongCount === 0) flash('✓ Todo correcto (−8)', 'success');
+  else flash(`${wrongCount} ${wrongCount === 1 ? 'error' : 'errores'} (−8)`, 'error');
   renderAll(); saveProgress();
 }
 document.getElementById('check-cell').addEventListener('click', () => {
-  askConfirm('¿Seguro?', 'Esto reducirá tus puntos en 1.', checkCell);
+  askConfirm('¿Verificar esta celda?', 'Te dice si está bien y resta 2 puntos.', checkCell);
 });
 document.getElementById('check-puzzle').addEventListener('click', () => {
-  askConfirm('¿Seguro?', 'Esto reducirá tus puntos en 3.', checkPuzzle);
+  askConfirm('¿Verificar todo el tablero?', 'Marca en rojo todos tus errores y resta 8 puntos.', checkPuzzle);
 });
 document.getElementById('daily-cog').addEventListener('click', () => openModal('settings-modal'));
 document.getElementById('header-home').addEventListener('click', goHome);   // shared header → landing
@@ -4134,7 +4154,7 @@ function miniRenderBoard() {
       else if (miniSameBox(sel.r, sel.c, r, c)) el.classList.add('peer-box');
       else if (r === sel.r || c === sel.c) el.classList.add('peer-line');
     }
-    if (miniState.errors[k] && settings.showErrors) el.classList.add('error');
+    if (miniState.errors[k]) el.classList.add('error');   // Mini is time-based: immediate feedback by design
     if (v !== 0) {
       el.textContent = v;
     } else {
