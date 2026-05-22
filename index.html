@@ -869,7 +869,14 @@
     .num-btn { height: 52px; font-size: 24px; }
   }
   .num-btn:active { transform: scale(0.94); }
-  .num-btn.exhausted { opacity: 0.35; }
+  /* A digit you've placed all 9 of: dimmed + soft terracota tint (reads as
+     "used up", not broken). */
+  .num-btn.exhausted {
+    opacity: 0.75;
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-deep);
+  }
   .num-btn.notes-mode { background: var(--accent-2); color: #ffffff; }
   .num-btn.erase { color: var(--ink); font-family: var(--font-ui); font-size: 20px; }
   .num-btn.erase svg { width: 26px; height: 26px; display: block; margin: 0 auto; }
@@ -2095,8 +2102,8 @@
 
   <div class="modal celebration" id="mini-done-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
-    <div class="big-emoji">☕</div>
-    <h2>¡Listo!</h2>
+    <div class="big-emoji"><img class="goal-brand-mark" id="mini-done-mark" alt="Cortadito" /></div>
+    <h2>¡Buen sorbo!</h2>
     <p class="goal-sub">Resolviste el Mini de hoy.</p>
     <div class="mini-rank-badge" id="mini-done-rank">—</div>
     <div class="goal-stats">
@@ -4608,6 +4615,10 @@ function miniCheckDone() {
   }
   const note = document.getElementById('mini-done-note');
   if (note) note.textContent = isNewBest ? 'Tu mejor tiempo. ¡Buen sorbo!' : 'Un sorbo rápido, bien resuelto.';
+  // Reuse the Normal goal modal's Cortadito logo (no need to inline it twice).
+  const _gm = document.querySelector('#goal-modal .goal-brand-mark');
+  const _mm = document.getElementById('mini-done-mark');
+  if (_gm && _mm) _mm.src = _gm.getAttribute('src');
   openModal('mini-done-modal');
 }
 function renderMiniStain() {
