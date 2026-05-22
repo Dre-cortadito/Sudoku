@@ -771,9 +771,8 @@
   .pad-wrap {
     max-width: var(--game-w);
     margin: 10px auto 0;
-    /* Opaque surface so the bottom coffee-stain never shows through the gaps
-       between buttons or the transparent tool buttons (seen on Samsung). */
-    background: var(--bg);
+    /* Transparent so the bottom coffee-stain shows through the gaps between the
+       buttons (the number/verify buttons are opaque, so it only peeks between). */
     position: relative;
     z-index: 1;
   }
@@ -1799,8 +1798,8 @@
     </div>
     <div class="number-pad" id="number-pad"></div>
     <div class="verify-row">
-      <button class="verify-btn" id="check-cell" type="button">Verificar celda (−2 pts)</button>
-      <button class="verify-btn" id="check-puzzle" type="button">Verificar tablero (−8 pts)</button>
+      <button class="verify-btn" id="check-cell" type="button">Verificar celda</button>
+      <button class="verify-btn" id="check-puzzle" type="button">Verificar tablero</button>
     </div>
   </div>
 </div>
@@ -2177,8 +2176,12 @@
   <div class="modal" id="verify-prompt-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">¡Llenaste el tablero!</h2>
-    <p>Para terminar, pulsa <strong class="hl-accent">Verificar tablero</strong> (el botón naranja). Si está todo bien, ganas — y no cuesta nada. Si hay algún error, te lo marca en rojo y resta 8 puntos, así que repásalo con calma antes.</p>
-    <div class="btn-row"><button data-close>Entendido</button></div>
+    <p>Para terminar, pulsa <strong class="hl-accent">Verificar tablero</strong> — el botón naranja, ahora <em>Terminar</em>. Si está todo bien, <strong>ganas</strong> (gratis). Si hay algún error, te lo marca en rojo y resta <span class="hl-accent">−8 pts</span>, así que repásalo con calma antes.</p>
+    <p>Durante el juego, <strong>Verificar celda</strong> revisa una sola celda y cuesta <span class="hl-accent">−2 pts</span>.</p>
+    <div class="btn-row">
+      <button data-close>Entendido</button>
+      <button id="verify-never">No volver a mostrar</button>
+    </div>
   </div>
 
   <div class="modal celebration" id="complete-modal" data-modal-content style="display:none">
@@ -2719,8 +2722,9 @@ function goalKey() {
   return `${STORAGE_PREFIX}-goal-shown-${state.iso}-${state.difficulty}-${state.mode}`;
 }
 function verifyPromptKey() {
-  return `${STORAGE_PREFIX}-verify-prompt-${state.iso}-${state.difficulty}-${state.mode}`;
+  return `${STORAGE_PREFIX}-verify-prompt-${state.iso}`;   // once per day (any difficulty/mode)
 }
+const VERIFY_PROMPT_OFF = STORAGE_PREFIX + '-verify-prompt-off';   // "No volver a mostrar" — forever
 function maestroKey() {
   return `${STORAGE_PREFIX}-maestro-shown-${state.iso}-${state.difficulty}-${state.mode}`;
 }
@@ -3409,7 +3413,7 @@ function updateVerifyCue() {
   btn.classList.toggle('needs-verify', cue);
   // When the grid is full it's the finish button (free if correct); otherwise
   // it's the mid-game peek that costs 8.
-  btn.textContent = cue ? 'Terminar ✓' : 'Verificar tablero (−8 pts)';
+  btn.textContent = cue ? 'Terminar ✓' : 'Verificar tablero';
 }
 // Completion is NOT automatic: filling the grid does not win. You must press
 // Verificar tablero to finish (checkPuzzle → finalizeWin). Here we only cue it:
@@ -3420,7 +3424,7 @@ function checkCompletion() {
   if (boardIsFull()) {
     if (!fullWarned) {
       fullWarned = true;
-      if (!localStorage.getItem(verifyPromptKey())) {
+      if (!localStorage.getItem(VERIFY_PROMPT_OFF) && !localStorage.getItem(verifyPromptKey())) {
         localStorage.setItem(verifyPromptKey(), '1');
         showVerifyPrompt();
       }
@@ -3466,6 +3470,11 @@ function finalizeWin() {
 function showVerifyPrompt() {
   openModal('verify-prompt-modal');
 }
+// "No volver a mostrar" — disable the fill-the-board prompt permanently.
+document.getElementById('verify-never').addEventListener('click', () => {
+  try { localStorage.setItem(VERIFY_PROMPT_OFF, '1'); } catch (e) {}
+  closeModal();
+});
 
 function showGoalModal() {
   const sc = score();
