@@ -224,8 +224,21 @@
   @media (max-width: 600px) {
     .header-nav { gap: 14px; font-size: 13px; }
   }
+  /* Narrow phones (most Samsung Galaxy widths land at/below 420px) USED to hide
+     Reglas / Estadísticas / Anteriores and leave only ☰ + the home button. But
+     those links don't live inside the ☰ menu, so they became unreachable on
+     those phones — that's the "rules bar doesn't appear" Samsung bug. Keep them
+     visible like on wider phones (and like iOS); just tighten the spacing/sizing
+     so they fit alongside ☰ + home. (Standard — matches Racimo. See
+     _docs/GAME-UI-STANDARDS.md.) */
   @media (max-width: 420px) {
-    .header-nav a:not(.more) { display: none; }
+    .page-header { padding: 6px 10px 12px; }
+    .header-nav { gap: 9px; font-size: 12px; }
+    .header-home { width: 30px; height: 30px; }
+    .header-nav .more { width: 32px; height: 32px; }
+  }
+  @media (max-width: 360px) {
+    .header-nav { gap: 6px; font-size: 11px; }
   }
   .header-nav .more {
     display: inline-flex; align-items: center; justify-content: center;
