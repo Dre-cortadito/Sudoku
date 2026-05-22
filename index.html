@@ -1613,8 +1613,7 @@
     <div class="landing-mode-row" id="landing-mode-row">
       <button class="landing-mode-btn active" data-landing-mode="clasico">Clásico</button>
       <button class="landing-mode-btn" data-landing-mode="niebla">Niebla</button>
-      <button class="landing-mode-btn is-disabled" data-landing-mode="diagonales" disabled aria-disabled="true">Diagonales</button>
-      <span class="soon-tag">Próximamente</span>
+      <button class="landing-mode-btn" data-landing-mode="diagonales">Diagonales</button>
     </div>
     <div class="landing-mode-desc" id="landing-mode-desc">El sudoku de toda la vida.</div>
     <button class="landing-play" id="landing-play">Jugar</button>
@@ -2017,6 +2016,7 @@
     <div class="pill-row">
       <button class="pill" data-mode="clasico">Clásico</button>
       <button class="pill" data-mode="niebla">Niebla</button>
+      <button class="pill" data-mode="diagonales">Diagonales</button>
     </div>
   </div>
 
@@ -2105,8 +2105,9 @@ const DIFFICULTY = {
   dificil: { label: 'Difícil', givens: 26 }
 };
 const MODES = {
-  clasico: { label: 'Clásico' },
-  niebla:  { label: 'Niebla' }
+  clasico:    { label: 'Clásico' },
+  niebla:     { label: 'Niebla' },
+  diagonales: { label: 'Diagonales' }
 };
 
 const STORAGE_PREFIX = 'sudoku';
@@ -2210,8 +2211,48 @@ function generateSolution(rng) {
   return board;
 }
 
+// Diagonales (Sudoku-X) solution: a full grid valid for rows/cols/boxes AND
+// both main diagonals. Built with randomized MRV backtracking (most-constrained
+// cell first) so it solves fast and varies by seed.
+function generateDiagonalSolution(rng) {
+  const grid = Array.from({ length: 9 }, () => new Array(9).fill(0));
+  function candsAt(r, c) {
+    const used = new Set();
+    for (let k = 0; k < 9; k++) { used.add(grid[r][k]); used.add(grid[k][c]); }
+    const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) used.add(grid[br+i][bc+j]);
+    if (r === c)     for (let k = 0; k < 9; k++) used.add(grid[k][k]);
+    if (r + c === 8) for (let k = 0; k < 9; k++) used.add(grid[k][8-k]);
+    const out = [];
+    for (let n = 1; n <= 9; n++) if (!used.has(n)) out.push(n);
+    return out;
+  }
+  function fill() {
+    let target = null, targetCands = null;
+    outer: for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+      if (grid[r][c] === 0) {
+        const cs = candsAt(r, c);
+        if (cs.length === 0) return false;
+        if (targetCands === null || cs.length < targetCands.length) {
+          target = [r, c]; targetCands = cs;
+          if (cs.length === 1) break outer;
+        }
+      }
+    }
+    if (target === null) return true;          // grid full
+    for (const n of shuffle(targetCands.slice(), rng)) {
+      grid[target[0]][target[1]] = n;
+      if (fill()) return true;
+      grid[target[0]][target[1]] = 0;
+    }
+    return false;
+  }
+  fill();
+  return grid;
+}
+
 // Count solutions up to a cap of 2 (we only need to know if unique).
-function countSolutions(board, cap) {
+function countSolutions(board, cap, diag) {
   const grid = board.map(r => r.slice());
   let count = 0;
   function solve() {
@@ -2227,13 +2268,11 @@ function countSolutions(board, cap) {
     for (let k = 0; k < 9; k++) { used.add(grid[r][k]); used.add(grid[k][c]); }
     const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) used.add(grid[br+i][bc+j]);
-    // TODO: Diagonales — add diagonal-line constraint to validator.
-    // (Deferred. The Diagonales mode is mocked in the design but not
-    // yet enabled.) When ready, gate on the active mode and, for each
-    // of the two main diagonals, require the cells contain 1–9 with no
-    // repeats — i.e. also exclude values already on this cell's
-    // diagonal(s):  if (r === c)      for (let k=0;k<9;k++) used.add(grid[k][k]);
-    //               if (r + c === 8)  for (let k=0;k<9;k++) used.add(grid[k][8-k]);
+    // Diagonales (Sudoku-X): each main diagonal also holds 1–9 with no repeats.
+    if (diag) {
+      if (r === c)     for (let k = 0; k < 9; k++) used.add(grid[k][k]);
+      if (r + c === 8) for (let k = 0; k < 9; k++) used.add(grid[k][8-k]);
+    }
     for (let n = 1; n <= 9; n++) {
       if (!used.has(n)) {
         grid[r][c] = n;
@@ -2248,7 +2287,7 @@ function countSolutions(board, cap) {
 }
 
 // Remove cells symmetrically (about center) and verify uniqueness.
-function generatePuzzle(solution, targetGivens, rng) {
+function generatePuzzle(solution, targetGivens, rng, diag) {
   const puzzle = solution.map(r => r.slice());
   // Pair positions (symmetric pairs). Center cell (4,4) is its own pair.
   const positions = [];
@@ -2269,7 +2308,7 @@ function generatePuzzle(solution, targetGivens, rng) {
       puzzle[sym[0]][sym[1]] = 0;
       removedTwo = true;
     }
-    const cnt = countSolutions(puzzle, 2);
+    const cnt = countSolutions(puzzle, 2, diag);
     if (cnt !== 1) {
       puzzle[r][c] = v1;
       if (removedTwo) puzzle[sym[0]][sym[1]] = v2;
@@ -2311,16 +2350,20 @@ function addGivens(puzzle, solution, targetGivens, rng) {
 // One solution per date is shared across all three difficulties — the
 // difficulties differ only in how many cells are revealed at start.
 const puzzleCache = {};
-function getPuzzleFor(iso, difficulty) {
-  const cacheKey = `${iso}-${difficulty}`;
+function getPuzzleFor(iso, difficulty, mode) {
+  // Clásico + Niebla share one solution (Niebla only hides cells). Diagonales
+  // needs its own diagonal-valid solution, so it caches under a 'diag' variant.
+  const isDiag = mode === 'diagonales';
+  const variant = isDiag ? 'diag' : 'std';
+  const cacheKey = `${iso}-${difficulty}-${variant}`;
   if (puzzleCache[cacheKey]) return puzzleCache[cacheKey];
-  const dailyKey = `daily-${iso}`;
+  const dailyKey = `daily-${iso}-${variant}`;
   if (!puzzleCache[dailyKey]) {
-    const seed = hashString(iso);
+    const seed = hashString(iso + (isDiag ? '-diag' : ''));
     const rng = mulberry32(seed);
-    const solution = generateSolution(rng);
+    const solution = isDiag ? generateDiagonalSolution(rng) : generateSolution(rng);
     // Generate Difícil first (most cells removed; needs uniqueness check).
-    const dificil = generatePuzzle(solution, DIFFICULTY.dificil.givens, rng);
+    const dificil = generatePuzzle(solution, DIFFICULTY.dificil.givens, rng, isDiag);
     // Medio and Fácil layer additional givens on top — uniqueness is
     // automatically preserved since adding givens only constrains further.
     const medio = addGivens(dificil, solution, DIFFICULTY.medio.givens, rng);
@@ -2481,7 +2524,7 @@ function saveTweaks(t) {
 
 // ---------- INIT PUZZLE ----------
 function initPuzzle() {
-  const { solution, puzzle } = getPuzzleFor(state.iso, state.difficulty);
+  const { solution, puzzle } = getPuzzleFor(state.iso, state.difficulty, state.mode);
   state.solution = solution;
   state.puzzle = puzzle;
   state.values = puzzle.map(r => r.slice());
@@ -2601,6 +2644,10 @@ function computeCandidates(r, c) {
   for (let k = 0; k < 9; k++) { used.add(state.values[r][k]); used.add(state.values[k][c]); }
   const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
   for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) used.add(state.values[br+i][bc+j]);
+  if (state.mode === 'diagonales') {
+    if (r === c)     for (let k = 0; k < 9; k++) used.add(state.values[k][k]);
+    if (r + c === 8) for (let k = 0; k < 9; k++) used.add(state.values[k][8-k]);
+  }
   const cand = new Set();
   for (let n = 1; n <= 9; n++) if (!used.has(n)) cand.add(n);
   return cand;
@@ -2643,6 +2690,9 @@ function renderBoard() {
       // Block separators
       if (c === 2 || c === 5) el.classList.add('bb-right');
       if (r === 2 || r === 5) el.classList.add('bb-bottom');
+
+      // Diagonales — tint the two main diagonals
+      if (state.mode === 'diagonales' && (r === c || r + c === 8)) el.classList.add('diagonal');
 
       // Niebla fog
       if (state.mode === 'niebla' && !state.revealed[idx]) {
@@ -2879,6 +2929,10 @@ function placeNumber(n) {
         if ((br+i)!==r && (bc+j)!==c && state.values[br+i][bc+j] === n) { conflict = 'Repetida en el bloque'; break outer; }
       }
     }
+    if (!conflict && state.mode === 'diagonales') {
+      if (r === c)     for (let k = 0; k < 9; k++) { if (k !== r && state.values[k][k] === n) { conflict = 'Repetida en la diagonal'; break; } }
+      if (!conflict && r + c === 8) for (let k = 0; k < 9; k++) { if (k !== r && state.values[k][8-k] === n) { conflict = 'Repetida en la diagonal'; break; } }
+    }
     flash(conflict || 'No coincide', 'error');
     // Reveal just this cell in Niebla so the player can see their mistake
     // (wrong placements do NOT reveal neighbors — only correct ones do).
@@ -2964,6 +3018,10 @@ function findHintCell() {
       const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
       for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
         used.add(visVal(br+i, bc+j));
+      }
+      if (state.mode === 'diagonales') {
+        if (r === c)     for (let k = 0; k < 9; k++) used.add(visVal(k, k));
+        if (r + c === 8) for (let k = 0; k < 9; k++) used.add(visVal(k, 8-k));
       }
       used.delete(0);
       if (used.size === 8) return [r, c];
@@ -3544,8 +3602,9 @@ document.getElementById('landing-theme-btn').addEventListener('click', toggleThe
 
 // ---------- LANDING ----------
 const MODE_DESCS = {
-  clasico: 'El sudoku de toda la vida.',
-  niebla:  'Las celdas se despejan a medida que juegas.'
+  clasico:    'El sudoku de toda la vida.',
+  niebla:     'Las celdas se despejan a medida que juegas.',
+  diagonales: 'Las dos diagonales también llevan del 1 al 9, sin repetir.'
 };
 function syncModeUI() {
   // Landing pills
