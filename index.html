@@ -812,6 +812,13 @@
     transition: transform 0.1s ease;
   }
   .verify-btn:active { transform: scale(0.96); }
+  /* Board full → the board check becomes the "finish" button: orange + a gentle
+     pulse to signal you need to verify to win. */
+  .verify-btn.needs-verify {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    animation: verify-pulse 1.3s ease-in-out infinite;
+  }
+  @keyframes verify-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
   .tool-btn {
     background: none;
     border: 1px solid var(--ink-line);
@@ -2150,6 +2157,13 @@
     </div>
   </div>
 
+  <div class="modal" id="verify-prompt-modal" data-modal-content style="display:none">
+    <button class="modal-close" data-close>×</button>
+    <h2 class="modal-title">¡Llenaste el tablero!</h2>
+    <p>Para terminar, pulsa <strong class="hl-accent">Verificar tablero</strong> (el botón naranja). Si está todo bien, ganas — y no cuesta nada. Si hay algún error, te lo marca en rojo y resta 8 puntos, así que repásalo con calma antes.</p>
+    <div class="btn-row"><button data-close>Entendido</button></div>
+  </div>
+
   <div class="modal celebration" id="complete-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <div class="big-emoji" id="complete-emoji">✨</div>
@@ -2691,6 +2705,9 @@ function progressKey() {
 function goalKey() {
   return `${STORAGE_PREFIX}-goal-shown-${state.iso}-${state.difficulty}-${state.mode}`;
 }
+function verifyPromptKey() {
+  return `${STORAGE_PREFIX}-verify-prompt-${state.iso}-${state.difficulty}-${state.mode}`;
+}
 function maestroKey() {
   return `${STORAGE_PREFIX}-maestro-shown-${state.iso}-${state.difficulty}-${state.mode}`;
 }
@@ -3084,6 +3101,7 @@ function renderAll() {
   renderPad();
   renderRankBar();
   refreshHintButton();
+  updateVerifyCue();   // keep the orange "verify to finish" cue in sync
 }
 function refreshHintButton() {
   const btn = document.getElementById('btn-hint');
@@ -3378,30 +3396,44 @@ function flash(text, cls) {
 
 // ---------- COMPLETION & MODALS ----------
 let goalShown = false, maestroShown = false, completeShown = false, fullWarned = false;
+function boardIsFull() {
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+    if (state.puzzle[r][c] === 0 && state.values[r][c] === 0) return false;
+  }
+  return true;
+}
+// Reflect "board full → time to verify" in the UI: the board-check button goes
+// orange. Called on every render so it stays in sync (incl. after a reload).
+function updateVerifyCue() {
+  const btn = document.getElementById('check-puzzle');
+  if (!btn) return;
+  const cue = !state.completed && boardIsFull();
+  btn.classList.toggle('needs-verify', cue);
+  // When the grid is full it's the finish button (free if correct); otherwise
+  // it's the mid-game peek that costs 8.
+  btn.textContent = cue ? 'Terminar ✓' : 'Verificar tablero (−8 pts)';
+}
+// Completion is NOT automatic: filling the grid does not win. You must press
+// Verificar tablero to finish (checkPuzzle → finalizeWin). Here we only cue it:
+// the orange button + a once-per-day prompt the first time the grid fills.
 function checkCompletion() {
-  // Completion = every cell matches the solution. Because the ceiling starts at
-  // Maestro, we celebrate ONLY on completion (a mid-game reto/Maestro check
-  // would fire instantly), and we show just the highest tier that applies.
-  let done = true, full = true;
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      const v = state.values[r][c];
-      if (v === 0) full = false;
-      if (v !== state.solution[r][c]) done = false;
-    }
-  }
-  if (!full) fullWarned = false;   // reset once the grid has an empty cell again
+  updateVerifyCue();
   if (state.completed) return;
-  if (!done) {
-    // Grid is full but still wrong — say so once (not a leak: only fires when
-    // every cell is filled). Don't reveal WHICH cells; that's Verificar's job.
-    if (full && !fullWarned) {
+  if (boardIsFull()) {
+    if (!fullWarned) {
       fullWarned = true;
-      flash('Tablero lleno · usa Verificar para hallar errores', '');
+      if (!localStorage.getItem(verifyPromptKey())) {
+        localStorage.setItem(verifyPromptKey(), '1');
+        showVerifyPrompt();
+      }
     }
-    return;
+  } else {
+    fullWarned = false;   // reset once a cell is cleared again
   }
-
+}
+// The actual win — fired by checkPuzzle when a FULL board verifies all-correct.
+function finalizeWin() {
+  if (state.completed) return;
   state.completed = true;
   const sc = score();
   const curIdx = currentRankIndex();
@@ -3414,6 +3446,7 @@ function checkCompletion() {
   dailyTimerStop();   // freeze the clock on completion
   saveProgress();
   dailyTimerUpdate();
+  updateVerifyCue();   // drop the orange cue now that you've won
 
   // One celebration, highest tier first: Maestro > Reto del día met > Complete.
   if (curIdx === RANK_NAMES.length - 1 && !localStorage.getItem(maestroKey())) {
@@ -3431,6 +3464,9 @@ function checkCompletion() {
     localStorage.setItem(completeKey(), '1');
     showCompleteModal();
   }
+}
+function showVerifyPrompt() {
+  openModal('verify-prompt-modal');
 }
 
 function showGoalModal() {
@@ -3989,24 +4025,38 @@ function checkCell() {
   renderAll(); saveProgress();
 }
 function checkPuzzle() {
+  if (state.completed) return;
   let wrongCount = 0;
   for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
     const idx = r * 9 + c;
     if (state.puzzle[r][c] === 0 && state.values[r][c] !== 0 && state.values[r][c] !== state.solution[r][c]) {
       wrongCount++;
-      state.revealedErrors.add(idx);   // light up every wrong cell you paid to find
+      state.revealedErrors.add(idx);   // light up every wrong cell
     }
   }
+  if (boardIsFull() && wrongCount === 0) {
+    // Finish line: a full, all-correct board wins — and it's FREE, so a clean
+    // solve still reaches Maestro. This is the only way to win.
+    flash('✓ ¡Resuelto!', 'success');
+    finalizeWin();
+    renderAll();
+    return;
+  }
+  // Otherwise it's a paid check: it found errors, or the grid isn't full yet.
   state.checkCount = (state.checkCount || 0) + COST_CHECK_BOARD;
-  if (wrongCount === 0) flash('✓ Todo correcto (−8)', 'success');
-  else flash(`${wrongCount} ${wrongCount === 1 ? 'error' : 'errores'} (−8)`, 'error');
+  if (wrongCount > 0) flash(`${wrongCount} ${wrongCount === 1 ? 'error' : 'errores'} (−8)`, 'error');
+  else flash('Sin errores aún · faltan celdas (−8)', '');
   renderAll(); saveProgress();
 }
 document.getElementById('check-cell').addEventListener('click', () => {
   askConfirm('¿Verificar esta celda?', 'Te dice si está bien y resta 2 puntos.', checkCell);
 });
 document.getElementById('check-puzzle').addEventListener('click', () => {
-  askConfirm('¿Verificar todo el tablero?', 'Marca en rojo todos tus errores y resta 8 puntos.', checkPuzzle);
+  if (boardIsFull() && !state.completed) {
+    askConfirm('¿Terminar?', 'Si está todo correcto, ¡ganas! (gratis). Si hay algún error, te lo marca en rojo y resta 8 puntos.', checkPuzzle);
+  } else {
+    askConfirm('¿Verificar todo el tablero?', 'Marca en rojo todos tus errores y resta 8 puntos.', checkPuzzle);
+  }
 });
 document.getElementById('daily-cog').addEventListener('click', () => openModal('settings-modal'));
 // Cronómetro toggle in the meta row — flips visibility only (the clock counts
