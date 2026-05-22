@@ -1302,7 +1302,8 @@
      Racimo would use red), rosewood for success cues + costs (where
      Racimo would use green). */
   .hl-accent { color: var(--accent); font-weight: 700; }
-  .hl-yellow { color: var(--accent-2); font-weight: 700; }
+  /* Point/time costs — orange like the rest (was the hard-to-read espresso brown). */
+  .hl-yellow { color: var(--accent); font-weight: 700; }
   /* Literal line-marker character — matches the goal bar on the rank track */
   .line-marker {
     color: var(--accent);
@@ -3656,6 +3657,31 @@ function closeModal() {
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
 }
+// Returning from another app/tab can leave the page scrolled so the rank bar
+// slips under the fixed header (until you refresh). Re-pin to the top whenever
+// we become visible again, in several passes (iOS restores scroll late).
+try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+function pinToTop() {
+  window.scrollTo(0, 0);
+  if (document.documentElement) document.documentElement.scrollTop = 0;
+  if (document.body) document.body.scrollTop = 0;
+}
+function pinToTopBurst() {
+  pinToTop();
+  requestAnimationFrame(pinToTop);
+  setTimeout(pinToTop, 120);
+  setTimeout(pinToTop, 450);
+  setTimeout(pinToTop, 900);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pinToTopBurst(); });
+window.addEventListener('pageshow', pinToTopBurst);
+window.addEventListener('focus', pinToTopBurst);
+window.addEventListener('orientationchange', pinToTopBurst);
+// If the page drifts under the fixed header while in-game, snap it back.
+window.addEventListener('scroll', () => {
+  if (!document.body.classList.contains('game-active') && !document.body.classList.contains('mini-active')) return;
+  if (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop) pinToTop();
+}, { passive: true });
 overlay.addEventListener('click', (e) => {
   if (e.target === overlay || e.target.matches('[data-close]')) closeModal();
 });
