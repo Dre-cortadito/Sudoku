@@ -867,6 +867,8 @@
     justify-content: center;
     padding: 24px 20px 40px;
     overflow-y: auto;
+    overscroll-behavior: contain;   /* don't chain scroll to the locked game
+                                       behind it (was pushing the rank bar up) */
   }
   @media (min-width: 880px) {
     .modal-overlay { top: 0; padding: 40px 20px; }
@@ -2621,6 +2623,7 @@ function initPuzzle() {
   if (typeof dailyTimerStart === 'function' && document.body.classList.contains('game-active')) {
     dailyTimerStart();
   }
+  if (_booted) saveSession();   // remember difficulty/mode changes
 }
 function countCorrectPlayerCells() {
   let n = 0;
@@ -3314,7 +3317,12 @@ function openModal(id) {
   if (id === 'rangos-modal') refreshRangos();
   if (id === 'mini-rangos-modal') refreshMiniRangos();
 }
-function closeModal() { overlay.classList.remove('open'); }
+function closeModal() {
+  overlay.classList.remove('open');
+  // Snap the (locked) game back to the top in case mobile shifted it while
+  // the modal was open — keeps the rank bar from ending up under the header.
+  window.scrollTo(0, 0);
+}
 overlay.addEventListener('click', (e) => {
   if (e.target === overlay || e.target.matches('[data-close]')) closeModal();
 });
@@ -3667,6 +3675,7 @@ document.getElementById('landing-play').addEventListener('click', () => {
   recordPlay();
   refreshStats();
   dailyTimerStart();
+  saveSession();   // remember we're in the Normal game now
 });
 
 // ---------- SETTINGS ----------
@@ -4330,6 +4339,7 @@ function launchMini() {
   // game already in progress); a fresh puzzle sits behind the Start gate.
   if (miniState.started && !miniState.done) miniStartTimer();
   else miniUpdateTimer();
+  saveSession();
 }
 function exitMini() {
   miniStopTimer(); miniSave();
@@ -4342,6 +4352,7 @@ function goHome() {
   dailyTimerStop(); saveProgress();
   miniStopTimer(); miniSave();
   document.body.classList.remove('game-active', 'mini-active');
+  saveSession();   // remember we're on the landing now
 }
 function buildMiniShareText() {
   if (!miniState) return `Sudoku Mini · ${formatPrettyDate(state.iso)}\n\ncortadito.news`;
@@ -4375,6 +4386,22 @@ document.getElementById('mini-start-btn').addEventListener('click', miniBegin);
 document.getElementById('mini-share').addEventListener('click', () => { shareMini(); });
 
 // ---------- BOOT ----------
+// ---------- SESSION — remember screen + difficulty/mode across reloads ----------
+const SESSION_KEY = STORAGE_PREFIX + '-session';
+let _booted = false;
+function curScreen() {
+  if (document.body.classList.contains('mini-active')) return 'mini';
+  if (document.body.classList.contains('game-active')) return 'normal';
+  return 'landing';
+}
+function saveSession() {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      screen: curScreen(), difficulty: state.difficulty, mode: state.mode
+    }));
+  } catch (e) {}
+}
+
 function boot() {
   // Restore theme + settings
   const tweaks = loadTweaks();
@@ -4387,6 +4414,15 @@ function boot() {
   if (location.hash && /^#\d{4}-\d{2}-\d{2}$/.test(location.hash)) {
     state.iso = location.hash.slice(1);
   }
+
+  // Restore the last session's difficulty/mode BEFORE building the puzzle.
+  let sess = null;
+  try { sess = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
+  if (sess) {
+    if (sess.difficulty && DIFFICULTY[sess.difficulty]) state.difficulty = sess.difficulty;
+    if (sess.mode && MODES[sess.mode]) state.mode = sess.mode;
+  }
+
   goalShown = !!localStorage.getItem(goalKey());
   maestroShown = !!localStorage.getItem(maestroKey());
   completeShown = !!localStorage.getItem(completeKey());
@@ -4399,6 +4435,15 @@ function boot() {
   renderStains();
   syncModeUI();
   syncDifficultyUI();
+
+  // Restore which screen the player was on, so a refresh stays put.
+  if (sess && sess.screen === 'mini') {
+    launchMini();
+  } else if (sess && sess.screen === 'normal') {
+    document.body.classList.add('game-active');
+    dailyTimerStart();
+  }
+  _booted = true;
 
   document.body.classList.add('ready');
 }
