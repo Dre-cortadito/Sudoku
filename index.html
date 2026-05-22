@@ -490,22 +490,35 @@
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    margin: 6px 0 8px;
+    margin: 0 0 8px;               /* flush under the rank bar (Racimo-tight spacing) */
   }
   .daily-meta-spacer { display: block; }
-  /* Opt-in count-up timer — lives in the left meta slot, mirroring the cog
-     on the right so the diff·mode group stays centered. Hidden unless on. */
-  .daily-timer {
+  /* Opt-in count-up timer toggle — lives in the left meta slot, mirroring the
+     cog on the right so the diff·mode group stays centered. The clock counts
+     from the moment you enter the puzzle; this button just shows/hides it. */
+  .daily-timer-btn {
     justify-self: start;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: none; padding: 2px 4px; margin: 0;
+    cursor: pointer; color: var(--ink-soft); font: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .daily-timer-btn .dt-clock {
+    width: 18px; height: 18px; opacity: 0.45;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+  .daily-timer-btn.on { color: var(--accent); }
+  .daily-timer-btn.on .dt-clock { opacity: 1; }
+  /* When off, show only the dim clock icon (a clear "tap to enable" affordance). */
+  .daily-timer-btn:not(.on) .daily-timer { display: none; }
+  .daily-timer {
     font-family: var(--font-ui);
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
     font-size: 14px;
     font-weight: 600;
-    color: var(--ink-soft);
     letter-spacing: 0.5px;
   }
-  .daily-timer[hidden] { display: none; }
   .info-bar {
     display: block;
     text-align: center;
@@ -543,7 +556,7 @@
     padding: 8px 16px;
     background: transparent;
     border-radius: 999px;
-    margin: 0 auto 10px;
+    margin: 0 auto 8px;            /* tight gap to the content below — Racimo standard */
     cursor: pointer;
     user-select: none;
     width: 100%;
@@ -614,7 +627,10 @@
     z-index: 4;
     white-space: nowrap;
   }
-  .rank-dot.current.done { background: var(--success); }
+  /* The current bubble stays brand orange even when you're above the reto line.
+     (In the ceiling model you start above it, so a green "done" bubble would be
+     green almost the whole game — the orange-line marker carries the reto cue.) */
+  .rank-dot.current.done { background: var(--accent); }
   /* Negative score — espresso brown bubble (overrides the orange default).
      Reto is always positive, so .done can't co-occur with .negative. */
   .rank-dot.current.negative { background: var(--accent-2); }
@@ -756,6 +772,11 @@
   .pad-wrap {
     max-width: var(--game-w);
     margin: 10px auto 0;
+    /* Opaque surface so the bottom coffee-stain never shows through the gaps
+       between buttons or the transparent tool buttons (seen on Samsung). */
+    background: var(--bg);
+    position: relative;
+    z-index: 1;
   }
   .tool-row {
     display: grid;
@@ -778,14 +799,17 @@
     background: var(--paper);
     border: 1px solid var(--ink-line);
     color: var(--ink);
-    padding: 9px 6px;
+    height: 34px;                 /* same height as the Notes (tool) buttons */
+    padding: 0 6px;
     border-radius: 10px;
     font: inherit;
     font-size: 10px;
+    font-weight: 700;             /* important action — bolder than the tools */
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    line-height: 1.2;
+    line-height: 1.15;
     cursor: pointer;
+    display: flex; align-items: center; justify-content: center; text-align: center;
     transition: transform 0.1s ease;
   }
   .verify-btn:active { transform: scale(0.96); }
@@ -1497,8 +1521,6 @@
      _docs/GAME-UI-STANDARDS.md). Mini shows the SAME .page-header element,
      not a forked copy. */
   body.mini-active .page-header { display: flex; }
-  /* The Cronómetro toggle is meaningless in Mini (it always times) — hide it. */
-  body.mini-active #setting-timer-row { display: none; }
   body.mini-active .mini-page {
     display: flex; flex-direction: column;
     gap: 10px;
@@ -1559,7 +1581,9 @@
   /* Live rank bar — identical to Diario's .rank-bar (same position, size and
      styling), just aligned to the Mini board width. Shows the rank you're on
      pace for by elapsed time, draining from Maestro/a down as the clock runs. */
-  .mini-rank-bar { max-width: var(--mini-w); position: relative; z-index: 1; }
+  /* Same size as Normal's rank bar (same width + the shared 24px bubble / 22px
+     track). Margin reset to 0 so the Mini flex-column gap controls spacing. */
+  .mini-rank-bar { max-width: var(--game-w); margin: 0 auto; position: relative; z-index: 1; }
 
   /* ===== Mini Start gate — board sits covered until "Empezar" ===== */
   .mini-start {
@@ -1691,7 +1715,10 @@
   </div>
 
   <div class="daily-meta">
-    <span class="daily-meta-spacer"><span class="daily-timer" id="daily-timer" hidden>0:00</span></span>
+    <button class="daily-timer-btn" id="daily-timer-btn" type="button" aria-pressed="false" aria-label="Cronómetro (no afecta tu puntaje)">
+      <svg class="dt-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span class="daily-timer" id="daily-timer">0:00</span>
+    </button>
     <button class="info-bar" id="info-bar" type="button" aria-label="Cambiar puzzle">
       <span id="info-diff">Medio</span>
       <span class="info-sep">·</span>
@@ -1984,6 +2011,15 @@
     <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. La <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> en la barra de rangos marca ese objetivo — la misma que en el modo Normal — y se pone <strong>marrón</strong> mientras vas en camino de lograrlo.</p>
   </div>
 
+  <div class="modal" id="timer-info-modal" data-modal-content style="display:none">
+    <button class="modal-close" data-close>×</button>
+    <h2 class="modal-title">Cronómetro</h2>
+    <p>Es solo para tu seguimiento personal — <strong>no afecta tu puntaje ni tu rango</strong>.</p>
+    <p>Cuenta desde que <strong>entraste al sudoku de hoy</strong>, no desde que lo enciendes. Por eso, al activarlo verás el tiempo real que llevas (si ya llevabas un rato, aparecerá ese tiempo, no <em>0:00</em>).</p>
+    <p>Puedes prenderlo y apagarlo cuando quieras; tu preferencia se recuerda.</p>
+    <div class="btn-row"><button class="primary" data-close>Entendido</button></div>
+  </div>
+
   <div class="modal" id="about-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2>Sobre Sudoku</h2>
@@ -2082,14 +2118,6 @@
         <div class="settings-sublabel">Marca todas las celdas con el mismo número.</div>
       </div>
       <div class="toggle" data-toggle="highlightSame"></div>
-    </div>
-    <h3>Juego</h3>
-    <div class="settings-row" id="setting-timer-row">
-      <div class="settings-text">
-        <div class="settings-label">Cronómetro</div>
-        <div class="settings-sublabel">Mide tu tiempo mientras juegas. No afecta tu puntaje ni tu rango.</div>
-      </div>
-      <div class="toggle" data-toggle="timer"></div>
     </div>
   </div>
 
@@ -2915,22 +2943,29 @@ function refreshHintButton() {
 }
 
 // ---------- OPTIONAL TIMER (Daily) ----------
-// Purely cosmetic: counts up while playing, never touches score() or rank.
-// Off by default; toggled from Ajustes. Elapsed seconds persist in progress.
+// The clock runs from the moment you ENTER today's puzzle (game-active),
+// regardless of the toggle — so turning it on later shows the real elapsed
+// time, not 0. The toggle (settings.timer) only controls visibility. Purely
+// cosmetic: it never touches score() or rank. Elapsed seconds persist in
+// progress, so a reload resumes the true running time.
 let dailyTimerHandle = null;
 function dailyTimerUpdate() {
+  const btn = document.getElementById('daily-timer-btn');
   const el = document.getElementById('daily-timer');
-  if (!el) return;
-  if (!settings.timer) { el.hidden = true; return; }
-  el.hidden = false;
-  el.textContent = miniFmt(state.elapsed);
+  if (btn) {
+    btn.classList.toggle('on', !!settings.timer);
+    btn.setAttribute('aria-pressed', settings.timer ? 'true' : 'false');
+  }
+  if (el) el.textContent = miniFmt(state.elapsed);
 }
 function dailyTimerStop() {
   if (dailyTimerHandle) { clearInterval(dailyTimerHandle); dailyTimerHandle = null; }
 }
 function dailyTimerStart() {
   dailyTimerStop();
-  if (!settings.timer || state.completed) { dailyTimerUpdate(); return; }
+  if (state.completed) { dailyTimerUpdate(); return; }
+  // Count continuously while the Normal game is open — even with the display
+  // off — so the elapsed time is real (since page entry), not since toggle-on.
   const startedAt = Date.now() - state.elapsed * 1000;
   dailyTimerHandle = setInterval(() => {
     state.elapsed = Math.floor((Date.now() - startedAt) / 1000);
@@ -3820,6 +3855,19 @@ document.getElementById('check-puzzle').addEventListener('click', () => {
   askConfirm('¿Verificar todo el tablero?', 'Marca en rojo todos tus errores y resta 8 puntos.', checkPuzzle);
 });
 document.getElementById('daily-cog').addEventListener('click', () => openModal('settings-modal'));
+// Cronómetro toggle in the meta row — flips visibility only (the clock counts
+// from page entry). First time it's turned on, explain that it doesn't affect
+// the score and shows real elapsed time. Preference persists via settings.
+const TIMER_INFO_KEY = STORAGE_PREFIX + '-timer-info';
+document.getElementById('daily-timer-btn').addEventListener('click', () => {
+  settings.timer = !settings.timer;
+  saveSettingsToStorage();
+  if (settings.timer && !localStorage.getItem(TIMER_INFO_KEY)) {
+    try { localStorage.setItem(TIMER_INFO_KEY, '1'); } catch (e) {}
+    openModal('timer-info-modal');
+  }
+  dailyTimerUpdate();
+});
 document.getElementById('header-home').addEventListener('click', goHome);   // shared header → landing
 
 // ---------- SURFACE VARIANT (Sereno default · Crema opt-in) ----------
@@ -4396,6 +4444,7 @@ function renderMiniStain() {
 }
 function launchMini() {
   if (!miniState || miniState.iso !== state.iso) initMini();
+  dailyTimerStop();   // Normal's clock runs continuously while game-active — pause it in Mini
   document.body.classList.add('mini-active');
   renderMiniStain();
   miniRenderBoard(); miniRenderPad(); miniRenderStart(); miniRenderRankBar(true);
