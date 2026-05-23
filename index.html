@@ -155,29 +155,29 @@
   .page-aside {
     display: none;
     flex-direction: column;
-    gap: 18px;
-    font-size: 12px;
+    gap: 26px;
+    font-size: 14px;
     color: var(--ink);
-    padding-top: 6px;
+    padding-top: 8px;
     position: relative;
     z-index: 1;
   }
   .page-aside h4 {
     font-family: var(--font-display);
-    margin: 0 0 6px;
-    font-size: 17px; font-weight: 700; letter-spacing: -0.2px;
+    margin: 0 0 8px;
+    font-size: 22px; font-weight: 700; letter-spacing: -0.2px;
     color: var(--ink);
   }
-  .page-aside p { margin: 0 0 6px; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
-  .page-aside .aside-block { border-top: 1px solid var(--ink-line); padding-top: 12px; }
-  .aside-reto-val { color: var(--accent) !important; font-family: var(--font-display); font-size: 28px; font-weight: 700; margin: 4px 0 0 !important; }
-  .aside-note { font-size: 11.5px; font-style: italic; margin-top: 8px !important; }
-  .aside-progress { display: flex; gap: 20px; margin-top: 4px; }
+  .page-aside p { margin: 0 0 8px; color: var(--ink-soft); font-size: 14.5px; line-height: 1.6; }
+  .page-aside .aside-block { border-top: 1px solid var(--ink-line); padding-top: 18px; }
+  .aside-reto-val { color: var(--accent) !important; font-family: var(--font-display); font-size: 40px; font-weight: 700; margin: 6px 0 0 !important; line-height: 1; }
+  .aside-note { font-size: 13px; font-style: italic; margin-top: 10px !important; }
+  .aside-progress { display: flex; gap: 28px; margin-top: 8px; }
   .aside-progress span { display: flex; flex-direction: column; }
-  .aside-progress b { font-family: var(--font-display); font-weight: 700; font-size: 24px; color: var(--ink); }
-  .aside-progress i { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; font-style: normal; }
+  .aside-progress b { font-family: var(--font-display); font-weight: 700; font-size: 34px; color: var(--ink); line-height: 1; }
+  .aside-progress i { font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; font-style: normal; margin-top: 4px; }
   .aside-ranks { display: flex; flex-direction: column; }
-  .aside-rank-row { display: flex; justify-content: space-between; margin: 3px 0; font-family: var(--font-ui); font-size: 12.5px; color: var(--ink-soft); }
+  .aside-rank-row { display: flex; justify-content: space-between; margin: 6px 0; font-family: var(--font-ui); font-size: 15px; color: var(--ink-soft); }
   .aside-rank-row.reached { color: var(--ink); }
   .aside-rank-row.current { font-weight: 700; }
   .aside-rank-row.current .aside-rank-name { color: var(--accent); }
@@ -220,6 +220,18 @@
     body.game-active .page > .page-aside           { display: flex; align-self: start; }
     body.game-active .page > .page-aside.is-left   { grid-area: left;  }
     body.game-active .page > .page-aside.is-right  { grid-area: right; }
+    /* Pull the coffee stains IN toward the board (they sat in the far page
+       corners because the page is wide). Positioned with left/right relative to
+       centre (NOT transform — makeStain sets an inline rotate transform we must
+       keep), so the stains straddle the board's top-left and bottom-right edges. */
+    body.game-active .page .stain.s-game-tl {
+      top: -10px; left: calc(50% - 360px); right: auto;
+      width: 320px; height: 320px;
+    }
+    body.game-active .page .stain.s-game-br {
+      bottom: -10px; right: calc(50% - 360px); left: auto;
+      width: 320px; height: 320px;
+    }
   }
   /* Landing gets a touch roomier on wide screens. */
   @media (min-width: 1024px) {
