@@ -1444,7 +1444,8 @@
     color: var(--ink-soft);
     margin: 0 0 -4px;
   }
-  body.mini-landing .landing-eyebrow { display: block; }
+  body.mini-landing .landing-eyebrow,
+  body.niebla-landing .landing-eyebrow { display: block; }
 
   /* Mini landing differentiation: 2×2 BeanFour cluster (64px) instead
      of the 3×3 tray, smaller italic wordmark — "espresso shot" vs
@@ -1453,6 +1454,40 @@
   body.mini-landing .landing-logo { display: none; }
   body.mini-landing .landing-logo-mini { display: block; }
   body.mini-landing .landing-title { font-size: 40px; font-style: italic; }
+  /* Niebla landing: its own italic wordmark (logo recolours via --accent below). */
+  body.niebla-landing .landing-title { font-style: italic; }
+
+  /* ---- Niebla · its own foggy slate identity (landing tab + in-game) ----
+     Niebla is a separate game, so it carries a cooler "fog" accent pair
+     instead of the terracota/espresso of Normal & Mini. */
+  body.niebla-landing,
+  body.niebla-game {
+    --accent:        #5f7e8c;   /* foggy slate-teal */
+    --accent-deep:   #46606b;
+    --accent-soft:   #e4ecef;
+    --accent-2:      #6b7884;   /* cool mist grey */
+    --accent-2-deep: #4c5862;
+    --accent-2-soft: #e7ebee;
+  }
+  body[data-theme="black"].niebla-landing,
+  body[data-theme="black"].niebla-game {
+    --accent:        #8fb1c0;   /* lifted fog for dark surfaces */
+    --accent-deep:   #6f95a6;
+    --accent-soft:   #1b272d;
+    --accent-2:      #9aa6b0;
+    --accent-2-deep: #7c8893;
+    --accent-2-soft: #1d2429;
+  }
+  /* In-game only: cool the cell highlights + the fog so the board reads as Niebla. */
+  body.niebla-game {
+    --cell-bg-sel:  #5f7e8c;
+    --cell-bg-line: #eef3f5;
+    --cell-bg-box:  #dbe7eb;
+    --cell-bg-same: #bcced4;
+    --cell-bg-peer: #e9eff1;
+    --fog:          #e7ecef;
+    --fog-stripe:   #ccd7dc;
+  }
 
   /* Disabled mode pill (Diagonales — deferred) + Próximamente tag. */
   .landing-mode-row { align-items: center; }
@@ -1686,8 +1721,9 @@
   <button class="landing-theme" id="landing-theme-btn" type="button" aria-label="Cambiar tema"></button>
   <div class="landing-inner">
     <div class="landing-tabs" role="tablist">
-      <button class="landing-tab active" id="tab-diario" data-tab="diario" role="tab">Normal</button>
       <button class="landing-tab" id="tab-mini" data-tab="mini" role="tab">Mini</button>
+      <button class="landing-tab active" id="tab-diario" data-tab="diario" role="tab">Normal</button>
+      <button class="landing-tab" id="tab-niebla" data-tab="niebla" role="tab">Niebla</button>
     </div>
     <div class="landing-logo-row">
       <svg class="landing-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="rotate(-28 22 22)"><ellipse cx="22" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 23.5 Q 22 18.25 33.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(14 60 22)"><ellipse cx="60" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 23.5 Q 60 18.25 71.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-18 98 22)"><ellipse cx="98" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 23.5 Q 98 18.25 109.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(22 22 60)"><ellipse cx="22" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 61.5 Q 22 56.25 33.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(0 60 60)"><ellipse cx="60" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent-2)"/><path d="M 48.75 61.5 Q 60 56.25 71.25 60.5" style="fill:none;stroke:var(--accent);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-22 98 60)"><ellipse cx="98" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 61.5 Q 98 56.25 109.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-14 22 98)"><ellipse cx="22" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 99.5 Q 22 94.25 33.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(24 60 98)"><ellipse cx="60" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 99.5 Q 60 94.25 71.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-30 98 98)"><ellipse cx="98" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 99.5 Q 98 94.25 109.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g></svg>
@@ -1708,15 +1744,6 @@
       <button class="landing-diff-btn" data-landing-diff="dificil">Difícil</button>
     </div>
     <div class="landing-diff-desc" id="landing-diff-desc">Cantidad estándar de números visibles.</div>
-    <div class="pickrow-label" id="landing-mode-label">Modo</div>
-    <div class="landing-mode-row" id="landing-mode-row">
-      <button class="landing-mode-btn active" data-landing-mode="clasico">Clásico</button>
-      <button class="landing-mode-btn" data-landing-mode="niebla">Niebla</button>
-      <!-- Diagonales (Sudoku-X) is fully built in the engine but hidden from
-           the UI for now. Re-add this button to bring it back. -->
-      <!-- <button class="landing-mode-btn" data-landing-mode="diagonales">Diagonales</button> -->
-    </div>
-    <div class="landing-mode-desc" id="landing-mode-desc">El sudoku de toda la vida.</div>
     <button class="landing-play" id="landing-play">Jugar</button>
     <button class="landing-sub" id="landing-sub">Suscribirse al boletín</button>
     <div class="landing-credit">
@@ -2127,19 +2154,13 @@
 
   <div class="modal" id="switcher-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
-    <h2>Cambiar puzzle</h2>
-    <p class="muted">Misma solución, distinta cantidad de pistas iniciales o distinto modo de juego.</p>
+    <h2>Cambiar dificultad</h2>
+    <p class="muted">Misma solución, distinta cantidad de pistas iniciales.</p>
     <h3>Dificultad</h3>
     <div class="pill-row">
       <button class="pill" data-diff="facil">Fácil</button>
       <button class="pill" data-diff="medio">Medio</button>
       <button class="pill" data-diff="dificil">Difícil</button>
-    </div>
-    <h3>Modo</h3>
-    <div class="pill-row">
-      <button class="pill" data-mode="clasico">Clásico</button>
-      <button class="pill" data-mode="niebla">Niebla</button>
-      <!-- <button class="pill" data-mode="diagonales">Diagonales</button>  (Diagonales hidden — engine kept) -->
     </div>
   </div>
 
@@ -2501,15 +2522,17 @@ function addGivens(puzzle, solution, targetGivens, rng) {
 // difficulties differ only in how many cells are revealed at start.
 const puzzleCache = {};
 function getPuzzleFor(iso, difficulty, mode) {
-  // Clásico + Niebla share one solution (Niebla only hides cells). Diagonales
-  // needs its own diagonal-valid solution, so it caches under a 'diag' variant.
+  // Each game gets its OWN daily solution so Niebla is a different board than
+  // Normal (not the same grid with fog) — its own set of numbers to play.
+  // Diagonales (deferred) also keeps its own diagonal-valid solution.
   const isDiag = mode === 'diagonales';
-  const variant = isDiag ? 'diag' : 'std';
+  const isNiebla = mode === 'niebla';
+  const variant = isDiag ? 'diag' : (isNiebla ? 'niebla' : 'std');
   const cacheKey = `${iso}-${difficulty}-${variant}`;
   if (puzzleCache[cacheKey]) return puzzleCache[cacheKey];
   const dailyKey = `daily-${iso}-${variant}`;
   if (!puzzleCache[dailyKey]) {
-    const seed = hashString(iso + (isDiag ? '-diag' : ''));
+    const seed = hashString(iso + (isDiag ? '-diag' : (isNiebla ? '-niebla' : '')));
     const rng = mulberry32(seed);
     const solution = isDiag ? generateDiagonalSolution(rng) : generateSolution(rng);
     // Generate Difícil first (most cells removed; needs uniqueness check).
@@ -2525,11 +2548,23 @@ function getPuzzleFor(iso, difficulty, mode) {
   return puzzleCache[cacheKey];
 }
 
-// Daily reto target (between 32 and 40, deterministic per date).
-function retoForDate(iso) {
-  const seed = hashString('reto-' + iso);
+// Daily reto target (deterministic per date). Niebla is its own game with its
+// own board, so it gets its own daily target too.
+function retoForDate(iso, mode) {
+  const seed = hashString('reto-' + (mode === 'niebla' ? 'niebla-' : '') + iso);
   return 28 + (seed % 9); // 28..36 — eased from 32..40 once Posibles (the free
                           // crutch) was removed, so daily streaks stay reachable.
+}
+
+// Each 9×9 game (Normal = clásico, Niebla) remembers its OWN last difficulty,
+// so picking Difícil in Normal doesn't change what Niebla opens on.
+function diffPrefKey(mode) { return `${STORAGE_PREFIX}-pref-diff-${mode}`; }
+function loadDiffPref(mode) {
+  try { const d = localStorage.getItem(diffPrefKey(mode)); if (d && DIFFICULTY[d]) return d; } catch (e) {}
+  return 'medio';
+}
+function saveDiffPref(mode, diff) {
+  try { if (DIFFICULTY[diff]) localStorage.setItem(diffPrefKey(mode), diff); } catch (e) {}
 }
 
 // ---------- NIEBLA — true fog of war ----------
@@ -2870,7 +2905,7 @@ function initPuzzle() {
     state.revealed.fill(true);
   }
 
-  state.reto = retoForDate(state.iso);
+  state.reto = retoForDate(state.iso, state.mode);
   state.correctCount = countCorrectPlayerCells();
 
   // Restore saved progress
@@ -3620,7 +3655,7 @@ function buildShareText() {
   const rank = RANK_NAMES[currentRankIndex()];
   const isMaestro = currentRankIndex() === RANK_NAMES.length - 1;
   const lines = [];
-  lines.push(`Sudoku · ${dateStr}`);
+  lines.push(`Sudoku${realMode() === 'niebla' ? ' Niebla' : ''} · ${dateStr}`);
   lines.push('');
   // Not finished yet — never claim a rank or the reto. (In the ceiling model the
   // score starts at the top, so an untouched board would otherwise look solved.)
@@ -3855,7 +3890,7 @@ function switchDate(iso) {
   initPuzzle();
   renderAll();
   document.getElementById('landing-date').textContent = formatLongDate(state.iso);
-  document.getElementById('landing-reto-value').textContent = retoForDate(state.iso) + ' pts';
+  document.getElementById('landing-reto-value').textContent = retoForDate(state.iso, state.mode) + ' pts';
 }
 
 // ---------- DIFFICULTY / MODE SWITCH ----------
@@ -3867,6 +3902,7 @@ function applyDifficulty(newDiff) {
   }
   document.querySelectorAll('.pill[data-diff]').forEach(b => b.classList.toggle('active', b.dataset.diff === newDiff));
   state.difficulty = newDiff;
+  saveDiffPref(state.mode, newDiff);   // remember this game's last difficulty
   goalShown = !!localStorage.getItem(goalKey());
   maestroShown = !!localStorage.getItem(maestroKey());
   completeShown = !!localStorage.getItem(completeKey());
@@ -3936,6 +3972,7 @@ document.querySelectorAll('.pill[data-diff]').forEach(btn => {
 document.querySelectorAll('[data-landing-diff]').forEach(btn => {
   btn.addEventListener('click', () => {
     state.difficulty = btn.dataset.landingDiff;
+    saveDiffPref(state.mode, state.difficulty);   // remember per-game
     goalShown = !!localStorage.getItem(goalKey());
     maestroShown = !!localStorage.getItem(maestroKey());
     completeShown = !!localStorage.getItem(completeKey());
@@ -4089,6 +4126,7 @@ document.getElementById('landing-play').addEventListener('click', () => {
   // Mini tab active → launch the 6×6 espresso shot instead of the Daily.
   if (document.body.classList.contains('mini-landing')) { launchMini(); return; }
   document.body.classList.add('game-active');
+  document.body.classList.toggle('niebla-game', state.mode === 'niebla');  // fog identity in-game
   // Commit the difficulty floor for this (date, mode) on FIRST play.
   // Subsequent Jugar taps don't re-set it; the player has committed.
   if (!state.startingDifficulty) {
@@ -4284,10 +4322,13 @@ function bestMiniTime() {
   } catch (e) { return null; }
 }
 function setLandingTab(tab) {
-  const isMini = tab === 'mini';
-  document.getElementById('tab-diario').classList.toggle('active', !isMini);
+  const isMini   = tab === 'mini';
+  const isNiebla = tab === 'niebla';
   document.getElementById('tab-mini').classList.toggle('active', isMini);
+  document.getElementById('tab-diario').classList.toggle('active', tab === 'diario');
+  document.getElementById('tab-niebla').classList.toggle('active', isNiebla);
   document.body.classList.toggle('mini-landing', isMini);
+  document.body.classList.toggle('niebla-landing', isNiebla);
 
   const title    = document.getElementById('landing-title');
   const tagline  = document.getElementById('landing-tagline');
@@ -4295,8 +4336,6 @@ function setLandingTab(tab) {
   const retoVal  = document.getElementById('landing-reto-value');
   const diffRow  = document.getElementById('landing-diff-row');
   const diffDesc = document.getElementById('landing-diff-desc');
-  const modeRow  = document.getElementById('landing-mode-row');
-  const modeDesc = document.getElementById('landing-mode-desc');
   const playBtn  = document.getElementById('landing-play');
 
   if (isMini) {
@@ -4307,28 +4346,40 @@ function setLandingTab(tab) {
     retoVal.textContent = best ? best : '—';
     diffRow.style.display  = 'none';
     diffDesc.style.display = 'none';
-    modeRow.style.display  = 'none';
-    modeDesc.style.display = 'none';
     playBtn.textContent = 'Jugar';
     playBtn.classList.remove('is-soon');
     playBtn.classList.add('is-mini-cta');
     playBtn.disabled = false;
-  } else {
-    title.textContent   = 'Sudoku';
-    tagline.textContent = '¿Qué patrón encontrarás hoy?';
-    retoLbl.textContent = 'Reto del día';
-    retoVal.textContent = retoForDate(state.iso) + ' pts';
-    diffRow.style.display  = '';
-    diffDesc.style.display = '';
-    modeRow.style.display  = '';
-    modeDesc.style.display = '';
-    playBtn.textContent = 'Jugar';
-    playBtn.classList.remove('is-soon', 'is-mini-cta');
-    playBtn.disabled = false;
+    return;
   }
+
+  // Normal (clásico) and Niebla are both the 9×9 engine — only the locked
+  // mode and the daily board differ. Each remembers its own difficulty.
+  const mode = isNiebla ? 'niebla' : 'clasico';
+  state.mode = mode;
+  state.difficulty = loadDiffPref(mode);
+  title.textContent   = isNiebla ? 'Niebla' : 'Sudoku';
+  tagline.textContent = isNiebla ? 'Despeja la niebla, celda a celda.' : '¿Qué patrón encontrarás hoy?';
+  retoLbl.textContent = 'Reto del día';
+  retoVal.textContent = retoForDate(state.iso, mode) + ' pts';
+  diffRow.style.display  = '';
+  diffDesc.style.display = '';
+  playBtn.textContent = 'Jugar';
+  playBtn.classList.remove('is-soon', 'is-mini-cta');
+  playBtn.disabled = false;
+  // Rebuild for this game's board + reload its medal/progress flags.
+  goalShown     = !!localStorage.getItem(goalKey());
+  maestroShown  = !!localStorage.getItem(maestroKey());
+  completeShown = !!localStorage.getItem(completeKey());
+  state.selected = null;
+  initPuzzle();
+  renderAll();
+  syncModeUI();
+  syncDifficultyUI();
 }
 document.getElementById('tab-diario').addEventListener('click', () => setLandingTab('diario'));
 document.getElementById('tab-mini').addEventListener('click', () => setLandingTab('mini'));
+document.getElementById('tab-niebla').addEventListener('click', () => setLandingTab('niebla'));
 
 // ================================================================
 // MINI 6×6 ENGINE — espresso-shot sibling. Self-contained: its own
@@ -4812,7 +4863,7 @@ function goHome() {
   closeDropdowns();    // dropdowns, so they don't linger over the landing/game
   dailyTimerStop(); saveProgress();
   miniStopTimer(); miniSave();
-  document.body.classList.remove('game-active', 'mini-active');
+  document.body.classList.remove('game-active', 'mini-active', 'niebla-game');
   saveSession();   // remember we're on the landing now
 }
 function buildMiniShareText() {
@@ -4886,25 +4937,32 @@ function boot() {
     if (sess.difficulty && DIFFICULTY[sess.difficulty]) state.difficulty = sess.difficulty;
     if (sess.mode && MODES[sess.mode]) state.mode = sess.mode;
   }
+  // Seed the per-game difficulty pref from the restored session so the tab
+  // re-opens on exactly what was last played for that mode.
+  saveDiffPref(state.mode, state.difficulty);
 
   goalShown = !!localStorage.getItem(goalKey());
   maestroShown = !!localStorage.getItem(maestroKey());
   completeShown = !!localStorage.getItem(completeKey());
 
   document.getElementById('landing-date').textContent = formatLongDate(state.iso);
-  document.getElementById('landing-reto-value').textContent = retoForDate(state.iso) + ' pts';
 
   initPuzzle();
   renderAll();
   renderStains();
-  syncModeUI();
-  syncDifficultyUI();
 
-  // Restore which screen the player was on, so a refresh stays put.
+  // Open the right game tab — sets mode/difficulty/UI + the daily reto display.
+  // (For the 9×9 tabs this also re-inits the board for that mode.)
+  const initialTab = (sess && sess.screen === 'mini') ? 'mini'
+                   : (state.mode === 'niebla' ? 'niebla' : 'diario');
+  setLandingTab(initialTab);
+
+  // Drop the player back into whatever they were on, so a refresh stays put.
   if (sess && sess.screen === 'mini') {
     launchMini();
   } else if (sess && sess.screen === 'normal') {
     document.body.classList.add('game-active');
+    document.body.classList.toggle('niebla-game', state.mode === 'niebla');
     dailyTimerStart();
   }
   _booted = true;
