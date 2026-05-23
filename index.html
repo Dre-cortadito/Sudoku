@@ -220,6 +220,9 @@
     .header-nav a:hover { color: var(--accent); }
   }
   .header-nav a.nav-rules-link { color: var(--accent); }
+  /* Press feedback that works on touch and clears on release (unlike :hover,
+     which sticks after a tap on touchscreens). */
+  .header-nav a.nav-rules-link:active { color: var(--accent-deep); }
   @media (hover: hover) {
     .header-nav a.nav-rules-link:hover { color: var(--accent-deep); }
   }
@@ -1443,7 +1446,6 @@
     50%      { color: var(--ink);      opacity: 1; }
   }
   .landing-tab:not(.active) { animation: tab-hint 2.2s ease-in-out infinite; }
-  .landing-tab:not(.active):nth-of-type(3) { animation-delay: 0.35s; }  /* slight shimmer */
   @media (prefers-reduced-motion: reduce) {
     .landing-tab:not(.active) { animation: none; opacity: 1; }
   }
