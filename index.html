@@ -145,6 +145,46 @@
     .page { --game-w: min(92vw, 520px, max(240px, calc(100dvh - 360px))); }
   }
 
+  /* ============ DESKTOP (≥960px) ============
+     Instead of the phone column floating in empty space, the game becomes a
+     centered "card" with the board as the focal point and the controls + info
+     arranged AROUND it: rank bar + meta above the board, the tools + number pad
+     to its right. Mobile (<960px) is completely untouched. Applies to Normal
+     and Niebla (both render `.page`); the Mini page is separate. */
+  @media (min-width: 960px) {
+    body.game-active .page {
+      display: grid;
+      grid-template-columns: 480px minmax(260px, 320px);
+      grid-template-areas:
+        "rank  pad"
+        "meta  pad"
+        "board pad";
+      column-gap: 40px;
+      row-gap: 12px;
+      align-items: start;
+      justify-content: center;
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 28px 32px;
+      background: var(--paper);
+      border: 1.5px solid var(--ink-line);
+      border-radius: 20px;
+      box-shadow: 0 16px 54px rgba(0, 0, 0, 0.09);
+      overflow: visible;
+    }
+    body.game-active .page > .rank-bar   { grid-area: rank;  max-width: none; margin: 0; }
+    body.game-active .page > .daily-meta { grid-area: meta;  margin: 2px 0 0; }
+    body.game-active .page > .board-wrap { grid-area: board; max-width: none; margin: 0; }
+    body.game-active .page > .pad-wrap   { grid-area: pad;   max-width: none; margin: 0; align-self: center; }
+    /* Clean card — drop the decorative coffee-stain layer inside it on desktop. */
+    body.game-active .page > .stain-layer { display: none; }
+  }
+  /* Landing gets a touch roomier on wide screens. */
+  @media (min-width: 960px) {
+    .landing-inner { max-width: 468px; gap: 14px; }
+    .landing-logo  { width: 104px; height: 104px; }
+  }
+
   /* ============ HEADER ============ */
   .page-header {
     display: none;     /* hidden on landing — only shown once game-active */
