@@ -220,7 +220,9 @@
     .header-nav a:hover { color: var(--accent); }
   }
   .header-nav a.nav-rules-link { color: var(--accent); }
-  .header-nav a.nav-rules-link:hover { color: var(--accent-deep); }
+  @media (hover: hover) {
+    .header-nav a.nav-rules-link:hover { color: var(--accent-deep); }
+  }
   @media (max-width: 600px) {
     .header-nav { gap: 14px; font-size: 13px; }
   }
@@ -1434,16 +1436,14 @@
     content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
     height: 2px; background: var(--accent);
   }
-  /* Gentle accent-glow pulse on the games you're NOT on, so players notice
-     there are other games up top. It stops for good once they switch tabs
-     once (body.tabs-seen), and never runs under reduced-motion. */
+  /* Gentle pulse (greyish → black) on the games you're NOT on, so players
+     always notice there are other games up top. Never runs under reduced-motion. */
   @keyframes tab-hint {
     0%, 100% { color: var(--ink-soft); opacity: 0.6; }
     50%      { color: var(--ink);      opacity: 1; }
   }
   .landing-tab:not(.active) { animation: tab-hint 2.2s ease-in-out infinite; }
   .landing-tab:not(.active):nth-of-type(3) { animation-delay: 0.35s; }  /* slight shimmer */
-  body.tabs-seen .landing-tab:not(.active) { animation: none; opacity: 1; }
   @media (prefers-reduced-motion: reduce) {
     .landing-tab:not(.active) { animation: none; opacity: 1; }
   }
@@ -4450,16 +4450,9 @@ function setLandingTab(tab) {
   syncModeUI();
   syncDifficultyUI();
 }
-// Once the player switches tabs, they've discovered the games — stop the
-// attention pulse on the non-selected tabs for good.
-const TABS_SEEN_KEY = STORAGE_PREFIX + '-tabs-seen';
-function markTabsSeen() {
-  document.body.classList.add('tabs-seen');
-  try { localStorage.setItem(TABS_SEEN_KEY, '1'); } catch (e) {}
-}
-document.getElementById('tab-diario').addEventListener('click', () => { markTabsSeen(); setLandingTab('diario'); });
-document.getElementById('tab-mini').addEventListener('click', () => { markTabsSeen(); setLandingTab('mini'); });
-document.getElementById('tab-niebla').addEventListener('click', () => { markTabsSeen(); setLandingTab('niebla'); });
+document.getElementById('tab-diario').addEventListener('click', () => setLandingTab('diario'));
+document.getElementById('tab-mini').addEventListener('click', () => setLandingTab('mini'));
+document.getElementById('tab-niebla').addEventListener('click', () => setLandingTab('niebla'));
 
 // ================================================================
 // MINI 6×6 ENGINE — espresso-shot sibling. Self-contained: its own
@@ -5004,9 +4997,6 @@ function boot() {
   applyVariant('sereno');   /* Surface locked to Sereno (Crema retired) */
   loadSettings();
   refreshToggles();
-
-  // If the player has already explored the game tabs, skip the attention pulse.
-  try { if (localStorage.getItem(TABS_SEEN_KEY)) document.body.classList.add('tabs-seen'); } catch (e) {}
 
   // Hash-based date
   if (location.hash && /^#\d{4}-\d{2}-\d{2}$/.test(location.hash)) {
