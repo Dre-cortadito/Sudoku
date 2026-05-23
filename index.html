@@ -220,12 +220,14 @@
     .header-nav a:hover { color: var(--accent); }
   }
   .header-nav a.nav-rules-link { color: var(--accent); }
-  /* Press feedback that works on touch and clears on release (unlike :hover,
-     which sticks after a tap on touchscreens). */
-  .header-nav a.nav-rules-link:active { color: var(--accent-deep); }
   @media (hover: hover) {
     .header-nav a.nav-rules-link:hover { color: var(--accent-deep); }
   }
+  /* While a nav link's panel is open, the link shows its "open" color — clear,
+     deterministic feedback (back to normal the moment the panel closes), instead
+     of relying on touch :hover/:active which stick or don't fire. */
+  .header-nav a.trigger-open { color: var(--accent); }
+  .header-nav a.nav-rules-link.trigger-open { color: var(--accent-deep); }
   @media (max-width: 600px) {
     .header-nav { gap: 14px; font-size: 13px; }
   }
@@ -1411,7 +1413,8 @@
   /* Tab strip flows as the first element of the landing column so it
      never overlaps the logo. Reads as page-level navigation. */
   .landing-tabs {
-    display: flex; gap: 32px; justify-content: center;
+    display: flex; gap: 30px; justify-content: center;
+    margin: 6px 0 4px;   /* a little breathing room — not tucked at the very top */
   }
   /* Uppercase label above each picker row (Dificultad / Modo). */
   .pickrow-label {
@@ -1426,10 +1429,10 @@
   body.mini-landing .pickrow-label { display: none; }
   .landing-tab {
     background: none; border: none;
-    padding: 6px 2px 9px;
+    padding: 8px 6px 11px;
     font-family: var(--font-ui);
-    font-size: 12px; font-weight: 700;
-    letter-spacing: 1.4px; text-transform: uppercase;
+    font-size: 15px; font-weight: 700;
+    letter-spacing: 1.8px; text-transform: uppercase;
     color: var(--ink-soft);
     cursor: pointer; position: relative;
     transition: color 0.15s ease;
@@ -1437,17 +1440,18 @@
   .landing-tab.active { color: var(--ink); }
   .landing-tab.active::after {
     content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
-    height: 2px; background: var(--accent);
+    height: 2.5px; background: var(--accent);
   }
-  /* Gentle pulse (greyish → black) on the games you're NOT on, so players
-     always notice there are other games up top. Never runs under reduced-motion. */
+  /* ALL tabs pulse greyish → black in unison so the games always read as
+     switchable; the underline above marks the one you've chosen. Color-only
+     (no opacity) so the active underline stays solid. */
   @keyframes tab-hint {
-    0%, 100% { color: var(--ink-soft); opacity: 0.6; }
-    50%      { color: var(--ink);      opacity: 1; }
+    0%, 100% { color: var(--ink-soft); }
+    50%      { color: var(--ink); }
   }
-  .landing-tab:not(.active) { animation: tab-hint 2.2s ease-in-out infinite; }
+  .landing-tab { animation: tab-hint 2.2s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) {
-    .landing-tab:not(.active) { animation: none; opacity: 1; }
+    .landing-tab { animation: none; }
   }
 
   /* Mini eyebrow above the wordmark when the Mini tab is active. */
@@ -3802,10 +3806,20 @@ function openModal(id) {
   if (id === 'stats-modal') refreshStats();
   if (id === 'rangos-modal') refreshRangos();
   if (id === 'mini-rangos-modal') refreshMiniRangos();
+  syncTriggers();
+}
+// Mark each nav trigger whose panel is currently open, so its link shows the
+// "open" color and returns to normal the instant the panel closes.
+function syncTriggers() {
+  document.querySelectorAll('[data-modal]').forEach(btn => {
+    btn.classList.toggle('trigger-open',
+      overlay.classList.contains('open') && resolveModalId(btn.dataset.modal) === openModalId);
+  });
 }
 function closeModal() {
   overlay.classList.remove('open');
   openModalId = null;
+  syncTriggers();
   document.body.style.overflow = '';
   // Snap the (locked) game back to the top in case mobile shifted it while the
   // modal was open. With html{overflow:hidden} the scroller can be body OR the
