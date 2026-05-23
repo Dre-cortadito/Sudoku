@@ -1017,6 +1017,10 @@
     font-size: 14px;
   }
   .celebration button.primary { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+  /* The close ✕ is NOT a pill button — keep it the plain glyph used in every
+     other modal (Reglas, etc). Without this, the generic `.celebration button`
+     rule above wraps it in a bordered "bubble". */
+  .celebration .modal-close { border: none; padding: 0; background: none; color: var(--ink-soft); }
 
   /* Buttons in plain (non-celebration) modals — e.g. the Cronómetro info card.
      Same pill aesthetic as the celebration buttons so they're on-brand. */
@@ -3033,6 +3037,28 @@ function renderBoard() {
 // Backspace/erase icon (recreated as inline SVG from the provided artwork so it
 // recolors with currentColor and works in dark mode). Used on every pad.
 const ERASE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H8.6a1.7 1.7 0 0 0-1.3.6L2.5 11.4a1 1 0 0 0 0 1.2l4.8 5.8a1.7 1.7 0 0 0 1.3.6H21a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="m11.5 9.5 5 5M16.5 9.5l-5 5"/></svg>';
+// Wire an erase button so a quick TAP runs tapFn (remove one) and a long
+// PRESS (≥450ms) runs holdFn (clear the whole cell). Buttons are recreated on
+// every render, so this is called fresh each time the pad is drawn.
+function attachHoldErase(btn, tapFn, holdFn) {
+  let timer = null, held = false;
+  const HOLD_MS = 450;
+  const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+  btn.addEventListener('pointerdown', () => {
+    held = false;
+    timer = setTimeout(() => {
+      held = true; timer = null;
+      holdFn();
+      if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
+    }, HOLD_MS);
+  });
+  btn.addEventListener('pointerup', () => { cancel(); if (!held) tapFn(); });
+  btn.addEventListener('pointerleave', cancel);
+  btn.addEventListener('pointercancel', cancel);
+  // Suppress the synthetic click that follows pointerup so tap never double-fires.
+  btn.addEventListener('click', (e) => { e.preventDefault(); });
+  btn.title = 'Toca para borrar uno · mantén pulsado para borrar la celda entera';
+}
 function renderPad() {
   padEl.innerHTML = '';
   // Count remaining per digit
@@ -3058,9 +3084,8 @@ function renderPad() {
   // 10th key: erase
   const eraseBtn = document.createElement('button');
   eraseBtn.className = 'num-btn erase';
-  eraseBtn.title = 'Borrar';
   eraseBtn.innerHTML = ERASE_SVG;
-  eraseBtn.addEventListener('click', eraseSelected);
+  attachHoldErase(eraseBtn, eraseSelected, eraseAllInCell);
   padEl.appendChild(eraseBtn);
 }
 
@@ -3231,7 +3256,35 @@ function placeNumber(n) {
   checkCompletion();
 }
 
+// TAP erase: take away ONE thing. If the cell holds a number, clear it; otherwise
+// remove just the LAST note you penciled in (progressive, not all at once).
 function eraseSelected() {
+  if (state.selected === null) return;
+  const idx = state.selected;
+  const r = Math.floor(idx/9), c = idx%9;
+  if (state.puzzle[r][c] !== 0) return;
+  const prev = state.values[r][c];
+  const prevError = state.errors[idx];
+  // A filled cell: erase the number (a cell never holds a number AND notes).
+  if (prev !== 0) {
+    state.values[r][c] = 0;
+    if (prev === state.solution[r][c]) state.correctCount--;
+    state.errors[idx] = false;
+    state.revealedErrors.delete(idx);
+    state.history.push({ type: 'erase', idx, prev, prevError, prevNotes: new Set() });
+    renderAll(); saveProgress();
+    return;
+  }
+  // No number: peel off the most-recently-added note only.
+  const notes = state.notes[idx];
+  if (notes.size === 0) return;
+  const last = Array.from(notes).pop();
+  notes.delete(last);
+  state.history.push({ type: 'note', idx, n: last });   // undo re-adds it
+  renderAll(); saveProgress();
+}
+// HOLD erase: clear the whole cell at once (number + every note).
+function eraseAllInCell() {
   if (state.selected === null) return;
   const idx = state.selected;
   const r = Math.floor(idx/9), c = idx%9;
@@ -3592,6 +3645,8 @@ function buildShareText() {
   if (state.completed && realMode() === 'niebla') {
     lines.push(isMaestro ? '   🌫️ …y en plena niebla.' : '🌫️ Resuelto en Niebla');
   }
+  // The mode you played is the first factual line right under the rank headline.
+  lines.push(`📐 ${diff} · ${modeLbl}`);
   lines.push('');
   if (sc >= state.reto) lines.push('✅ Reto del día logrado');
   else lines.push(`📌 Reto del día: ${state.reto} pts`);
@@ -3603,7 +3658,6 @@ function buildShareText() {
   if (bonuses.length) lines.push(`✨ ${bonuses.join(' · ')}`);
   // Time is flavor only (never affects rank): include it if the timer was on.
   if (state.completed && settings.timer && state.elapsed > 0) lines.push(`⏱ ${miniFmt(state.elapsed)}`);
-  lines.push(`📐 ${diff} · ${modeLbl}`);
   lines.push('');
   lines.push('https://cortadito.news');
   return lines.join('\n');
@@ -4520,7 +4574,7 @@ function miniRenderPad() {
   const eb = document.createElement('button');   // erase, in the pad like Diario
   eb.className = 'num-btn erase';
   eb.innerHTML = ERASE_SVG;
-  eb.addEventListener('click', miniErase);
+  attachHoldErase(eb, miniErase, miniEraseAll);
   pad.appendChild(eb);
 }
 function miniPlace(n) {
@@ -4557,11 +4611,33 @@ function miniPlace(n) {
   miniRenderBoard(); miniRenderPad(); miniSave();
   miniCheckDone();
 }
+// TAP erase: remove ONE thing — the number if present, otherwise just the last note.
 function miniErase() {
   if (!miniState || miniState.done) return;
   const sel = miniState.selected; if (!sel) return;
   const { r, c } = sel, k = r + ',' + c;
   if (miniState.puzzle[r][c] !== 0) return;
+  const prev = miniState.values[r][c];
+  if (prev !== 0) {   // filled cell → clear the number
+    miniState.history.push({ r, c, prev, prevErr: miniState.errors[k], prevNotes: (miniState.notes[k] || []).slice() });
+    miniState.values[r][c] = 0; delete miniState.errors[k];
+    miniRenderBoard(); miniRenderPad(); miniSave();
+    return;
+  }
+  const list = (miniState.notes[k] || []);   // no number → peel off the last note
+  if (!list.length) return;
+  miniState.history.push({ r, c, prev: 0, prevErr: miniState.errors[k], prevNotes: list.slice() });
+  const arr = list.slice(); arr.pop();
+  if (arr.length) miniState.notes[k] = arr; else delete miniState.notes[k];
+  miniRenderBoard(); miniRenderPad(); miniSave();
+}
+// HOLD erase: clear the whole cell (number + every note) in one go.
+function miniEraseAll() {
+  if (!miniState || miniState.done) return;
+  const sel = miniState.selected; if (!sel) return;
+  const { r, c } = sel, k = r + ',' + c;
+  if (miniState.puzzle[r][c] !== 0) return;
+  if (miniState.values[r][c] === 0 && !(miniState.notes[k] || []).length) return;
   miniState.history.push({ r, c, prev: miniState.values[r][c], prevErr: miniState.errors[k], prevNotes: (miniState.notes[k] || []).slice() });
   miniState.values[r][c] = 0; delete miniState.errors[k]; delete miniState.notes[k];
   miniRenderBoard(); miniRenderPad(); miniSave();
@@ -4696,7 +4772,7 @@ function miniCheckDone() {
     }
   }
   const note = document.getElementById('mini-done-note');
-  if (note) note.textContent = isNewBest ? 'Tu mejor tiempo. ¡Buen sorbo!' : 'Un sorbo rápido, bien resuelto.';
+  if (note) note.textContent = isNewBest ? '¡Tu mejor tiempo hasta ahora!' : 'Un sorbo rápido, bien resuelto.';
   // Reuse the Normal goal modal's Cortadito logo (no need to inline it twice).
   const _gm = document.querySelector('#goal-modal .goal-brand-mark');
   const _mm = document.getElementById('mini-done-mark');
