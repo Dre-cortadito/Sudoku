@@ -1438,8 +1438,8 @@
      there are other games up top. It stops for good once they switch tabs
      once (body.tabs-seen), and never runs under reduced-motion. */
   @keyframes tab-hint {
-    0%, 100% { color: var(--ink-soft); opacity: 0.65; }
-    50%      { color: var(--accent);  opacity: 1; }
+    0%, 100% { color: var(--ink-soft); opacity: 0.6; }
+    50%      { color: var(--ink);      opacity: 1; }
   }
   .landing-tab:not(.active) { animation: tab-hint 2.2s ease-in-out infinite; }
   .landing-tab:not(.active):nth-of-type(3) { animation-delay: 0.35s; }  /* slight shimmer */
@@ -3769,16 +3769,22 @@ async function shareResult() {
 
 // ---------- MODALS ----------
 const overlay = document.getElementById('modal-overlay');
-function openModal(id) {
-  // Reglas are game-specific: Mini and Niebla open their own versions.
-  // Rangos stays shared between Normal and Niebla (both rank by points; only
-  // Mini ranks by time), so it only swaps for Mini.
+let openModalId = null;   // which modal is currently open (resolved id), or null
+// Reglas are game-specific: Mini and Niebla open their own versions. Rangos
+// stays shared between Normal and Niebla (both rank by points; only Mini ranks
+// by time), so it only swaps for Mini.
+function resolveModalId(id) {
   if (document.body.classList.contains('mini-active')) {
-    if (id === 'reglas-modal') id = 'mini-reglas-modal';
-    if (id === 'rangos-modal') id = 'mini-rangos-modal';
+    if (id === 'reglas-modal') return 'mini-reglas-modal';
+    if (id === 'rangos-modal') return 'mini-rangos-modal';
   } else if (document.body.classList.contains('niebla-game')) {
-    if (id === 'reglas-modal') id = 'niebla-reglas-modal';
+    if (id === 'reglas-modal') return 'niebla-reglas-modal';
   }
+  return id;
+}
+function openModal(id) {
+  id = resolveModalId(id);
+  openModalId = id;
   // Hide all
   document.querySelectorAll('[data-modal-content]').forEach(el => el.style.display = 'none');
   const el = document.getElementById(id);
@@ -3797,6 +3803,7 @@ function openModal(id) {
 }
 function closeModal() {
   overlay.classList.remove('open');
+  openModalId = null;
   document.body.style.overflow = '';
   // Snap the (locked) game back to the top in case mobile shifted it while the
   // modal was open. With html{overflow:hidden} the scroller can be body OR the
@@ -3835,7 +3842,15 @@ overlay.addEventListener('click', (e) => {
   if (e.target === overlay || e.target.matches('[data-close]')) closeModal();
 });
 document.querySelectorAll('[data-modal]').forEach(btn => {
-  btn.addEventListener('click', (e) => { e.preventDefault(); closeDropdowns(); openModal(btn.dataset.modal); });
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeDropdowns();
+    // Toggle: clicking the same trigger while its modal is open closes it
+    // (the ✕ still works too). Standard across the games.
+    const target = resolveModalId(btn.dataset.modal);
+    if (overlay.classList.contains('open') && openModalId === target) closeModal();
+    else openModal(btn.dataset.modal);
+  });
 });
 
 function refreshStats() {
@@ -5019,10 +5034,12 @@ function boot() {
   renderAll();
   renderStains();
 
-  // Open the right game tab — sets mode/difficulty/UI + the daily reto display.
-  // (For the 9×9 tabs this also re-inits the board for that mode.)
-  const initialTab = (sess && sess.screen === 'mini') ? 'mini'
-                   : (state.mode === 'niebla' ? 'niebla' : 'diario');
+  // Normal is the default landing tab. We only re-open Mini or Niebla when the
+  // player was actually IN that game (so a refresh keeps their spot) — merely
+  // leaving the landing on another tab does NOT make it the default next time.
+  let initialTab = 'diario';
+  if (sess && sess.screen === 'mini') initialTab = 'mini';
+  else if (sess && sess.screen === 'normal') initialTab = (sess.mode === 'niebla') ? 'niebla' : 'diario';
   setLandingTab(initialTab);
 
   // Drop the player back into whatever they were on, so a refresh stays put.
