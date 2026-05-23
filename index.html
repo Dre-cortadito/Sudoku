@@ -6,12 +6,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
 <title>Sudoku — Cortadito News</title>
-<meta name="description" content="Un acertijo diario de números de Cortadito News. ¿Qué patrón encontrarás hoy? Juega en modo clásico o en modo niebla.">
+<meta name="description" content="Un acertijo diario de números de Cortadito News. ¿Qué patrón encontrarás hoy? Tres juegos cada día: Normal, Niebla y Mini.">
 <style>
   /* ================================================================
      CORTADITO SUDOKU
-     Two play modes (Clásico, Niebla) on the same daily puzzle.
-     Three difficulties. Cobalt blue + warm gold accents.
+     Three separate games (Normal, Niebla, Mini), each its own daily board,
+     difficulty memory, ranks/medals, and rules. Three difficulties (Normal/Niebla).
      ================================================================ */
   :root {
     --bg:           #ffffff;
@@ -1891,7 +1891,7 @@
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="reglas-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
-    <h2 class="modal-title">Cómo jugar</h2>
+    <h2 class="modal-title">Cómo jugar — Normal</h2>
     <p>El sudoku es una cuadrícula de <strong>9 × 9</strong> dividida en nueve bloques de <strong>3 × 3</strong>. Empiezas con algunos números ya puestos y tu trabajo es llenar el resto.</p>
 
     <h3>Las tres reglas</h3>
@@ -1923,7 +1923,6 @@
     <p><strong>1ª vez</strong> — el juego busca una celda donde sólo hay una opción posible y la marca con un borde rosa. Tienes que deducir qué número va. Cuesta <span class="hl-yellow">−3 pts</span>.<br>
     <strong>2ª vez sobre esa misma celda</strong> — si todavía no la resolviste, el juego rellena la respuesta. Cuesta <span class="hl-yellow">−3 pts más</span> (total <span class="hl-yellow">−6 pts</span>).</p>
     <p>Si la resuelves tú mismo/a sin pedir el segundo paso, sólo pierdes <span class="hl-yellow">−3 pts</span>. El botón cambia de <em>Pista</em> a <em>Revelar</em> cuando hay una pista activa, así sabes qué va a pasar al tocarlo.</p>
-    <p>En <strong class="hl-accent">modo Niebla</strong>, la primera pista también despeja la niebla de esa sola celda.</p>
 
     <h3>Puntaje</h3>
     <p>Empiezas el día con la <strong>puntuación máxima</strong> — o sea, en <strong class="hl-accent">Maestro/a</strong>. Cada ayuda que usas te <strong>baja</strong>:</p>
@@ -1940,7 +1939,7 @@
     <h3>Medallas</h3>
     <p><strong class="hl-accent">✨ Sin verificar</strong>: completa el sudoku sin usar Verificar ni una sola vez.<br>
     <strong class="hl-accent">✨ Sin pistas</strong>: complétalo sin pedir ninguna pista.<br>
-    <strong class="hl-accent">✨ Sin descender</strong>: termina en la dificultad y el modo en los que empezaste, sin pasar a una versión más fácil (ni de Difícil a Medio, ni de Niebla a Clásico).</p>
+    <strong class="hl-accent">✨ Sin descender</strong>: termina en la dificultad en la que empezaste, sin pasar a una más fácil (sin bajar de Difícil a Medio, ni de Medio a Fácil).</p>
 
     <h3>El tiempo (opcional)</h3>
     <p>Puedes encender un <strong>cronómetro</strong> en Ajustes. Es sólo para tu gusto: <strong>no afecta tu rango</strong>. Si lo tienes activado, tu tiempo aparece en el mensaje que compartes.</p>
@@ -1951,16 +1950,57 @@
     <strong>Difícil</strong>: pocos números dados, cadenas de deducción más largas.</p>
     <p class="muted">Los tres niveles comparten la misma solución del día — sólo cambia cuántos números aparecen visibles al empezar.</p>
 
-    <h3>Modo Niebla</h3>
-    <p>El tablero empieza casi todo cubierto de niebla: sólo ves <strong>algunas pistas</strong> — el resto del tablero, y unas cuantas pistas más, están escondidas.</p>
-    <p>Cada número que colocas —acertado o no— despeja la niebla a su alrededor, descubriendo más tablero (y a veces nuevas pistas). Pero despejar la niebla <strong class="hl-accent">no te dice si acertaste</strong>: igual que en Clásico, el juego no te corrige. Sólo <strong>Verificar</strong> revela si una celda está bien, y sólo cuando tú decides usarlo. Por eso "tantear hasta que se abra el tablero" descubre el mapa, no las respuestas.</p>
-    <p>Las <strong>notas</strong> sólo se pueden poner en celdas que ya ves; una celda en la niebla hay que destaparla primero (colocando un número).</p>
-    <p>Las pistas que ves <strong class="hl-accent">siempre alcanzan para resolverlo con pura lógica</strong> — nunca tienes que adivinar.</p>
-    <p>Niebla es el modo <strong class="hl-accent">más exigente</strong>: ves menos pistas y exploras casi a ciegas. Si empiezas en Niebla y cambias a Clásico a mitad de partida, verás el tablero completo — pero ese descenso te cuesta la medalla <strong class="hl-accent">Sin descender</strong> de hoy.</p>
-    <p class="muted">Menos pistas a la vista, más tablero por descubrir.</p>
-
     <h3>Rangos</h3>
     <p>Hay diez rangos, desde <em>Debutante</em> hasta <strong class="hl-accent">Maestro/a</strong>. Empiezas en lo más alto y bajas con cada ayuda. Toca la barra de rangos arriba para ver toda la escalera.</p>
+    <p class="muted">¿Buscas más reto? <strong>Niebla</strong> es su propio juego, con el tablero casi todo cubierto. Elígelo en la pantalla de inicio.</p>
+  </div>
+
+  <div class="modal" id="niebla-reglas-modal" data-modal-content style="display:none">
+    <button class="modal-close" data-close>×</button>
+    <h2 class="modal-title">Cómo jugar — Niebla</h2>
+    <p>Niebla es el sudoku de <strong>9 × 9</strong> de siempre, pero el tablero empieza casi todo cubierto: sólo ves <strong>algunas pistas</strong> y vas descubriendo el resto a medida que resuelves. Es su propio juego, con su tablero, su reto y sus medallas, aparte del Sudoku normal.</p>
+
+    <h3>La niebla</h3>
+    <p>Al empezar, casi todo el tablero —y unas cuantas pistas— están escondidos bajo la niebla. Cada número que colocas, <strong>acertado o no</strong>, despeja la niebla a su alrededor y descubre más tablero (a veces, nuevas pistas).</p>
+    <p>Despejar la niebla <strong class="hl-accent">no te dice si acertaste</strong>: igual que en el Sudoku normal, el juego no te corrige. Por eso "tantear hasta que se abra el tablero" descubre el mapa, no las respuestas.</p>
+    <p>Las pistas que ves <strong class="hl-accent">siempre alcanzan para resolverlo con pura lógica</strong> — nunca tienes que adivinar por culpa de algo que no puedes ver.</p>
+
+    <h3>Las tres reglas</h3>
+    <p>Cada <strong class="hl-accent">fila</strong>, cada <strong class="hl-accent">columna</strong> y cada <strong class="hl-accent">bloque de 3 × 3</strong> lleva los números del 1 al 9, sin repetir.</p>
+
+    <h3>Como en papel: el juego no te corrige</h3>
+    <p>El tablero no te dice si un número está bien cuando lo colocas. Resuelves con pura lógica; la única forma de comprobar es usar <strong class="hl-accent">Verificar</strong> — y eso cuesta puntos.</p>
+
+    <h3>Cómo se juega acá</h3>
+    <p><strong>Notas</strong>: anota a mano los candidatos. Sólo puedes poner notas en celdas que <strong>ya ves</strong>; una celda en la niebla hay que destaparla primero colocando un número.<br>
+    <strong>Deshacer</strong>: revierte tu última jugada (los puntos gastados no se recuperan).<br>
+    <strong>⌫</strong>: toca para borrar una cosa (el último apunte, o el número); mantén pulsado para vaciar la celda entera.</p>
+
+    <h3>Verificar</h3>
+    <p><strong>Verificar celda</strong> — te dice si la celda elegida está bien; si está mal, la marca en rojo. Cuesta <span class="hl-yellow">−2 pts</span>.<br>
+    <strong>Verificar tablero</strong> — marca <em>todos</em> tus errores de una vez: <span class="hl-yellow">−8 pts</span>. Con el tablero lleno, ese mismo botón pasa a ser <strong>Terminar</strong>: gratis si todo está bien.</p>
+
+    <h3>Pista</h3>
+    <p><strong>1ª vez</strong> — marca con un borde rosa una celda donde sólo hay una opción, y despeja su niebla. Tú deduces el número. Cuesta <span class="hl-yellow">−3 pts</span>.<br>
+    <strong>2ª vez sobre esa misma celda</strong> — rellena la respuesta. <span class="hl-yellow">−3 pts más</span> (total <span class="hl-yellow">−6 pts</span>).</p>
+
+    <h3>Puntaje</h3>
+    <p>Empiezas el día en <strong class="hl-accent">Maestro/a</strong> (la puntuación máxima) y cada ayuda te baja: <span class="hl-yellow">−2</span> verificar celda · <span class="hl-yellow">−8</span> verificar tablero · <span class="hl-yellow">−3</span> pista · <span class="hl-yellow">−6</span> revelar.</p>
+    <p class="muted">Resuelve sin ayuda y terminas en Maestro/a. Adivinar al azar no sirve: para saber si acertaste tendrías que gastar una verificación.</p>
+
+    <h3>Reto del día</h3>
+    <p>Niebla tiene <strong class="hl-accent">su propio reto</strong>: terminar en cierto rango o mejor. En la barra de rangos, la <span class="line-marker">|</span> <strong class="hl-accent">línea</strong> marca esa meta — termina en o por encima de ella y mantienes tu racha de Niebla.</p>
+
+    <h3>Medallas</h3>
+    <p><strong class="hl-accent">✨ Sin verificar</strong>: termina sin usar Verificar.<br>
+    <strong class="hl-accent">✨ Sin pistas</strong>: termina sin pedir ninguna pista.<br>
+    <strong class="hl-accent">✨ Sin descender</strong>: termina en la dificultad en la que empezaste, sin bajar a una más fácil.</p>
+
+    <h3>Dificultad</h3>
+    <p><strong>Fácil · Medio · Difícil</strong> cambian cuántas pistas ves al empezar. Cuanto más difícil, más tablero por descubrir bajo la niebla — y cada juego (Normal y Niebla) recuerda su propia dificultad.</p>
+
+    <h3>Rangos</h3>
+    <p>Diez rangos, de <em>Debutante</em> a <strong class="hl-accent">Maestro/a</strong>, por puntos (igual que el Sudoku normal). Toca la barra de rangos arriba para ver la escalera completa.</p>
   </div>
 
   <div class="modal" id="stats-modal" data-modal-content style="display:none">
@@ -2100,8 +2140,8 @@
   <div class="modal" id="about-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2>Sobre Sudoku</h2>
-    <p>Un acertijo diario de <strong>Cortadito News</strong>. Cada día, un nuevo sudoku en tres dificultades y dos modos de juego.</p>
-    <p>El sudoku clásico es un puzzle de lógica pura. El modo niebla esconde casi todo el tablero —y algunas pistas— y lo vas descubriendo a medida que resuelves; las pistas visibles siempre bastan para resolverlo sin adivinar.</p>
+    <p>Un acertijo diario de <strong>Cortadito News</strong>. Cada día, tres juegos para elegir: <strong>Normal</strong>, <strong>Niebla</strong> y <strong>Mini</strong>.</p>
+    <p>El Sudoku normal es lógica pura. Niebla esconde casi todo el tablero —y algunas pistas— y lo vas descubriendo a medida que resuelves; las pistas visibles siempre bastan para resolverlo sin adivinar. El Mini es un 6 × 6 rápido, contra el reloj.</p>
     <p class="muted">¡Lo esencial en un sorbo!</p>
   </div>
 
@@ -3717,10 +3757,14 @@ async function shareResult() {
 // ---------- MODALS ----------
 const overlay = document.getElementById('modal-overlay');
 function openModal(id) {
-  // Reglas + Rangos are game-aware: in Mini they open the Mini versions.
+  // Reglas are game-specific: Mini and Niebla open their own versions.
+  // Rangos stays shared between Normal and Niebla (both rank by points; only
+  // Mini ranks by time), so it only swaps for Mini.
   if (document.body.classList.contains('mini-active')) {
     if (id === 'reglas-modal') id = 'mini-reglas-modal';
     if (id === 'rangos-modal') id = 'mini-rangos-modal';
+  } else if (document.body.classList.contains('niebla-game')) {
+    if (id === 'reglas-modal') id = 'niebla-reglas-modal';
   }
   // Hide all
   document.querySelectorAll('[data-modal-content]').forEach(el => el.style.display = 'none');
