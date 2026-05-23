@@ -225,18 +225,31 @@
        centre (NOT transform — makeStain sets an inline rotate transform we must
        keep), so the stains straddle the board's top-left and bottom-right edges. */
     body.game-active .page .stain.s-game-tl {
-      top: -10px; left: calc(50% - 360px); right: auto;
-      width: 320px; height: 320px;
+      top: 120px; bottom: auto; left: calc(50% - 400px); right: auto;
+      width: 300px; height: 300px;
     }
     body.game-active .page .stain.s-game-br {
-      bottom: -10px; right: calc(50% - 360px); left: auto;
-      width: 320px; height: 320px;
+      bottom: 150px; top: auto; right: calc(50% - 400px); left: auto;
+      width: 300px; height: 300px;
     }
   }
   /* Landing gets a touch roomier on wide screens. */
   @media (min-width: 1024px) {
     .landing-inner { max-width: 468px; gap: 14px; }
     .landing-logo  { width: 104px; height: 104px; }
+  }
+  /* Desktop: a much bigger header — the bean, the "Sudoku" wordmark, and the nav
+     all scale up to suit the wide layout. High-specificity so it wins over the
+     mobile/spec sizes regardless of source order. */
+  @media (min-width: 1024px) {
+    body.game-active .page-header { padding: 16px 48px 18px; gap: 28px; }
+    body.game-active .page-header .page-logo { width: 52px; height: 52px; }
+    body.game-active .page-header .wordmark  { font-size: 40px; }
+    body.game-active .page-header .header-nav { gap: 30px; font-size: 19px; }
+    body.game-active .page-header .header-home { width: 44px; height: 44px; }
+    body.game-active .page-header .header-home svg { width: 23px; height: 23px; }
+    body.game-active .page-header .header-nav .more { width: 44px; height: 44px; }
+    body.game-active .page-header .header-nav .more svg { width: 28px; height: 28px; }
   }
 
   /* ============ HEADER ============ */
