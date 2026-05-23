@@ -183,11 +183,15 @@
   .aside-rank-row.current .aside-rank-name { color: var(--accent); }
   .aside-rank-pts { font-feature-settings: "tnum"; color: var(--ink-soft); }
 
+  .page-date { display: none; }   /* desktop-only; the date row under the header */
   @media (min-width: 1024px) {
+    /* The game sits directly on the page — NO card. The coffee stains show
+       through the background, and a date row sits under the header. */
     body.game-active .page {
       display: grid;
       grid-template-columns: 1fr 460px 1fr;
       grid-template-areas:
+        "date  date  date"
         "left  rank  right"
         "left  meta  right"
         "left  board right"
@@ -196,20 +200,23 @@
       row-gap: 12px;
       align-items: start;
       justify-content: center;
-      max-width: 1160px;
-      margin: 28px auto;
-      padding: 26px 34px 32px;
-      background: var(--paper);
-      border: 1.5px solid var(--ink-line);
-      border-radius: 20px;
-      box-shadow: 0 16px 54px rgba(0, 0, 0, 0.09);
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 40px 44px;
       overflow: visible;
+    }
+    body.game-active .page > .page-date {
+      display: block; grid-area: date;
+      text-align: center;
+      padding: 0 0 12px; margin: 0 0 4px;
+      border-bottom: 1px solid var(--ink-line);
+      font-size: 13px; letter-spacing: 0.2px; color: var(--ink);
+      font-feature-settings: "tnum";
     }
     body.game-active .page > .rank-bar   { grid-area: rank;  max-width: none; margin: 0; }
     body.game-active .page > .daily-meta { grid-area: meta;  max-width: none; margin: 2px 0 0; }
     body.game-active .page > .board-wrap { grid-area: board; max-width: none; margin: 6px 0 0; }
     body.game-active .page > .pad-wrap   { grid-area: pad;   max-width: none; margin: 10px 0 0; }
-    body.game-active .page > .stain-layer { display: none; }  /* clean card */
     body.game-active .page > .page-aside           { display: flex; align-self: start; }
     body.game-active .page > .page-aside.is-left   { grid-area: left;  }
     body.game-active .page > .page-aside.is-right  { grid-area: right; }
@@ -1884,6 +1891,8 @@
 <!-- ============ PAGE ============ -->
 <div class="page">
   <div class="stain-layer" id="page-stain-layer" aria-hidden="true"></div>
+  <!-- Desktop-only date row under the header. -->
+  <div class="page-date" id="page-date" aria-hidden="true"></div>
 
   <!-- Desktop-only left info panel (hidden on mobile). -->
   <aside class="page-aside is-left" aria-hidden="true">
@@ -3357,6 +3366,8 @@ function renderAll() {
 // with the real game state. No-op on mobile, where the panels are hidden.
 function renderDesktopPanels() {
   if (!window.matchMedia || !window.matchMedia('(min-width: 1024px)').matches) return;
+  const pd = document.getElementById('page-date');
+  if (pd) pd.textContent = formatLongDate(state.iso);
   const reto = document.getElementById('aside-reto');
   if (!reto) return;                         // not the Normal/Niebla page
   reto.textContent = state.reto + ' pts';
