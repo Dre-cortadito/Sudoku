@@ -3336,8 +3336,9 @@ function initPuzzle() {
         for (let r = 0; r < 9; r++) {
           for (let c = 0; c < 9; c++) {
             const v = state.values[r][c];
-            if (puzzle[r][c] === 0 && v !== 0 && v === solution[r][c]) {
-              revealAround(r, c);
+            if (puzzle[r][c] === 0 && v !== 0) {
+              state.revealed[r * 9 + c] = true;                 // you saw the cell you filled
+              if (v === solution[r][c]) revealAround(r, c);      // correct opens the 3x3
             }
           }
         }
@@ -3399,7 +3400,10 @@ function renderBoard() {
   let selVal = 0;
   if (sel !== null) {
     const r = Math.floor(sel/9), c = sel%9;
-    selVal = state.values[r][c];
+    // Niebla: a fogged cell must NOT broadcast its hidden value through the
+    // same-number highlight (selecting it used to light up every matching digit,
+    // leaking the answer). Only read the value when the cell is actually visible.
+    if (state.mode !== 'niebla' || state.revealed[sel]) selVal = state.values[r][c];
   }
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
@@ -3659,14 +3663,9 @@ function placeNumber(n) {
   const idx = state.selected;
   const r = Math.floor(idx/9), c = idx%9;
   if (state.puzzle[r][c] !== 0) {
-    // Niebla: a fogged cell can be a hidden clue. Probing it just clears the fog
-    // around it (like any placement) and the clue becomes visible — the game
-    // never says whether your guess matched.
-    if (state.mode === 'niebla' && !state.revealed[idx]) {
-      revealAround(r, c);
-      renderAll(); saveProgress();
-    }
-    return; // given — never editable
+    // Given — never editable. (Niebla: hidden clues surface only when an adjacent
+    // CORRECT placement clears the fog — there's no free probing.)
+    return;
   }
 
   if (state.notesMode) {
@@ -3709,10 +3708,13 @@ function placeNumber(n) {
     state.errors[idx] = true;
     if (prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
   }
-  // Niebla: ANY number you place — right or wrong — clears the fog around it,
-  // uncovering more board. The clearing never signals correctness, so it can't
-  // be brute-forced; only Verificar tells you if you're right.
-  if (state.mode === 'niebla') revealAround(r, c);
+  // Niebla (fog of war): you always SEE the cell you just filled, but only a
+  // CORRECT number clears the fog AROUND it and uncovers more board. A wrong
+  // number opens nothing — the reveal itself is the feedback (reveal-on-correct).
+  if (state.mode === 'niebla') {
+    state.revealed[idx] = true;
+    if (correct) revealAround(r, c);
+  }
   state.history.push({ type: 'place', idx, prev, prevError });
   renderAll();
   saveProgress();
