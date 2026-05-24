@@ -799,7 +799,13 @@
      tiles apart. Lighten the lines (board background shows through the 1px gaps)
      so each cell reads clearly. Box borders stay light (--ink) above this. */
   body[data-theme="black"] .board,
-  body[data-theme="black"] .mini-board { background: #726658; }
+  body[data-theme="black"] .mini-board { background: #1a1614; }
+  /* Dark mode: the flat near-black tiles merged into one mass and the thin gap
+     lines weren't enough. Give EVERY tile a crisp 1px outline (box-shadow, so no
+     layout shift) — the grid now reads as a clear pattern of framed tiles, the
+     way Claro's white tiles read against their lines. */
+  body[data-theme="black"] .cell { box-shadow: inset 0 0 0 1px #6e6256; }
+  body[data-theme="black"] .cell.selected { box-shadow: none; }   /* keep the clean orange + white ring */
   .cell {
     background: var(--cell-bg);
     display: flex; align-items: center; justify-content: center;
