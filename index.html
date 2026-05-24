@@ -1692,15 +1692,18 @@
      means nothing to the player. Hide the number (like the Mini bar) — the label
      beside it carries the rank name; the bubble just marks your position. */
   body.niebla-game #rank-bar .rank-dot.current { width: 16px; height: 16px; font-size: 0; }
-  /* Points feedback: a delta floats up from the rank bar on every score change. */
+  /* Points feedback: a delta floats up over the CENTER of the board on every score
+     change (esp. Niebla wrong placements) — so it reads as in-play feedback on the
+     table, not a number off at the top. Sits in the upper third so it clears the
+     centered flash message. */
   @keyframes pts-pop {
-    0%   { opacity: 0; transform: translate(-50%, 6px); }
+    0%   { opacity: 0; transform: translate(-50%, 12px); }
     18%  { opacity: 1; transform: translate(-50%, 0); }
-    100% { opacity: 0; transform: translate(-50%, -28px); }
+    100% { opacity: 0; transform: translate(-50%, -34px); }
   }
   .pts-delta {
-    position: absolute; left: 50%; top: -10px;
-    font-family: var(--font-display); font-weight: 700; font-size: 24px;
+    position: absolute; left: 50%; top: 32%;
+    font-family: var(--font-display); font-weight: 700; font-size: 30px;
     pointer-events: none; z-index: 6; white-space: nowrap;
     animation: pts-pop 1s ease-out forwards;
   }
@@ -3021,7 +3024,12 @@ function getPuzzleFor(iso, difficulty, mode) {
     puzzleCache[dailyKey] = { solution, facil, medio, dificil };
   }
   const daily = puzzleCache[dailyKey];
-  puzzleCache[cacheKey] = { solution: daily.solution, puzzle: daily[difficulty] };
+  // Niebla differentiates its difficulties ONLY by how much starts under fog
+  // (NIEBLA_FLOOR), so every Niebla difficulty shares the SAME dense base. Using
+  // per-difficulty bases made medio/dificil both bottom out at the ~24 solvability
+  // floor and flip order day to day (difícil could end up easier than medio).
+  const base = isNiebla ? daily.facil : daily[difficulty];
+  puzzleCache[cacheKey] = { solution: daily.solution, puzzle: base };
   return puzzleCache[cacheKey];
 }
 
@@ -3052,7 +3060,10 @@ function saveDiffPref(mode, diff) {
 // — so the player can always finish by pure logic and is never forced to guess
 // because of something they can't see. Each hidden clue is also kept adjacent
 // to at least one empty cell, so it always re-surfaces as you solve around it.
-const NIEBLA_FLOOR = { facil: 30, medio: 25, dificil: 20 };
+// Visible-clue floor per difficulty (all share the dense facil base). dificil's
+// 20 is below the ~24 human-solvability floor, so it lands at ~24 — the heaviest
+// fog that's still logic-solvable. facil/medio land exactly (33/28). Monotonic.
+const NIEBLA_FLOOR = { facil: 33, medio: 28, dificil: 20 };
 const _nieblaSeedCache = {};
 // Fast unique-solution test — MRV (most-constrained cell first) + bitmask
 // backtracking, stops counting at `cap`. Much faster than the generic
@@ -3394,11 +3405,25 @@ function initPuzzle() {
   const saved = loadProgress();
   if (saved) {
     // Merge saved entries onto THIS difficulty's givens, so changing difficulty
-    // (a descent) keeps your work: a cell that's a given now shows the given,
-    // otherwise your saved entry carries over. Same difficulty → straight restore.
+    // keeps your work: a cell that's a given now shows the given, otherwise your
+    // own entry carries over. Same difficulty → straight restore.
     const sv = saved.values || [];
-    state.values = puzzle.map((row, r) => row.map((g, c) => (g !== 0 ? g : ((sv[r] && sv[r][c]) || 0))));
     const diffChanged = !!saved.difficulty && saved.difficulty !== state.difficulty;
+    // A saved value is only the PLAYER's entry if that cell was NOT a given in the
+    // difficulty it was saved under. Otherwise it's a clue from the old layout — it
+    // must NOT carry over as an orange "entry" on a cell that isn't a given now.
+    let savedGivens = null;
+    if (diffChanged) {
+      const sp = getPuzzleFor(state.iso, saved.difficulty, state.mode);
+      savedGivens = sp && sp.puzzle;
+    }
+    state.values = puzzle.map((row, r) => row.map((g, c) => {
+      if (g !== 0) return g;                                  // a given now → show the clue (black)
+      const saw = (sv[r] && sv[r][c]) || 0;
+      if (!saw) return 0;
+      if (savedGivens && savedGivens[r][c] !== 0) return 0;   // was a clue before, not now → leave empty
+      return saw;                                             // genuine player entry → keep
+    }));
     state.notes = saved.notes.map(arr => new Set(arr));
     state.errorCount = saved.errorCount || 0;
     state.hintCount = saved.hintCount || 0;
@@ -4043,12 +4068,15 @@ function flash(text, cls) {
 // connected to what you just did.
 function flashPoints(delta) {
   if (!delta) return;
-  const bar = document.getElementById('rank-bar');
-  if (!bar) return;
+  // Float the delta up over the active board (centered on the table) rather than
+  // the rank bar at the top — keeps the feedback where the player is looking.
+  const wrap = document.querySelector(
+    document.body.classList.contains('mini-active') ? '.mini-board-wrap' : '.board-wrap');
+  if (!wrap) return;
   const el = document.createElement('div');
   el.className = 'pts-delta ' + (delta < 0 ? 'neg' : 'pos');
   el.textContent = (delta > 0 ? '+' : '−') + Math.abs(delta);
-  bar.appendChild(el);
+  wrap.appendChild(el);
   setTimeout(() => el.remove(), 1000);
 }
 
