@@ -241,10 +241,25 @@
       width: 300px; height: 300px;
     }
   }
-  /* Landing gets a touch roomier on wide screens. */
+  /* Landing gets a touch roomier on wide screens: the MODE tab strip drops
+     below the pinned theme toggle (padding-top), and the info reads larger. */
   @media (min-width: 1024px) {
-    .landing-inner { max-width: 468px; gap: 14px; }
-    .landing-logo  { width: 104px; height: 104px; }
+    .landing-inner { max-width: 520px; gap: 18px; padding-top: 60px; }
+    .landing-logo  { width: 116px; height: 116px; }
+    .landing-tabs  { gap: 42px; margin: 0 0 6px; }
+    .landing-tab   { font-size: 18px; letter-spacing: 2.2px; padding: 10px 8px 13px; }
+    .landing-tab.active::after { height: 3px; }
+    .landing-title   { font-size: 60px; }
+    .landing-tagline { font-size: 23px; max-width: 380px; }
+    .landing-date    { font-size: 17px; }
+    .landing-reto-label { font-size: 11px; }
+    .landing-reto-value { font-size: 21px; }
+    .pickrow-label   { font-size: 13px; letter-spacing: 1.9px; }
+    .landing-diff-btn  { font-size: 14px; padding: 8px 16px; }
+    .landing-diff-desc { font-size: 15px; }
+    .landing-play { font-size: 17px; padding: 14px 26px; width: 250px; }
+    .landing-sub  { font-size: 14px; }
+    .landing-credit { font-size: 13px; }
   }
   /* Desktop: a much bigger header — the bean, the "Sudoku" wordmark, and the nav
      all scale up to suit the wide layout. High-specificity so it wins over the
@@ -1846,6 +1861,64 @@
   .mini-rank-badge.is-top { color: var(--accent); }   /* orange only at Maestro/a */
   .mini-reto-line { font-size: 13px; color: var(--ink-soft); margin: 2px 0 0; }
   .mini-reto-line.met { color: var(--success); font-weight: 700; }
+
+  /* ============================================================
+     MINI — DESKTOP: the same 3-column treatment as Normal/Niebla
+     (date row on top, rank bar alone at the top of the centre
+     column, board centred, info panels left + right starting at
+     the timer row, coffee stains beside the board). Placed after
+     the `body.mini-active .mini-page { display:flex }` rule above
+     so this grid wins by source order on wide screens.
+     ============================================================ */
+  @media (min-width: 1024px) {
+    body.mini-active .mini-page {
+      display: grid;
+      grid-template-columns: 1fr 460px 1fr;
+      grid-template-areas:
+        "date  date  date"
+        ".     rank  ."
+        "left  meta  right"
+        "left  board right"
+        "left  pad   right";
+      column-gap: 30px;
+      row-gap: 12px;
+      align-items: start;
+      justify-content: center;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 40px 44px;
+      overflow: visible;
+      --mini-w: 420px;
+    }
+    body.mini-active .mini-page > .page-date {
+      display: block; grid-area: date;
+      text-align: center;
+      padding: 2px 0 14px; margin: 0 0 4px;
+      position: relative;
+      font-size: 18px; letter-spacing: 0.3px; color: var(--ink);
+      font-feature-settings: "tnum";
+    }
+    body.mini-active .mini-page > .page-date::after {
+      content: ""; position: absolute; bottom: 0;
+      left: 50%; margin-left: -50vw; width: 100vw;
+      border-bottom: 1px solid var(--ink-line);
+    }
+    body.mini-active .mini-page > .mini-rank-bar   { grid-area: rank;  max-width: var(--mini-w); margin: 0 auto; }
+    body.mini-active .mini-page > .mini-meta       { grid-area: meta;  max-width: var(--mini-w); margin: 2px auto 0; }
+    body.mini-active .mini-page > .mini-board-wrap { grid-area: board; max-width: var(--mini-w); margin: 6px auto 0; }
+    body.mini-active .mini-page > .mini-pad-wrap   { grid-area: pad;   max-width: var(--mini-w); margin: 10px auto 0; }
+    body.mini-active .mini-page > .page-aside          { display: flex; align-self: start; }
+    body.mini-active .mini-page > .page-aside.is-left  { grid-area: left;  }
+    body.mini-active .mini-page > .page-aside.is-right { grid-area: right; }
+    body.mini-active .mini-page .stain.s-game-tl {
+      top: 160px; bottom: auto; left: calc(50% - 470px); right: auto;
+      width: 300px; height: 300px;
+    }
+    body.mini-active .mini-page .stain.s-game-br {
+      bottom: 150px; top: auto; right: calc(50% - 460px); left: auto;
+      width: 300px; height: 300px;
+    }
+  }
 </style>
 </head>
 <body data-theme="white">
@@ -2015,6 +2088,29 @@
 <!-- ============ MINI PAGE (6×6, espresso shot) ============ -->
 <div class="mini-page" id="mini-page">
   <div class="stain-layer" id="mini-stain-layer" aria-hidden="true"></div>
+  <!-- Desktop-only date row under the header (mirrors Normal). -->
+  <div class="page-date mini-date" id="mini-date" aria-hidden="true"></div>
+
+  <!-- Desktop-only left info panel (hidden on mobile). -->
+  <aside class="page-aside is-left" aria-hidden="true">
+    <div>
+      <h4>Reto del día</h4>
+      <p class="aside-reto-val" id="mini-aside-reto">— </p>
+      <p id="mini-aside-reto-sub">—</p>
+    </div>
+    <div class="aside-block">
+      <h4>Cómo jugar — Mini</h4>
+      <p>Coloca los números del <strong style="color:var(--ink)">1 al 6</strong> en cada fila, columna y caja de <strong style="color:var(--ink)">2×3</strong>, sin repetir.</p>
+      <p>Es una carrera: el <strong style="color:var(--ink)">reloj</strong> arranca al pulsar <strong style="color:var(--ink)">Empezar</strong>. Cuanto más rápido, mejor rango.</p>
+    </div>
+    <div class="aside-block">
+      <h4>Cómo subir de rango</h4>
+      <p>⏱️ <strong style="color:var(--accent)">Menos tiempo</strong> · cada rango pide un reloj más bajo</p>
+      <p>🎯 <strong style="color:var(--accent)">Bate el reto</strong> · termina bajo el objetivo para tu racha</p>
+      <p class="aside-note">No hay puntos ni penalizaciones: solo el cronómetro.</p>
+    </div>
+  </aside>
+
   <div class="rank-bar mini-rank-bar" id="mini-rank-bar" role="button" tabindex="0" aria-label="Ver rangos del Mini">
     <span class="rank-label" id="mini-rank-label">Maestro/a</span>
     <div class="rank-track" id="mini-rank-track"></div>
@@ -2055,6 +2151,21 @@
     </div>
     <div class="number-pad mini-number-pad" id="mini-pad"></div>
   </div>
+
+  <!-- Desktop-only right info panel (hidden on mobile). -->
+  <aside class="page-aside is-right" aria-hidden="true">
+    <div>
+      <h4>Tu progreso</h4>
+      <div class="aside-progress">
+        <span><b id="mini-aside-time">0:00</b><i>Tu reloj</i></span>
+      </div>
+      <p id="mini-aside-rank-line" style="margin-top:12px">Vas por <strong style="color:var(--accent)">—</strong></p>
+    </div>
+    <div class="aside-block">
+      <h4>Rangos de hoy</h4>
+      <div id="mini-aside-ranks"></div>
+    </div>
+  </aside>
 </div>
 
 <!-- ============ FEEDBACK ============ -->
@@ -4823,7 +4934,7 @@ function miniSave() {
   } catch (e) {}
 }
 function miniStopTimer() { if (miniState && miniState.timer) { clearInterval(miniState.timer); miniState.timer = null; } }
-function miniUpdateTimer() { const el = document.getElementById('mini-timer'); if (el && miniState) el.textContent = miniFmt(miniState.elapsed); }
+function miniUpdateTimer() { const el = document.getElementById('mini-timer'); if (el && miniState) el.textContent = miniFmt(miniState.elapsed); renderMiniDesktopPanels(); }
 function miniStartTimer() {
   if (!miniState || miniState.done) { miniUpdateTimer(); return; }
   miniStopTimer();
@@ -5115,6 +5226,42 @@ function renderMiniStain() {
   const br = makeStain(state.iso + 'b', 's-game-br', STAIN_DATA.splatter);
   if (tl) layer.appendChild(tl);
   if (br) layer.appendChild(br);
+}
+// Desktop-only: fill the Mini side panels + date row (mirrors renderDesktopPanels
+// for Normal). Mini is time-based, so the "reto" is a target time, the ladder
+// shows the time cutoff per rank, and "current/reached" follow the pace rank.
+function renderMiniDesktopPanels() {
+  if (!window.matchMedia || !window.matchMedia('(min-width: 1024px)').matches) return;
+  if (!miniState) return;
+  const md = document.getElementById('mini-date');
+  if (md) md.textContent = formatLongDate(miniState.iso);
+  const reto = document.getElementById('mini-aside-reto');
+  if (!reto) return;                         // panels not in the DOM
+  const target = miniRetoForDate(miniState.iso);
+  reto.textContent = '≤ ' + miniFmt(target);
+  const sub = document.getElementById('mini-aside-reto-sub');
+  if (sub) sub.innerHTML = 'Llega a <strong style="color:var(--ink)">' + miniRankName(target) + '</strong> o mejor para completar la racha de hoy.';
+  const t = miniState.elapsed || 0;
+  const timeEl = document.getElementById('mini-aside-time');
+  if (timeEl) timeEl.textContent = miniFmt(t);
+  const rankLine = document.getElementById('mini-aside-rank-line');
+  if (rankLine) rankLine.innerHTML = 'Vas por <strong style="color:var(--accent)">' + miniRankName(t) + '</strong>';
+  const ranks = document.getElementById('mini-aside-ranks');
+  if (ranks) {
+    const curIdx = miniRankIndexForTime(t);
+    const maxByIdx = {};
+    for (const c of MINI_RANK_CUTOFFS) maxByIdx[c.idx] = c.max;
+    ranks.innerHTML = '';
+    for (let i = RANK_NAMES.length - 1; i >= 0; i--) {   // Maestro/a at top, Debutante at bottom
+      const row = document.createElement('div');
+      row.className = 'aside-rank-row' + (i <= curIdx ? ' reached' : '') + (i === curIdx ? ' current' : '');
+      const name = document.createElement('span'); name.className = 'aside-rank-name'; name.textContent = RANK_NAMES[i];
+      const tm = document.createElement('span'); tm.className = 'aside-rank-pts';
+      tm.textContent = (maxByIdx[i] === Infinity) ? '—' : ('≤ ' + miniFmt(maxByIdx[i]));
+      row.appendChild(name); row.appendChild(tm);
+      ranks.appendChild(row);
+    }
+  }
 }
 function launchMini() {
   if (!miniState || miniState.iso !== state.iso) initMini();
