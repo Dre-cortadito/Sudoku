@@ -291,19 +291,14 @@
     body.game-active .page-logo,
     body.mini-active .page-logo { width: 36px; height: 36px; }
   }
-  /* Mini's bean is two-tone (charcoal body + gold crease). !important beats the
-     SVG's inline style; the landing 2×2 cluster mirrors the header bean so both
-     views read the same. LIGHT theme: charcoal body pops on the cream page (an
-     espresso-bean look). DARK theme: the body flips to bright gold so it pops on
-     the near-black page (a dark-charcoal bean would vanish there) — see override. */
+  /* Mini's HEADER bean is two-tone (coral body + marigold crease), flipped in the
+     dark theme so it pops on the near-black page. !important beats the SVG inline
+     style. The landing 2×2 CLUSTER is NOT overridden here — it bakes an alternating
+     2-coral / 2-marigold pattern into its own SVG inline styles. */
   body.mini-active .page-logo ellipse { fill: var(--accent-2) !important; }
   body.mini-active .page-logo path { stroke: var(--accent) !important; }
-  body.mini-landing .landing-logo-mini ellipse { fill: var(--accent-2) !important; }
-  body.mini-landing .landing-logo-mini path { stroke: var(--accent) !important; }
   body[data-theme="black"].mini-active .page-logo ellipse { fill: var(--accent) !important; }
   body[data-theme="black"].mini-active .page-logo path { stroke: var(--accent-2) !important; }
-  body[data-theme="black"].mini-landing .landing-logo-mini ellipse { fill: var(--accent) !important; }
-  body[data-theme="black"].mini-landing .landing-logo-mini path { stroke: var(--accent-2) !important; }
   @media (min-width: 600px) {
     .wordmark { font-size: 22px; }   /* spec: keep header quiet, no upscale */
   }
@@ -1164,6 +1159,11 @@
   .modal .btn-row button.primary {
     background: var(--accent); border-color: var(--accent); color: #ffffff;
   }
+  /* Mini's marigold accent is light — white text on it vanishes. Mini's primary
+     pill buttons (celebration + modal CTAs) take dark text instead. */
+  body.mini-active .celebration button.primary,
+  body.mini-active .modal .btn-row button.primary,
+  body.mini-landing .modal .btn-row button.primary { color: #3a2800; }
   .modal .btn-row button:active { transform: scale(0.97); }
 
   /* ---- Goal card anatomy (spec: cn-goal-* ) ---- */
@@ -1618,30 +1618,29 @@
     --accent-2-deep: #6b4259;
     --accent-2-soft: #271a22;
   }
-  /* ---- Mini · racing yellow + graphite. Yellow is the primary identity; the
-     secondary is a charcoal/graphite — the yellow-on-black "hi-vis / racing
-     livery" pairing reads as speed and grounds the brightness. NOTE: --accent
-     doubles as a TEXT colour across the app (timer, rank labels, even the board
-     digits), so it stays a legible goldenrod; the bright speed-yellow lives in
-     the board cell-bg tints below. Graphite drives the bean, Notas pad + feedback
-     box (replaces the old red). ---- */
+  /* ---- Mini · warm marigold + coral. Main = #fab92e (marigold), secondary =
+     #d64933 (coral). The marigold is light, so it shines as a FILL (bean, board
+     tints) but is low-contrast as text on white — the hero timer/rank use --ink
+     (safe) and the board digits use --cell-ink (dark), so the few accent-text
+     spots that remain are non-critical. Coral drives the bean, Notas pad +
+     feedback box (it's dark enough for white text). ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #b8860b;   /* goldenrod — legible gold for all accent text + bean crease */
-    --accent-deep:   #8a6d00;
-    --accent-soft:   #fbf0c4;
-    --accent-2:      #2f3640;   /* graphite — bean body, Notas pad, feedback box */
-    --accent-2-deep: #1f2630;
-    --accent-2-soft: #e7eaee;
+    --accent:        #fab92e;   /* marigold — main identity (bean, board, accents) */
+    --accent-deep:   #c47d10;   /* deep marigold — legible for pressed / exhausted text */
+    --accent-soft:   #fef1d6;
+    --accent-2:      #d64933;   /* coral — bean, Notas pad, feedback box (white text reads) */
+    --accent-2-deep: #b53824;
+    --accent-2-soft: #fbe4df;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
-    --accent:        #f1cf3a;   /* bright gold — reads as a foreground on the dark surface */
-    --accent-deep:   #d4b528;
-    --accent-soft:   #2a2406;
-    --accent-2:      #4a5260;   /* lifted graphite — distinct from the near-black page, white text reads */
-    --accent-2-deep: #353c47;
-    --accent-2-soft: #1c2027;
+    --accent:        #fab92e;   /* marigold pops on the dark surface */
+    --accent-deep:   #d99e2a;
+    --accent-soft:   #2f2408;
+    --accent-2:      #d64933;   /* coral — dark enough for white feedback text */
+    --accent-2-deep: #b53824;
+    --accent-2-soft: #2e1410;
   }
   /* In-game only (Niebla): all highlights are PLUM in a tonal progression
      (line < box < same < selected), exactly like Normal's terracota board and
@@ -1654,8 +1653,8 @@
     --cell-bg-same: #d0a8c0;   /* strong plum — same number */
     --cell-bg-sel:  #8a5572;   /* solid plum — selected (white digit + ring) */
     --cell-bg-peer: #f2e4ec;
-    --fog:          #e7ecef;
-    --fog-stripe:   #ccd7dc;
+    --fog:          #e7ecef;   /* light base */
+    --fog-stripe:   #5c849a;   /* the Niebla blue — fog's diagonal stripes read as the brand colour */
   }
   /* Dark Niebla: same plum progression, gone DARK so the light-blue digits stay
      legible (light tints would swallow them). */
@@ -1665,29 +1664,29 @@
     --cell-bg-same: #503546;   /* strong */
     --cell-bg-sel:  #8a5572;   /* solid plum — selected */
     --cell-bg-peer: #2a1e26;
-    --fog:          #222c31;
-    --fog-stripe:   #33424a;
+    --fog:          #222c31;   /* dark base */
+    --fog-stripe:   #46647a;   /* the Niebla blue (lighter than the base so the stripes show) */
   }
-  /* In-game only: Mini's board takes the speed-yellow identity (parallels Normal's
-     all-terracota board). LIGHT theme — bright warm-yellow tints for row/col/box/
-     same; entered digits are a dark gold (--cell-ink) so they read on the tints. */
+  /* In-game only: Mini's board is a marigold tonal progression (parallels Normal's
+     all-terracota board and Niebla's all-plum board). LIGHT theme — warm marigold
+     tints; entered digits are a dark amber (--cell-ink) so they read on the tints. */
   body.mini-active {
-    --cell-ink:     #8a6d00;   /* entered digits — dark gold, legible on white + tints */
-    --cell-bg-line: #fdf2c8;   /* faint — row + column */
-    --cell-bg-box:  #fbe79c;   /* clearer — 3×3 box */
-    --cell-bg-same: #f7d24f;   /* strongest tint — same number (speed-yellow) */
-    --cell-bg-sel:  #a8780a;   /* deep gold — selected (white digit + ring read on it) */
-    --cell-bg-peer: #fdf2c8;
+    --cell-ink:     #8a5a14;   /* entered digits — dark amber, legible on white + tints */
+    --cell-bg-line: #fef0d2;   /* faint — row + column */
+    --cell-bg-box:  #fde1a8;   /* clearer — 3×3 box */
+    --cell-bg-same: #fbc763;   /* strong marigold — same number */
+    --cell-bg-sel:  #b06d12;   /* deep burnt-marigold — selected (white digit + ring read) */
+    --cell-bg-peer: #fef0d2;
   }
-  /* Dark Mini: bright-yellow digits already pop on the dark tiles, so use DARK
+  /* Dark Mini: bright marigold digits pop on the dark tiles, so use DARK
      amber tints for the highlights (light tints would swallow the digits). */
   body[data-theme="black"].mini-active {
-    --cell-ink:     #f9e70f;   /* full speed-yellow digits on the dark surface */
-    --cell-bg-line: #2e2606;
-    --cell-bg-box:  #41350a;
-    --cell-bg-same: #5c4a0e;
-    --cell-bg-sel:  #a8780a;
-    --cell-bg-peer: #2e2606;
+    --cell-ink:     #fab92e;   /* marigold digits on the dark surface */
+    --cell-bg-line: #332408;
+    --cell-bg-box:  #46320c;
+    --cell-bg-same: #5e4310;
+    --cell-bg-sel:  #b06d12;
+    --cell-bg-peer: #332408;
   }
   /* Niebla is precision-scored, so the rank-bar bubble holds a DERIVED score that
      means nothing to the player. Hide the number (like the Mini bar) — the label
@@ -2064,7 +2063,7 @@
     </div>
     <div class="landing-logo-row">
       <svg class="landing-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="rotate(-28 22 22)"><ellipse cx="22" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 23.5 Q 22 18.25 33.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(14 60 22)"><ellipse cx="60" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 23.5 Q 60 18.25 71.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-18 98 22)"><ellipse cx="98" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 23.5 Q 98 18.25 109.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(22 22 60)"><ellipse cx="22" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 61.5 Q 22 56.25 33.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(0 60 60)"><ellipse cx="60" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent-2)"/><path d="M 48.75 61.5 Q 60 56.25 71.25 60.5" style="fill:none;stroke:var(--accent);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-22 98 60)"><ellipse cx="98" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 61.5 Q 98 56.25 109.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-14 22 98)"><ellipse cx="22" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 99.5 Q 22 94.25 33.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(24 60 98)"><ellipse cx="60" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 99.5 Q 60 94.25 71.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-30 98 98)"><ellipse cx="98" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 99.5 Q 98 94.25 109.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g></svg>
-      <svg class="landing-logo-mini" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="rotate(-22 36 36)"><ellipse cx="36" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 22.05 37.86 Q 36 31.35 49.95 36.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(18 84 36)"><ellipse cx="84" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 70.05 37.86 Q 84 31.35 97.95 36.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(14 36 84)"><ellipse cx="36" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 22.05 85.86 Q 36 79.35 49.95 84.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(-26 84 84)"><ellipse cx="84" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 70.05 85.86 Q 84 79.35 97.95 84.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g></svg>
+      <svg class="landing-logo-mini" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="rotate(-22 36 36)"><ellipse cx="36" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent-2)"/><path d="M 22.05 37.86 Q 36 31.35 49.95 36.62" style="fill:none;stroke:var(--accent);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(18 84 36)"><ellipse cx="84" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 70.05 37.86 Q 84 31.35 97.95 36.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(14 36 84)"><ellipse cx="36" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 22.05 85.86 Q 36 79.35 49.95 84.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(-26 84 84)"><ellipse cx="84" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent-2)"/><path d="M 70.05 85.86 Q 84 79.35 97.95 84.62" style="fill:none;stroke:var(--accent);stroke-width:3.1;stroke-linecap:round"/></g></svg>
       <span class="landing-eyebrow" id="landing-eyebrow">Sudoku</span>
       <h1 class="landing-title" id="landing-title">Sudoku</h1>
     </div>
