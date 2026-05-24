@@ -621,9 +621,7 @@
     width: 18px; height: 18px; opacity: 1;
     transition: color 0.15s ease;
   }
-  .daily-timer-btn.on { color: var(--accent); }   /* accent when running */
-  /* When off, show only the dim clock icon (a clear "tap to enable" affordance). */
-  .daily-timer-btn:not(.on) .daily-timer { display: none; }
+  .daily-timer-btn.on { color: var(--accent); }   /* always surfaced now */
   .daily-timer {
     font-family: var(--font-ui);
     font-variant-numeric: tabular-nums;
@@ -2512,7 +2510,7 @@
     <p class="goal-sub">Alcanzaste la meta del día.</p>
     <p class="goal-body" id="goal-body">—</p>
     <div class="goal-stats">
-      <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-pts">0</span><span class="goal-stat-label">Pts</span></div>
+      <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-pts">0</span><span class="goal-stat-label" id="goal-stat-pts-label">Pts</span></div>
       <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-err">0:00</span><span class="goal-stat-label">Tiempo</span></div>
       <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-diff">—</span><span class="goal-stat-label">Dificultad</span></div>
     </div>
@@ -3683,8 +3681,8 @@ function dailyTimerUpdate() {
   const btn = document.getElementById('daily-timer-btn');
   const el = document.getElementById('daily-timer');
   if (btn) {
-    btn.classList.toggle('on', !!settings.timer);
-    btn.setAttribute('aria-pressed', settings.timer ? 'true' : 'false');
+    btn.classList.add('on');                 // timer is always surfaced now
+    btn.setAttribute('aria-pressed', 'true');
   }
   if (el) el.textContent = miniFmt(state.elapsed);
 }
@@ -4062,29 +4060,37 @@ document.getElementById('verify-never').addEventListener('click', () => {
 });
 
 function showGoalModal() {
+  const niebla = realMode() === 'niebla';
   const sc = score();
+  const wrong = state.wrongCount || 0;
   const rank = RANK_NAMES[currentRankIndex()];
   const diffLabel = DIFFICULTY[realDifficulty()].label;
 
-  // Body names the rank reached + a warm closing line.
+  // Body names the rank reached + a warm closing line (precision-flavored for Niebla).
   const body = document.getElementById('goal-body');
   if (body) {
-    body.innerHTML = `Terminaste en <strong>${rank}</strong> y cruzaste la meta de hoy con <strong>${sc}</strong> ${sc === 1 ? 'punto' : 'puntos'}. Pocos saborean cada cifra como tú.`;
+    body.innerHTML = niebla
+      ? `Terminaste en <strong>${rank}</strong> con <strong>${wrong}</strong> ${wrong === 1 ? 'error' : 'errores'} — buena puntería en plena niebla.`
+      : `Terminaste en <strong>${rank}</strong> y cruzaste la meta de hoy con <strong>${sc}</strong> ${sc === 1 ? 'punto' : 'puntos'}. Pocos saborean cada cifra como tú.`;
   }
 
-  // Stat block: Pts · Errores · Dificultad (no multiplier — the engine
-  // doesn't weight score by difficulty; harder tiers simply expose more
-  // cells to solve, so difficulty is the honest third axis here).
+  // Stat block: first stat is Errores (Niebla) or Pts (clásico); then Tiempo; then Dificultad.
   const setStat = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  setStat('goal-stat-pts', sc);
+  setStat('goal-stat-pts', niebla ? wrong : sc);
+  const ptsLabel = document.getElementById('goal-stat-pts-label');
+  if (ptsLabel) ptsLabel.textContent = niebla ? 'Errores' : 'Pts';
   setStat('goal-stat-err', miniFmt(state.elapsed || 0) + (beatSpeed() ? ' ⚡' : ''));
   setStat('goal-stat-diff', diffLabel);
 
-  // Bonus pills — the clean-solve badges still intact at the finish.
+  // Bonus pills — precision badge for Niebla, clean-solve badges for clásico.
   const pills = [];
-  if ((state.checkCount || 0) === 0) pills.push('Sin verificar');
-  if ((state.hintCount || 0) === 0)  pills.push('Sin pistas');
-  if (isSinDescender())              pills.push('Sin descender');
+  if (niebla) {
+    if (wrong === 0) pills.push('Sin errores');
+  } else {
+    if ((state.checkCount || 0) === 0) pills.push('Sin verificar');
+    if ((state.hintCount || 0) === 0)  pills.push('Sin pistas');
+    if (isSinDescender())              pills.push('Sin descender');
+  }
   const bonusWrap = document.getElementById('goal-bonuses');
   if (bonusWrap) {
     bonusWrap.innerHTML = pills.map(p => `<span class="goal-bonus">✨ ${p}</span>`).join('');
@@ -4761,13 +4767,8 @@ document.getElementById('daily-cog').addEventListener('click', () => openModal('
 // the score and shows real elapsed time. Preference persists via settings.
 const TIMER_INFO_KEY = STORAGE_PREFIX + '-timer-info';
 document.getElementById('daily-timer-btn').addEventListener('click', () => {
-  settings.timer = !settings.timer;
-  saveSettingsToStorage();
-  if (settings.timer && !localStorage.getItem(TIMER_INFO_KEY)) {
-    try { localStorage.setItem(TIMER_INFO_KEY, '1'); } catch (e) {}
-    openModal('timer-info-modal');
-  }
-  dailyTimerUpdate();
+  // The clock is always on now; tapping it just explains it never affects your score.
+  openModal('timer-info-modal');
 });
 document.getElementById('header-home').addEventListener('click', goHome);   // shared header → landing
 
