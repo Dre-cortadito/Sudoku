@@ -36,10 +36,11 @@
 
     --cell-bg:        #ffffff;
     --cell-bg-given:  #f3eee2;
-    /* Highlight progression — terracota family, increasing intensity */
-    --cell-bg-line:   #fbf2e6;        /* faint — row + column */
-    --cell-bg-box:    #f5e4cc;        /* clearer — 3x3 box */
-    --cell-bg-same:   #f6cda7;        /* strongest — same number */
+    /* Highlight progression — terracota family, increasing intensity. Deepened
+       from near-white so the row/col + box actually read against white cells. */
+    --cell-bg-line:   #eedfbe;        /* row + column */
+    --cell-bg-box:    #e7cf9d;        /* clearer — 3x3 box */
+    --cell-bg-same:   #efba7c;        /* strongest — same number */
     --cell-bg-sel:    #d9633b;        /* solid terracota — selected cell */
     --cell-bg-peer:   #f3ece2;        /* soft press/hover tint (was undefined) */
     --cell-bg-diagonal: rgba(217, 99, 59, 0.14);  /* Diagonales band (deferred) */
