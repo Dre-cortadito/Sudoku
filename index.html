@@ -1909,12 +1909,22 @@
        40px — both need the desktop bump too, or Mini looks tiny next to Normal. */
     .landing-logo-mini { width: 160px; height: 160px; }
     body.mini-landing .landing-title { font-size: 64px; }
-    .landing-tabs  { gap: 48px; margin: 0; }
+    .landing-tabs  { gap: 48px; margin: 0; order: -2; }
     .landing-tab   { font-size: 20px; letter-spacing: 2.6px; padding: 10px 10px 14px; }
     .landing-tab.active::after { height: 3px; }
     .landing-title   { font-size: 84px; }
     .landing-tagline { font-size: 28px; max-width: 460px; }
-    .landing-date    { font-size: 21px; }
+    /* Date jumps up to right under the tabs so it's seen at a glance (like the
+       game page + NYT Spelling Bee). Flex `order` repositions it on desktop only,
+       so the mobile DOM order is untouched; full-bleed line beneath it. */
+    .landing-date {
+      order: -1; width: 100%; font-size: 20px;
+      padding-bottom: 16px; position: relative;
+    }
+    .landing-date::after {
+      content: ""; position: absolute; bottom: 0; left: 50%;
+      margin-left: -50vw; width: 100vw; border-bottom: 1px solid var(--ink-line);
+    }
     .landing-reto-label { font-size: 12px; }
     .landing-reto-value { font-size: 28px; }
     .pickrow-label   { font-size: 14px; letter-spacing: 2px; }
