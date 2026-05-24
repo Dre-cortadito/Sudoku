@@ -1938,6 +1938,13 @@
     .page-header .header-home svg { width: 23px; height: 23px; }
     .page-header .header-nav .more { width: 44px; height: 44px; }
     .page-header .header-nav .more svg { width: 28px; height: 28px; }
+
+    /* Modals/panels open BELOW the bigger desktop header. The header now sits
+       ABOVE the overlay (position:relative + z-index:1700 for its full-bleed
+       line), so without this offset the panel's top hides behind the menu bar.
+       Header occupies ~28px body padding + ~86px header ≈ 114px; start at 116px
+       so the panel clears it and the header stays fully visible + bright. */
+    .modal-overlay { top: 116px; padding: 20px 20px 48px; }
   }
 </style>
 </head>
