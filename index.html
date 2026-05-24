@@ -2513,7 +2513,7 @@
     <p class="goal-body" id="goal-body">—</p>
     <div class="goal-stats">
       <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-pts">0</span><span class="goal-stat-label">Pts</span></div>
-      <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-err">0</span><span class="goal-stat-label">Verificaciones</span></div>
+      <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-err">0:00</span><span class="goal-stat-label">Tiempo</span></div>
       <div class="goal-stat"><span class="goal-stat-value" id="goal-stat-diff">—</span><span class="goal-stat-label">Dificultad</span></div>
     </div>
     <div class="goal-bonuses" id="goal-bonuses"></div>
@@ -2529,6 +2529,7 @@
     <h2>¡Maestro/a del sudoku!</h2>
     <p>Llegaste al rango más alto.</p>
     <p class="muted">Pocos resuelven cada celda con tu precisión.</p>
+    <p class="muted" id="maestro-time"></p>
     <div class="btn-row">
       <button class="primary" id="maestro-share">Compartir</button>
       <button data-close>Seguir jugando</button>
@@ -2619,6 +2620,7 @@
     <h2 id="complete-title">¡Sudoku completo!</h2>
     <p id="complete-sub">Resolviste el rompecabezas de hoy.</p>
     <p class="muted" id="complete-bonus"></p>
+    <p class="muted" id="complete-time"></p>
     <div class="btn-row">
       <button class="primary" id="complete-share">Compartir</button>
       <button data-close>Cerrar</button>
@@ -2669,6 +2671,21 @@ const MAX_SCORE = RANK_THRESHOLDS[RANK_THRESHOLDS.length - 1];   // 42 = Maestro
 // each wrong placement drops you ~one rank. Expressing it as a derived score
 // lets the rank bar, reto and celebration all keep working unchanged.
 const NIEBLA_WRONG_PENALTY = 4;   // ~1 rank step per wrong placement
+// Time is shown as a stat (and earns an optional ⚡ badge) but NEVER affects the
+// rank. Beat these targets (seconds) for the badge; Niebla gets more time since
+// the fog slows you down.
+const SPEED_TARGET = { facil: 300, medio: 480, dificil: 720 };
+function speedTargetFor(diff, mode) {
+  const base = SPEED_TARGET[diff] || 480;
+  return mode === 'niebla' ? Math.round(base * 1.4) : base;
+}
+function beatSpeed() {
+  return !!state.completed && state.elapsed > 0 && state.elapsed <= speedTargetFor(realDifficulty(), realMode());
+}
+function finishTimeLine() {
+  if (!state.elapsed) return '';
+  return '⏱ ' + miniFmt(state.elapsed) + (beatSpeed() ? '  ⚡' : '');
+}
 // Aid costs (in points off the ceiling). Tuned so each aid bites in rank-steps.
 const COST_CHECK_CELL  = 2;   // Verificar una celda
 const COST_CHECK_BOARD = 8;   // Verificar todo el tablero (a big peek)
@@ -4060,7 +4077,7 @@ function showGoalModal() {
   // cells to solve, so difficulty is the honest third axis here).
   const setStat = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   setStat('goal-stat-pts', sc);
-  setStat('goal-stat-err', state.checkCount || 0);
+  setStat('goal-stat-err', miniFmt(state.elapsed || 0) + (beatSpeed() ? ' ⚡' : ''));
   setStat('goal-stat-diff', diffLabel);
 
   // Bonus pills — the clean-solve badges still intact at the finish.
@@ -4075,7 +4092,11 @@ function showGoalModal() {
 
   openModal('goal-modal');
 }
-function showMaestroModal() { openModal('maestro-modal'); }
+function showMaestroModal() {
+  const t = document.getElementById('maestro-time');
+  if (t) t.textContent = finishTimeLine();
+  openModal('maestro-modal');
+}
 function showCompleteModal() {
   const clean = (state.checkCount || 0) === 0;   // never spent a Verificar
   const noHint = (state.hintCount || 0) === 0;
@@ -4087,6 +4108,8 @@ function showCompleteModal() {
   else if (clean) bonusText = '✨ Sin verificar';
   else if (noHint) bonusText = '✨ Sin pistas';
   document.getElementById('complete-bonus').textContent = bonusText;
+  const ct = document.getElementById('complete-time');
+  if (ct) ct.textContent = finishTimeLine();
   openModal('complete-modal');
 }
 
@@ -4166,8 +4189,9 @@ function buildShareText() {
     if (state.completed && isSinDescender()) bonuses.push('Sin descender');
   }
   if (bonuses.length) lines.push(`✨ ${bonuses.join(' · ')}`);
-  // Time is flavor only (never affects rank): include it if the timer was on.
-  if (state.completed && settings.timer && state.elapsed > 0) lines.push(`⏱ ${miniFmt(state.elapsed)}`);
+  // Time is a visible stat now (still never affects rank): always show the finish
+  // time on completion, with a ⚡ when you beat the speed target.
+  if (state.completed && state.elapsed > 0) lines.push(finishTimeLine());
   lines.push('');
   lines.push('https://cortadito.news');
   return lines.join('\n');
