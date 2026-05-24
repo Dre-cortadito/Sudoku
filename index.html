@@ -196,7 +196,6 @@
       display: grid;
       grid-template-columns: 1fr 460px 1fr;
       grid-template-areas:
-        "date  date  date"
         ".     rank  ."
         "left  meta  right"
         "left  board right"
@@ -210,22 +209,8 @@
       padding: 16px 40px 44px;
       overflow: visible;
     }
-    body.game-active .page > .page-date {
-      display: block; grid-area: date;
-      text-align: center;
-      padding: 2px 0 14px; margin: 0 0 4px;
-      position: relative;
-      font-size: 18px; letter-spacing: 0.3px; color: var(--ink);
-      font-feature-settings: "tnum";
-    }
-    /* Full-bleed underline so it spans the same full width as the header line
-       above the date (header is full body width; body has overflow-x:hidden so
-       100vw never adds a horizontal scrollbar). */
-    body.game-active .page > .page-date::after {
-      content: ""; position: absolute; bottom: 0;
-      left: 50%; margin-left: -50vw; width: 100vw;
-      border-bottom: 1px solid var(--ink-line);
-    }
+    /* Date moved to the shared header bar — the in-grid date row is gone. */
+    body.game-active .page > .page-date { display: none; }
     body.game-active .page > .rank-bar   { grid-area: rank;  max-width: none; margin: 0; }
     body.game-active .page > .daily-meta { grid-area: meta;  max-width: none; margin: 2px 0 0; }
     body.game-active .page > .board-wrap { grid-area: board; max-width: none; margin: 6px 0 0; }
@@ -270,6 +255,8 @@
     .page-header { position: static; padding: 8px 0 16px; height: auto; }
   }
   .title-block { display: flex; align-items: center; gap: 10px; }
+  /* Date shown in the header only on desktop (unified top bar); hidden on mobile. */
+  .header-date { display: none; }
   /* Home: returns to the landing. Lives in the shared header, so it appears in
      every game (standard — see _docs/GAME-UI-STANDARDS.md). */
   .header-home {
@@ -1878,7 +1865,6 @@
       display: grid;
       grid-template-columns: 1fr 460px 1fr;
       grid-template-areas:
-        "date  date  date"
         ".     rank  ."
         "left  meta  right"
         "left  board right"
@@ -1893,19 +1879,8 @@
       overflow: visible;
       --mini-w: 420px;
     }
-    body.mini-active .mini-page > .page-date {
-      display: block; grid-area: date;
-      text-align: center;
-      padding: 2px 0 14px; margin: 0 0 4px;
-      position: relative;
-      font-size: 18px; letter-spacing: 0.3px; color: var(--ink);
-      font-feature-settings: "tnum";
-    }
-    body.mini-active .mini-page > .page-date::after {
-      content: ""; position: absolute; bottom: 0;
-      left: 50%; margin-left: -50vw; width: 100vw;
-      border-bottom: 1px solid var(--ink-line);
-    }
+    /* Date moved to the shared header bar — the Mini in-grid date row is gone. */
+    body.mini-active .mini-page > .page-date { display: none; }
     body.mini-active .mini-page > .mini-rank-bar   { grid-area: rank;  max-width: var(--mini-w); margin: 0 auto; }
     body.mini-active .mini-page > .mini-meta       { grid-area: meta;  max-width: var(--mini-w); margin: 2px auto 0; }
     body.mini-active .mini-page > .mini-board-wrap { grid-area: board; max-width: var(--mini-w); margin: 6px auto 0; }
@@ -1932,7 +1907,7 @@
      ============================================================ */
   @media (min-width: 1024px) {
     /* --- Landing: large, top-anchored info (no centered gap under the tabs) --- */
-    .landing-inner { max-width: 580px; gap: 22px; padding-top: 56px; }
+    .landing-inner { max-width: 580px; gap: 22px; padding-top: 104px; }   /* clear the shared top header */
     .landing-logo-row { margin-top: 10px; gap: 18px; }   /* overrides margin-top:auto */
     .landing-credit   { margin-bottom: 0; }              /* overrides margin-bottom:auto */
     .landing-logo  { width: 160px; height: 160px; }
@@ -1940,22 +1915,14 @@
        40px — both need the desktop bump too, or Mini looks tiny next to Normal. */
     .landing-logo-mini { width: 160px; height: 160px; }
     body.mini-landing .landing-title { font-size: 64px; }
-    .landing-tabs  { gap: 48px; margin: 0; order: -1; }
+    .landing-tabs  { gap: 48px; margin: 0; }
     .landing-tab   { font-size: 20px; letter-spacing: 2.6px; padding: 10px 10px 14px; }
     .landing-tab.active::after { height: 3px; }
     .landing-title   { font-size: 84px; }
     .landing-tagline { font-size: 28px; max-width: 460px; }
-    /* Date sits ABOVE the tabs as a top dateline, so the tab strip stays glued to
-       the game details below it (putting the date between them split the two).
-       Flex `order` repositions it on desktop only; full-bleed line beneath it. */
-    .landing-date {
-      order: -2; width: 100%; font-size: 20px;
-      padding-bottom: 16px; position: relative;
-    }
-    .landing-date::after {
-      content: ""; position: absolute; bottom: 0; left: 50%;
-      margin-left: -50vw; width: 100vw; border-bottom: 1px solid var(--ink-line);
-    }
+    /* Date now lives in the shared top header (same spot on landing + game), so
+       the standalone landing dateline is gone. */
+    .landing-date { display: none; }
     .landing-reto-label { font-size: 12px; }
     .landing-reto-value { font-size: 28px; }
     .pickrow-label   { font-size: 14px; letter-spacing: 2px; }
@@ -1969,17 +1936,30 @@
        Top mark stays below the date line (~114px from the top). */
     .stain.s-landing    { top: 132px; left: calc(50% - 500px); right: auto; }
     .stain.s-landing-br { bottom: 12px; right: calc(50% - 500px); left: auto; }
-    /* Theme toggle bumped up for the larger desktop landing (then 25% smaller). */
-    .landing-theme { width: 47px; height: 47px; }
-    .landing-theme svg { width: 22px; height: 22px; }
+    /* Theme lives in the header ☰ on desktop now (unified bar), so the floating
+       landing toggle is hidden to avoid two controls in the same corner. */
+    .landing-theme { display: none; }
 
     /* --- Header: bigger bean/wordmark/nav for EVERY game; full-bleed bottom line
        that touches the screen edges (matches the line under the date row). --- */
-    .page-header { padding: 16px 48px 18px; gap: 28px; position: relative; border-bottom: none; }
+    /* The header is the UNIFIED top bar: shown on the landing AND in-game so the
+       date (centered in it) sits in the exact same spot across the transition. */
+    .page-header { display: flex; padding: 16px 48px 18px; gap: 28px; position: relative; border-bottom: none; }
     .page-header::after {
       content: ""; position: absolute; left: 50%; margin-left: -50vw; bottom: 0; width: 100vw;
       border-bottom: 1px solid var(--ink-line);
     }
+    /* Date centered in the bar — same position on landing + game. */
+    .header-date {
+      display: block; position: absolute; left: 50%; transform: translateX(-50%);
+      font-size: 18px; letter-spacing: 0.3px; color: var(--ink);
+      font-feature-settings: "tnum"; white-space: nowrap; pointer-events: none;
+    }
+    /* On the landing (no game active): hide the in-flow board page so the body
+       can't scroll the static header away, hide the Inicio button (you're already
+       home), and drop the floating theme toggle. */
+    body:not(.game-active):not(.mini-active) .page { display: none; }
+    body:not(.game-active):not(.mini-active) .page-header .header-home { display: none; }
     .page-header .page-logo { width: 52px; height: 52px; }
     .page-header .wordmark  { font-size: 40px; }
     .page-header .header-nav { gap: 30px; font-size: 19px; }
@@ -2042,6 +2022,7 @@
     <svg class="page-logo" viewBox="0 0 36 36" aria-hidden="true"><g transform="rotate(-22 18 18)"><ellipse cx="18" cy="18" rx="14.85" ry="10.125" style="fill:var(--accent)"/><path d="M 5.85 19.62 Q 18 13.95 30.15 18.54" style="fill:none;stroke:var(--accent-2);stroke-width:2.7;stroke-linecap:round"/></g></svg>
     <h1 class="wordmark">Sudoku</h1>
   </div>
+  <span class="header-date" id="header-date" aria-hidden="true"></span>
   <nav class="header-nav" aria-label="Más">
     <button class="header-home" id="header-home" type="button" aria-label="Inicio">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
@@ -2739,6 +2720,11 @@ function formatLongDate(iso) {
   const month = d.toLocaleDateString('es-ES', { month: 'long' });
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
   return `${cap(weekday)}, ${d.getDate()} de ${month} de ${d.getFullYear()}`;
+}
+// Shared top-bar date (desktop): the same #header-date element on landing + game.
+function setHeaderDate(iso) {
+  const h = document.getElementById('header-date');
+  if (h) h.textContent = formatLongDate(iso);
 }
 function formatPrettyDate(iso) {
   const d = isoToDate(iso);
@@ -3620,6 +3606,7 @@ function renderDesktopPanels() {
   if (!window.matchMedia || !window.matchMedia('(min-width: 1024px)').matches) return;
   const pd = document.getElementById('page-date');
   if (pd) pd.textContent = formatLongDate(state.iso);
+  setHeaderDate(state.iso);
   const reto = document.getElementById('aside-reto');
   if (!reto) return;                         // not the Normal/Niebla page
   const niebla = state.mode === 'niebla';
@@ -4424,6 +4411,7 @@ function switchDate(iso) {
   initPuzzle();
   renderAll();
   document.getElementById('landing-date').textContent = formatLongDate(state.iso);
+  setHeaderDate(state.iso);
   document.getElementById('landing-reto-value').textContent = retoForDate(state.iso, state.mode) + ' pts';
 }
 
@@ -5378,6 +5366,7 @@ function renderMiniDesktopPanels() {
   if (!miniState) return;
   const md = document.getElementById('mini-date');
   if (md) md.textContent = formatLongDate(miniState.iso);
+  setHeaderDate(miniState.iso);
   const reto = document.getElementById('mini-aside-reto');
   if (!reto) return;                         // panels not in the DOM
   const target = miniRetoForDate(miniState.iso);
@@ -5509,6 +5498,7 @@ function boot() {
   completeShown = !!localStorage.getItem(completeKey());
 
   document.getElementById('landing-date').textContent = formatLongDate(state.iso);
+  setHeaderDate(state.iso);
 
   initPuzzle();
   renderAll();
