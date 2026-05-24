@@ -794,6 +794,12 @@
     user-select: none;
     position: relative;
   }
+  /* Dark mode: the cells are nearly black, so the old grid-line colour
+     (--ink-line-strong #4a4138) vanished into them and you couldn't tell the
+     tiles apart. Lighten the lines (board background shows through the 1px gaps)
+     so each cell reads clearly. Box borders stay light (--ink) above this. */
+  body[data-theme="black"] .board,
+  body[data-theme="black"] .mini-board { background: #726658; }
   .cell {
     background: var(--cell-bg);
     display: flex; align-items: center; justify-content: center;
