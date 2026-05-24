@@ -291,14 +291,19 @@
     body.game-active .page-logo,
     body.mini-active .page-logo { width: 36px; height: 36px; }
   }
-  /* Mini's bean swaps fill/stroke vs Diario's terracota bean: red bean body with
-     a yellow crease. !important beats the SVG's inline style. The landing 2×2
-     cluster mirrors the header bean so both views read as the same two-tone mark
-     (rather than one flat colour). */
+  /* Mini's bean is two-tone (charcoal body + gold crease). !important beats the
+     SVG's inline style; the landing 2×2 cluster mirrors the header bean so both
+     views read the same. LIGHT theme: charcoal body pops on the cream page (an
+     espresso-bean look). DARK theme: the body flips to bright gold so it pops on
+     the near-black page (a dark-charcoal bean would vanish there) — see override. */
   body.mini-active .page-logo ellipse { fill: var(--accent-2) !important; }
   body.mini-active .page-logo path { stroke: var(--accent) !important; }
   body.mini-landing .landing-logo-mini ellipse { fill: var(--accent-2) !important; }
   body.mini-landing .landing-logo-mini path { stroke: var(--accent) !important; }
+  body[data-theme="black"].mini-active .page-logo ellipse { fill: var(--accent) !important; }
+  body[data-theme="black"].mini-active .page-logo path { stroke: var(--accent-2) !important; }
+  body[data-theme="black"].mini-landing .landing-logo-mini ellipse { fill: var(--accent) !important; }
+  body[data-theme="black"].mini-landing .landing-logo-mini path { stroke: var(--accent-2) !important; }
   @media (min-width: 600px) {
     .wordmark { font-size: 22px; }   /* spec: keep header quiet, no upscale */
   }
@@ -1613,48 +1618,52 @@
     --accent-2-deep: #6b4259;
     --accent-2-soft: #271a22;
   }
-  /* ---- Mini · "the Flash" yellow + red. Yellow is the primary identity, red the
-     secondary (bean crease, Notas, feedback box). NOTE: --accent doubles as a
-     TEXT colour across the app (timer, rank labels, even the board digits), so it
-     must stay legible on white — a neon #f9e70f there is invisible. The accent is
-     therefore a legible goldenrod; the bright speed-yellow lives in the board's
-     cell-bg highlight tints (backgrounds, read with dark digits) below. ---- */
+  /* ---- Mini · racing yellow + graphite. Yellow is the primary identity; the
+     secondary is a charcoal/graphite — the yellow-on-black "hi-vis / racing
+     livery" pairing reads as speed and grounds the brightness. NOTE: --accent
+     doubles as a TEXT colour across the app (timer, rank labels, even the board
+     digits), so it stays a legible goldenrod; the bright speed-yellow lives in
+     the board cell-bg tints below. Graphite drives the bean, Notas pad + feedback
+     box (replaces the old red). ---- */
   body.mini-landing,
   body.mini-active {
     --accent:        #b8860b;   /* goldenrod — legible gold for all accent text + bean crease */
     --accent-deep:   #8a6d00;
     --accent-soft:   #fbf0c4;
-    --accent-2:      #fa0c0c;   /* Flash red — bean body, Notas, feedback box */
-    --accent-2-deep: #c40808;
-    --accent-2-soft: #fde3e3;
+    --accent-2:      #2f3640;   /* graphite — bean body, Notas pad, feedback box */
+    --accent-2-deep: #1f2630;
+    --accent-2-soft: #e7eaee;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
     --accent:        #f1cf3a;   /* bright gold — reads as a foreground on the dark surface */
     --accent-deep:   #d4b528;
     --accent-soft:   #2a2406;
-    --accent-2:      #e62525;   /* Flash red, dark enough for white feedback text */
-    --accent-2-deep: #c01a1a;
-    --accent-2-soft: #2a1010;
+    --accent-2:      #4a5260;   /* lifted graphite — distinct from the near-black page, white text reads */
+    --accent-2-deep: #353c47;
+    --accent-2-soft: #1c2027;
   }
-  /* In-game only: cool the cell highlights + the fog so the board reads as Niebla. */
+  /* In-game only (Niebla): split the TWO Niebla colours by role so you can find
+     yourself. PLUM = focus (the cell you're on + every cell holding your number);
+     BLUE-grey = structure (row, column, box); grey hatch = fog. The warm plum
+     pops against the cool field — before, everything was one blue and the
+     selection drowned in it. */
   body.niebla-game {
-    --cell-bg-sel:  #557484;
-    --cell-bg-line: #d6dbde;   /* darker neutral grey — row/col now clearly visible */
-    --cell-bg-box:  #bfc8cd;
-    --cell-bg-same: #a3aeb4;
+    --cell-bg-sel:  #8a5572;   /* PLUM — the cell you're on */
+    --cell-bg-line: #d6dbde;   /* blue-grey — row + column (structure) */
+    --cell-bg-box:  #bfc8cd;   /* blue-grey — 3×3 box */
+    --cell-bg-same: #e6cdd9;   /* light PLUM — every cell holding your number, so they pop too */
     --cell-bg-peer: #d6dbde;
     --fog:          #e7ecef;
     --fog-stripe:   #ccd7dc;
   }
-  /* Dark Niebla: the light fog highlights above are for the LIGHT theme — in the
-     dark theme they turn near-white and swallow the (light) digits. Use cool but
-     DARK fog tints so the highlights read and the numbers stay legible. */
+  /* Dark Niebla: same split, but the highlights go DARK so the light digits stay
+     legible (light tints would swallow them). */
   body[data-theme="black"].niebla-game {
-    --cell-bg-sel:  #557484;
-    --cell-bg-line: #20303a;
-    --cell-bg-box:  #324d5c;   /* clearly lighter than the row/col, still dark enough for the light digits */
-    --cell-bg-same: #3a5a6a;
+    --cell-bg-sel:  #8a5572;   /* PLUM selected */
+    --cell-bg-line: #20303a;   /* dark blue-grey — row/col */
+    --cell-bg-box:  #324d5c;   /* dark blue — 3×3 box */
+    --cell-bg-same: #3a2530;   /* dark PLUM — matching numbers glow plum, not blue */
     --cell-bg-peer: #20303a;
     --fog:          #222c31;
     --fog-stripe:   #33424a;
