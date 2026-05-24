@@ -389,15 +389,16 @@
     align-items: center;
     gap: 12px;
     padding-top: 52px;   /* mobile: drop the tab strip below the pinned theme toggle */
+    justify-content: center;   /* center the whole group (tabs + info) on the page */
   }
   .landing-logo-row {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    /* Together with margin-bottom:auto on .landing-credit, this vertically
-       centers everything between the pinned toggle and the bottom edge. */
-    margin-top: auto;
+    /* The whole group is centered via .landing-inner justify-content:center, so
+       the tabs stay glued to the info instead of being pinned to the top. */
+    margin-top: 0;
   }
   .landing-logo {
     width: 90px; height: 90px;     /* trimmed from 110 so the landing fits one screen */
@@ -519,8 +520,7 @@
     color: var(--ink-soft);
     font-size: 12px;
     margin-top: 8px;
-    margin-bottom: auto;   /* pairs with .landing-logo-row margin-top:auto to
-                              center the content block below the toggle */
+    margin-bottom: 0;
     line-height: 1.5;
     letter-spacing: 0.2px;
   }
@@ -1016,9 +1016,11 @@
     opacity: 1;
     transform: translate(-50%, -60%);
   }
+  /* Feedback box uses the mode's SECONDARY colour (--accent-2): brown in Normal,
+     grey in Niebla, brown in Mini. Errors stay red. */
   .feedback.success { background: var(--accent-2); color: #ffffff; border-color: var(--accent-2); }
   .feedback.error   { background: var(--error); color: #ffffff; border-color: var(--error); }
-  .feedback.bonus   { background: var(--accent); color: #ffffff; border-color: var(--accent); }
+  .feedback.bonus   { background: var(--accent-2); color: #ffffff; border-color: var(--accent-2); }
   .feedback.bonus-2 { background: var(--accent-2); color: #ffffff; border-color: var(--accent-2); }
 
   /* ============ MODALS ============ */
@@ -1552,7 +1554,9 @@
     0%, 100% { color: var(--ink-soft); }
     50%      { color: var(--ink); }
   }
-  .landing-tab { animation: tab-hint 2.2s ease-in-out infinite; }
+  /* Only the NON-selected tabs blink; the selected one stays steady. JS restarts
+     these animations together on every tab switch so they never drift out of sync. */
+  .landing-tab:not(.active) { animation: tab-hint 2.2s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) {
     .landing-tab { animation: none; }
   }
@@ -1588,47 +1592,47 @@
                                    grey crease + middle bean read clearly on top */
     --accent-deep:   #1c3a48;
     --accent-soft:   #e4ecef;
-    --accent-2:      #6b7884;   /* cool mist grey — bean crease + middle bean */
-    --accent-2-deep: #4c5862;
-    --accent-2-soft: #e7ebee;
+    --accent-2:      #626a70;   /* neutral slate grey — clearer than the old bluish grey */
+    --accent-2-deep: #474e53;
+    --accent-2-soft: #e8eaec;
   }
   body[data-theme="black"].niebla-landing,
   body[data-theme="black"].niebla-game {
     --accent:        #8fb1c0;   /* light fog beans on the dark surface */
     --accent-deep:   #6f95a6;
     --accent-soft:   #1b272d;
-    --accent-2:      #4f6b78;   /* darker crease/middle so it shows against the light beans */
-    --accent-2-deep: #3a505a;
+    --accent-2:      #6b737a;   /* neutral grey crease (clearer than bluish) */
+    --accent-2-deep: #515a60;
     --accent-2-soft: #1d2429;
   }
-  /* ---- Mini · its own coffee-brown identity (landing tab + in-game), so it
-     reads as distinct as Niebla's blue — the tab underline, header bean, Reglas
-     link and beans all go brown when Mini is selected. ---- */
+  /* ---- Mini · yellow (speed) primary + dark-brown secondary. Yellow reads as
+     "fast"; the espresso brown stays in the palette (bean crease, Notas/feedback
+     box). Whatever is orange in Normal becomes yellow here. ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #2f7d4f;   /* fresh green — bean fill */
-    --accent-deep:   #215c39;
-    --accent-soft:   #e6f0e9;
-    --accent-2:      #6fa982;   /* lighter sage — bean crease + middle */
-    --accent-2-deep: #4f7e62;
-    --accent-2-soft: #e9f1ec;
+    --accent:        #d99c0b;   /* amber-yellow — bean fill, tab underline */
+    --accent-deep:   #b3800a;
+    --accent-soft:   #f5ecd6;
+    --accent-2:      #6f4a2a;   /* dark espresso brown — crease, Notas, feedback box */
+    --accent-2-deep: #543620;
+    --accent-2-soft: #efe7df;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
-    --accent:        #86c39b;   /* light green beans on the dark surface */
-    --accent-deep:   #67a47d;
-    --accent-soft:   #16241b;
-    --accent-2:      #527d63;
-    --accent-2-deep: #3e6049;
-    --accent-2-soft: #18231c;
+    --accent:        #e8b54a;   /* light gold on the dark surface */
+    --accent-deep:   #c99633;
+    --accent-soft:   #2a2113;
+    --accent-2:      #7a5638;   /* brown crease, dark enough for white feedback text */
+    --accent-2-deep: #5e472f;
+    --accent-2-soft: #221a12;
   }
   /* In-game only: cool the cell highlights + the fog so the board reads as Niebla. */
   body.niebla-game {
-    --cell-bg-sel:  #5f7e8c;
-    --cell-bg-line: #eef3f5;
-    --cell-bg-box:  #dbe7eb;
-    --cell-bg-same: #bcced4;
-    --cell-bg-peer: #e9eff1;
+    --cell-bg-sel:  #557484;
+    --cell-bg-line: #d6dbde;   /* darker neutral grey — row/col now clearly visible */
+    --cell-bg-box:  #bfc8cd;
+    --cell-bg-same: #a3aeb4;
+    --cell-bg-peer: #d6dbde;
     --fog:          #e7ecef;
     --fog-stripe:   #ccd7dc;
   }
@@ -1686,16 +1690,8 @@
     cursor: default;
   }
   .landing-play.is-soon:active { transform: none; }
-  /* Mini's Empezar — solid terracota, lighter commitment than Daily's ink Jugar. */
-  .landing-play.is-mini-cta {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-    width: 220px;
-  }
-  @media (hover: hover) {
-    .landing-play.is-mini-cta:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
-  }
+  /* Mini's Jugar is black like Normal/Niebla now (only the width differs). */
+  .landing-play.is-mini-cta { width: 220px; }
   @media (hover: hover) {
     .landing-play:disabled:hover,
     .landing-play.is-soon:hover {
@@ -4907,6 +4903,14 @@ function bestMiniTime() {
     return s ? miniFmt(s) : null;
   } catch (e) { return null; }
 }
+// Restart the blink on ALL tabs at once so the non-selected ones stay in sync
+// (a tab that was just deselected would otherwise start its loop out of phase).
+function syncTabBlink() {
+  const tabs = document.querySelectorAll('.landing-tab');
+  tabs.forEach(t => { t.style.animation = 'none'; });
+  void document.body.offsetWidth;                 // force reflow
+  tabs.forEach(t => { t.style.animation = ''; });  // re-apply from CSS, all in phase
+}
 function setLandingTab(tab) {
   const isMini   = tab === 'mini';
   const isNiebla = tab === 'niebla';
@@ -4915,6 +4919,7 @@ function setLandingTab(tab) {
   document.getElementById('tab-niebla').classList.toggle('active', isNiebla);
   document.body.classList.toggle('mini-landing', isMini);
   document.body.classList.toggle('niebla-landing', isNiebla);
+  syncTabBlink();   // keep the blinking tabs in phase after the selection changes
 
   const title    = document.getElementById('landing-title');
   const tagline  = document.getElementById('landing-tagline');
@@ -5203,6 +5208,7 @@ function miniRenderPad() {
   for (let n = 1; n <= 6; n++) {
     const b = document.createElement('button');
     b.className = 'num-btn';
+    if (miniState.notesMode) b.classList.add('notes-mode');   // turn the pad the secondary colour, like Normal
     b.textContent = n;
     if ((counts[n] || 0) >= 6) b.classList.add('done');
     b.addEventListener('click', () => miniPlace(n));
