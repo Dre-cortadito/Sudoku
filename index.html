@@ -1020,12 +1020,14 @@
     opacity: 1;
     transform: translate(-50%, -60%);
   }
-  /* Feedback box uses the mode's SECONDARY colour (--accent-2): brown in Normal,
-     grey in Niebla, brown in Mini. Errors stay red. */
+  /* Feedback bubble uses the mode's SECONDARY colour (--accent-2): brown in Normal,
+     plum in Niebla, coral in Mini. 'penalty' (e.g. Niebla's "−4 puntos") is the same
+     mode colour. Only hard "you were wrong" verify results stay red. */
   .feedback.success { background: var(--accent-2); color: #ffffff; border-color: var(--accent-2); }
   .feedback.error   { background: var(--error); color: #ffffff; border-color: var(--error); }
   .feedback.bonus   { background: var(--accent-2); color: #ffffff; border-color: var(--accent-2); }
   .feedback.bonus-2 { background: var(--accent-2); color: #ffffff; border-color: var(--accent-2); }
+  .feedback.penalty { background: var(--accent-2); color: #ffffff; border-color: var(--accent-2); }
 
   /* ============ MODALS ============ */
   .modal-overlay {
@@ -1692,23 +1694,6 @@
      means nothing to the player. Hide the number (like the Mini bar) — the label
      beside it carries the rank name; the bubble just marks your position. */
   body.niebla-game #rank-bar .rank-dot.current { width: 16px; height: 16px; font-size: 0; }
-  /* Points feedback: a delta floats up over the CENTER of the board on every score
-     change (esp. Niebla wrong placements) — so it reads as in-play feedback on the
-     table, not a number off at the top. Sits in the upper third so it clears the
-     centered flash message. */
-  @keyframes pts-pop {
-    0%   { opacity: 0; transform: translate(-50%, 12px); }
-    18%  { opacity: 1; transform: translate(-50%, 0); }
-    100% { opacity: 0; transform: translate(-50%, -34px); }
-  }
-  .pts-delta {
-    position: absolute; left: 50%; top: 32%;
-    font-family: var(--font-display); font-weight: 700; font-size: 30px;
-    pointer-events: none; z-index: 6; white-space: nowrap;
-    animation: pts-pop 1s ease-out forwards;
-  }
-  .pts-delta.neg { color: var(--error); }
-  .pts-delta.pos { color: var(--accent); }
 
   /* Disabled mode pill (Diagonales — deferred) + Próximamente tag. */
   .landing-mode-row { align-items: center; }
@@ -3850,7 +3835,7 @@ function placeNumber(n) {
   } else {
     state.errors[idx] = true;
     // Niebla precision: every wrong placement is a permanent ding on your rank.
-    if (state.mode === 'niebla') { state.wrongCount = (state.wrongCount || 0) + 1; flashPoints(-NIEBLA_WRONG_PENALTY); }
+    if (state.mode === 'niebla') { state.wrongCount = (state.wrongCount || 0) + 1; flash('−' + NIEBLA_WRONG_PENALTY + ' puntos', 'penalty'); }
     if (prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
   }
   // Niebla (fog of war): you always SEE the cell you just filled, but only a
@@ -4001,7 +3986,6 @@ function hint() {
     }
     state.revealedErrors.delete(idx);
     state.hintCount += COST_HINT_REVEAL;    // tier 2 — fills the answer (3 + the 3 nudge = 6 total)
-    flashPoints(-COST_HINT_REVEAL);
     state.hintedCells.add(idx);
     if (state.mode === 'niebla') revealAround(r, c);
     state.pendingHint = null;
@@ -4017,7 +4001,6 @@ function hint() {
   const idx = r * 9 + c;
   state.pendingHint = idx;
   state.hintCount += COST_HINT_NUDGE;       // tier 1 — points you at a solvable cell
-  flashPoints(-COST_HINT_NUDGE);
   let fogLifted = false;
   if (state.mode === 'niebla' && !state.revealed[idx]) {
     state.revealed[idx] = true;
@@ -4063,22 +4046,8 @@ function flash(text, cls) {
   clearTimeout(feedbackTimer);
   feedbackTimer = setTimeout(() => el.classList.remove('show'), 900);
 }
-// Floats a "−N" / "+N" up from the rank bar whenever the score changes, so a
-// verify, hint or wrong Niebla placement visibly costs you — keeps the scoring
-// connected to what you just did.
-function flashPoints(delta) {
-  if (!delta) return;
-  // Float the delta up over the active board (centered on the table) rather than
-  // the rank bar at the top — keeps the feedback where the player is looking.
-  const wrap = document.querySelector(
-    document.body.classList.contains('mini-active') ? '.mini-board-wrap' : '.board-wrap');
-  if (!wrap) return;
-  const el = document.createElement('div');
-  el.className = 'pts-delta ' + (delta < 0 ? 'neg' : 'pos');
-  el.textContent = (delta > 0 ? '+' : '−') + Math.abs(delta);
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 1000);
-}
+// (Score-change feedback is shown as a centered flash BUBBLE — see flash() — so
+// every mode reads the same: a mode-coloured pill on the board.)
 
 // ---------- COMPLETION & MODALS ----------
 let goalShown = false, maestroShown = false, completeShown = false, fullWarned = false;
@@ -4836,7 +4805,6 @@ function checkCell() {
   const v = state.values[r][c];
   if (v === 0) { flash('Esa celda está vacía', 'error'); return; }
   state.checkCount = (state.checkCount || 0) + COST_CHECK_CELL;
-  flashPoints(-COST_CHECK_CELL);
   if (v === state.solution[r][c]) {
     flash('✓ Correcto (−2)', 'success');
     state.revealedErrors.delete(idx);
@@ -4866,7 +4834,6 @@ function checkPuzzle() {
   }
   // Otherwise it's a paid check: it found errors, or the grid isn't full yet.
   state.checkCount = (state.checkCount || 0) + COST_CHECK_BOARD;
-  flashPoints(-COST_CHECK_BOARD);
   if (wrongCount > 0) flash(`${wrongCount} ${wrongCount === 1 ? 'error' : 'errores'} (−8)`, 'error');
   else flash('Sin errores aún · faltan celdas (−8)', '');
   renderAll(); saveProgress();
