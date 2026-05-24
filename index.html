@@ -85,8 +85,9 @@
     --accent:       #ef7d57;          /* lifted terracota */
     --accent-deep:  #d56241;
     --accent-soft:  #2a1c14;          /* deep terracota tint */
-    --accent-2:     #c08a64;          /* lifted espresso */
-    --accent-2-deep:#8e6243;
+    --accent-2:     #9a6a47;          /* deeper coffee brown — clearly distinct from
+                                         the coral --accent (was #c08a64, too orange) */
+    --accent-2-deep:#744f34;
     --accent-2-soft:#241a12;          /* deep espresso tint */
     --success:      #86a85a;          /* lifted olive */
     --error:        #d96565;
@@ -290,10 +291,14 @@
     body.game-active .page-logo,
     body.mini-active .page-logo { width: 36px; height: 36px; }
   }
-  /* Mini uses the darker espresso bean in the header (fill/stroke swapped vs
-     Diario's terracota bean). !important beats the SVG's inline style. */
+  /* Mini's bean swaps fill/stroke vs Diario's terracota bean: red bean body with
+     a yellow crease. !important beats the SVG's inline style. The landing 2×2
+     cluster mirrors the header bean so both views read as the same two-tone mark
+     (rather than one flat colour). */
   body.mini-active .page-logo ellipse { fill: var(--accent-2) !important; }
   body.mini-active .page-logo path { stroke: var(--accent) !important; }
+  body.mini-landing .landing-logo-mini ellipse { fill: var(--accent-2) !important; }
+  body.mini-landing .landing-logo-mini path { stroke: var(--accent) !important; }
   @media (min-width: 600px) {
     .wordmark { font-size: 22px; }   /* spec: keep header quiet, no upscale */
   }
@@ -1549,6 +1554,9 @@
     content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
     height: 2.5px; background: var(--accent);
   }
+  /* Mini's speed-yellow is too light for a 2.5px line on the pale paper — fall
+     back to the deep gold so the active MINI tab's underline still reads. */
+  body.mini-landing .landing-tab.active::after { background: var(--accent-deep); }
   /* ALL tabs pulse greyish → black in unison so the games always read as
      switchable; the underline above marks the one you've chosen. Color-only
      (no opacity) so the active underline stays solid. */
@@ -1594,8 +1602,9 @@
                                    grey crease + middle bean read clearly on top */
     --accent-deep:   #1c3a48;
     --accent-soft:   #e4ecef;
-    --accent-2:      #572c49;   /* plum — strong contrast against the fog blue */
-    --accent-2-deep: #3e1f34;
+    --accent-2:      #8a5572;   /* lifted plum (same hue as dark theme) — light
+                                   enough to read clearly against the fog blue */
+    --accent-2-deep: #6b4259;
     --accent-2-soft: #efe6ec;
   }
   body[data-theme="black"].niebla-landing,
@@ -1607,26 +1616,27 @@
     --accent-2-deep: #6b4259;
     --accent-2-soft: #271a22;
   }
-  /* ---- Mini · yellow (speed) primary + dark-brown secondary. Yellow reads as
-     "fast"; the espresso brown stays in the palette (bean crease, Notas/feedback
-     box). Whatever is orange in Normal becomes yellow here. ---- */
+  /* ---- Mini · "the Flash" red + yellow. Yellow stays the primary (speed);
+     red replaces brown as the secondary (bean crease, Notas, feedback box).
+     The bright speed-yellow is too light for thin lines on white, so
+     --accent-deep carries a legible gold for those cases. ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #d99c0b;   /* amber-yellow — bean fill, tab underline */
-    --accent-deep:   #b3800a;
-    --accent-soft:   #f5ecd6;
-    --accent-2:      #6f4a2a;   /* dark espresso brown — crease, Notas, feedback box */
-    --accent-2-deep: #543620;
-    --accent-2-soft: #efe7df;
+    --accent:        #f9e70f;   /* Flash yellow — speed; bean fill + accents */
+    --accent-deep:   #caa600;   /* deep gold — thin underlines / pressed on white */
+    --accent-soft:   #fdf8cf;
+    --accent-2:      #fa0c0c;   /* Flash red — bean crease, Notas, feedback box */
+    --accent-2-deep: #c40808;
+    --accent-2-soft: #fde3e3;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
-    --accent:        #e8b54a;   /* light gold on the dark surface */
-    --accent-deep:   #c99633;
-    --accent-soft:   #2a2113;
-    --accent-2:      #7a5638;   /* brown crease, dark enough for white feedback text */
-    --accent-2-deep: #5e472f;
-    --accent-2-soft: #221a12;
+    --accent:        #f9e70f;   /* Flash yellow pops on the dark surface */
+    --accent-deep:   #d4c50d;
+    --accent-soft:   #2a2606;
+    --accent-2:      #e62525;   /* Flash red, dark enough for white feedback text */
+    --accent-2-deep: #c01a1a;
+    --accent-2-soft: #2a1010;
   }
   /* In-game only: cool the cell highlights + the fog so the board reads as Niebla. */
   body.niebla-game {
