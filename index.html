@@ -36,11 +36,11 @@
 
     --cell-bg:        #ffffff;
     --cell-bg-given:  #f3eee2;
-    /* Highlight progression — terracota family, increasing intensity. Deepened
-       from near-white so the row/col + box actually read against white cells. */
-    --cell-bg-line:   #e3cf9f;        /* row + column */
-    --cell-bg-box:    #d3b574;        /* clearer — 3x3 box */
-    --cell-bg-same:   #e0a253;        /* strongest — same number */
+    /* Highlight progression — original terracota/orange tones (Normal). Niebla
+       overrides these with its darker cool set; Normal keeps the warm orange. */
+    --cell-bg-line:   #fbf2e6;        /* faint — row + column */
+    --cell-bg-box:    #f5e4cc;        /* clearer — 3x3 box */
+    --cell-bg-same:   #f6cda7;        /* strongest — same number */
     --cell-bg-sel:    #d9633b;        /* solid terracota — selected cell */
     --cell-bg-peer:   #f3ece2;        /* soft press/hover tint (was undefined) */
     --cell-bg-diagonal: rgba(217, 99, 59, 0.14);  /* Diagonales band (deferred) */
@@ -380,9 +380,7 @@
      taller than the screen — so the Diario/Mini tabs are never clipped
      above the viewport. */
   .landing-inner {
-    margin: 0 auto;   /* was `auto` (vertically centered) — now top-aligned so
-                         the tab strip above never shifts when Diario↔Mini
-                         changes the content height below it. */
+    margin: 0 auto;
     width: 100%;
     max-width: 420px;
     text-align: center;
@@ -390,6 +388,7 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    padding-top: 52px;   /* mobile: drop the tab strip below the pinned theme toggle */
   }
   .landing-logo-row {
     display: flex;
@@ -1607,21 +1606,21 @@
      link and beans all go brown when Mini is selected. ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #6f4a2a;   /* coffee brown — bean fill */
-    --accent-deep:   #543620;
-    --accent-soft:   #efe7df;
-    --accent-2:      #a87d54;   /* lighter tan — bean crease + middle */
-    --accent-2-deep: #82603f;
-    --accent-2-soft: #f0e8de;
+    --accent:        #2f7d4f;   /* fresh green — bean fill */
+    --accent-deep:   #215c39;
+    --accent-soft:   #e6f0e9;
+    --accent-2:      #6fa982;   /* lighter sage — bean crease + middle */
+    --accent-2-deep: #4f7e62;
+    --accent-2-soft: #e9f1ec;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
-    --accent:        #c79c70;   /* light coffee beans on the dark surface */
-    --accent-deep:   #a87f54;
-    --accent-soft:   #241c14;
-    --accent-2:      #7a5a3c;
-    --accent-2-deep: #5e472f;
-    --accent-2-soft: #221a12;
+    --accent:        #86c39b;   /* light green beans on the dark surface */
+    --accent-deep:   #67a47d;
+    --accent-soft:   #16241b;
+    --accent-2:      #527d63;
+    --accent-2-deep: #3e6049;
+    --accent-2-soft: #18231c;
   }
   /* In-game only: cool the cell highlights + the fog so the board reads as Niebla. */
   body.niebla-game {
@@ -1928,11 +1927,11 @@
      ============================================================ */
   @media (min-width: 1024px) {
     /* --- Landing: large, top-anchored info (no centered gap under the tabs) --- */
-    .landing-inner { max-width: 580px; gap: 22px; padding-top: 104px; }   /* clear the shared top header */
-    /* Center the game info in the space below the tab strip (auto margins) so it
-       sits mid-page instead of jammed up under the header. */
-    .landing-logo-row { margin-top: auto; gap: 18px; }
-    .landing-credit   { margin-bottom: auto; }
+    /* Center the WHOLE group (tabs + game info) together below the header so the
+       mode selector stays glued to the game area instead of pinned to the top. */
+    .landing-inner { max-width: 580px; gap: 22px; padding-top: 104px; justify-content: center; }
+    .landing-logo-row { margin-top: 0; gap: 18px; }
+    .landing-credit   { margin-bottom: 0; }
     .landing-logo  { width: 160px; height: 160px; }
     /* The Mini landing swaps in a different logo element + shrinks the title to
        40px — both need the desktop bump too, or Mini looks tiny next to Normal. */
@@ -2494,8 +2493,7 @@
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">Cronómetro</h2>
     <p>Es solo para tu seguimiento personal — <strong>no afecta tu puntaje ni tu rango</strong>.</p>
-    <p>Cuenta desde que <strong>entraste al sudoku de hoy</strong>, no desde que lo enciendes. Por eso, al activarlo verás el tiempo real que llevas (si ya llevabas un rato, aparecerá ese tiempo, no <em>0:00</em>).</p>
-    <p>Puedes prenderlo y apagarlo cuando quieras; tu preferencia se recuerda.</p>
+    <p>Cuenta desde que <strong>entraste al sudoku de hoy</strong> y se detiene cuando lo terminas.</p>
     <div class="btn-row"><button data-close>Entendido</button></div>
   </div>
 
