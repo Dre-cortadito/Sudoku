@@ -1622,6 +1622,18 @@
     --fog:          #e7ecef;
     --fog-stripe:   #ccd7dc;
   }
+  /* Dark Niebla: the light fog highlights above are for the LIGHT theme — in the
+     dark theme they turn near-white and swallow the (light) digits. Use cool but
+     DARK fog tints so the highlights read and the numbers stay legible. */
+  body[data-theme="black"].niebla-game {
+    --cell-bg-sel:  #557484;
+    --cell-bg-line: #20303a;
+    --cell-bg-box:  #2a4250;
+    --cell-bg-same: #3a5a6a;
+    --cell-bg-peer: #20303a;
+    --fog:          #222c31;
+    --fog-stripe:   #33424a;
+  }
 
   /* Disabled mode pill (Diagonales — deferred) + Próximamente tag. */
   .landing-mode-row { align-items: center; }
