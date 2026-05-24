@@ -3857,7 +3857,7 @@ function hint() {
     if (state.mode === 'niebla') revealAround(r, c);
     state.pendingHint = null;
     state.history.push({ type: 'hint', idx, prev, prevError });
-    flash('Revelado · −3', 'bonus');
+    flash('Revelado (−3)', 'bonus');
     renderAll(); saveProgress(); checkCompletion();
     return;
   }
@@ -3874,7 +3874,7 @@ function hint() {
     fogLifted = true;
   }
   state.history.push({ type: 'hint-nudge', idx, fogLifted });
-  flash('Mira esta celda · −3', 'bonus');
+  flash('Mira esta celda (−3)', 'bonus');
   renderAll(); saveProgress();
 }
 
@@ -5175,7 +5175,7 @@ function miniHint() {
     if (miniState.startedAt) miniState.startedAt -= 30000;
     miniState.hintCount = (miniState.hintCount || 0) + 1;
     miniState.selected = { r, c };
-    flash('Revelado · +30s', 'bonus');
+    flash('Revelado (+30s)', 'bonus');
     miniUpdateTimer(); miniRenderBoard(); miniRenderPad(); miniSave();
     miniCheckDone();
   });
