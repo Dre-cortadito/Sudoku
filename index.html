@@ -1643,28 +1643,28 @@
     --accent-2-deep: #353c47;
     --accent-2-soft: #1c2027;
   }
-  /* In-game only (Niebla): split the TWO Niebla colours by role so you can find
-     yourself. PLUM = focus (the cell you're on + every cell holding your number);
-     BLUE-grey = structure (row, column, box); grey hatch = fog. The warm plum
-     pops against the cool field — before, everything was one blue and the
-     selection drowned in it. */
+  /* In-game only (Niebla): all highlights are PLUM in a tonal progression
+     (line < box < same < selected), exactly like Normal's terracota board and
+     Mini's gold board. Blue stays the digit/ink colour, the fog stays a neutral
+     grey hatch — so the warm plum tones pop against both the blue numbers and the
+     cool fog, and the tonal steps let you find yourself. */
   body.niebla-game {
-    --cell-bg-sel:  #8a5572;   /* PLUM — the cell you're on */
-    --cell-bg-line: #d6dbde;   /* blue-grey — row + column (structure) */
-    --cell-bg-box:  #bfc8cd;   /* blue-grey — 3×3 box */
-    --cell-bg-same: #e6cdd9;   /* light PLUM — every cell holding your number, so they pop too */
-    --cell-bg-peer: #d6dbde;
+    --cell-bg-line: #f2e4ec;   /* faintest plum — row + column */
+    --cell-bg-box:  #e4cdda;   /* clearer plum — 3×3 box */
+    --cell-bg-same: #d0a8c0;   /* strong plum — same number */
+    --cell-bg-sel:  #8a5572;   /* solid plum — selected (white digit + ring) */
+    --cell-bg-peer: #f2e4ec;
     --fog:          #e7ecef;
     --fog-stripe:   #ccd7dc;
   }
-  /* Dark Niebla: same split, but the highlights go DARK so the light digits stay
+  /* Dark Niebla: same plum progression, gone DARK so the light-blue digits stay
      legible (light tints would swallow them). */
   body[data-theme="black"].niebla-game {
-    --cell-bg-sel:  #8a5572;   /* PLUM selected */
-    --cell-bg-line: #20303a;   /* dark blue-grey — row/col */
-    --cell-bg-box:  #324d5c;   /* dark blue — 3×3 box */
-    --cell-bg-same: #3a2530;   /* dark PLUM — matching numbers glow plum, not blue */
-    --cell-bg-peer: #20303a;
+    --cell-bg-line: #2a1e26;   /* faintest dark plum — row/col */
+    --cell-bg-box:  #3b2a37;   /* clearer */
+    --cell-bg-same: #503546;   /* strong */
+    --cell-bg-sel:  #8a5572;   /* solid plum — selected */
+    --cell-bg-peer: #2a1e26;
     --fog:          #222c31;
     --fog-stripe:   #33424a;
   }
