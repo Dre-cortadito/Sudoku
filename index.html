@@ -3185,20 +3185,22 @@ const state = {
 const lifetime = loadLifetime();
 
 function progressKey() {
-  return `${STORAGE_PREFIX}-progress-${state.iso}-${state.difficulty}-${state.mode}`;
+  // Per (date, mode) — NOT difficulty. Changing difficulty keeps the same session:
+  // the saved entries are re-merged onto the new difficulty's givens (see initPuzzle).
+  return `${STORAGE_PREFIX}-progress-${state.iso}-${state.mode}`;
 }
 function goalKey() {
-  return `${STORAGE_PREFIX}-goal-shown-${state.iso}-${state.difficulty}-${state.mode}`;
+  return `${STORAGE_PREFIX}-goal-shown-${state.iso}-${state.mode}`;
 }
 function verifyPromptKey() {
   return `${STORAGE_PREFIX}-verify-prompt-${state.iso}`;   // once per day (any difficulty/mode)
 }
 const VERIFY_PROMPT_OFF = STORAGE_PREFIX + '-verify-prompt-off';   // "No volver a mostrar" — forever
 function maestroKey() {
-  return `${STORAGE_PREFIX}-maestro-shown-${state.iso}-${state.difficulty}-${state.mode}`;
+  return `${STORAGE_PREFIX}-maestro-shown-${state.iso}-${state.mode}`;
 }
 function completeKey() {
-  return `${STORAGE_PREFIX}-complete-shown-${state.iso}-${state.difficulty}-${state.mode}`;
+  return `${STORAGE_PREFIX}-complete-shown-${state.iso}-${state.mode}`;
 }
 // Per (date, mode) — independent of current difficulty, since these track
 // the player's commitment for the day.
@@ -3227,6 +3229,7 @@ function saveProgress() {
   try {
     const data = {
       values: state.values,
+      difficulty: state.difficulty,        // so a difficulty switch can re-merge entries
       notes: state.notes.map(s => Array.from(s)),
       errorCount: state.errorCount,
       hintCount: state.hintCount,
@@ -3340,7 +3343,12 @@ function initPuzzle() {
   // Restore saved progress
   const saved = loadProgress();
   if (saved) {
-    state.values = saved.values;
+    // Merge saved entries onto THIS difficulty's givens, so changing difficulty
+    // (a descent) keeps your work: a cell that's a given now shows the given,
+    // otherwise your saved entry carries over. Same difficulty → straight restore.
+    const sv = saved.values || [];
+    state.values = puzzle.map((row, r) => row.map((g, c) => (g !== 0 ? g : ((sv[r] && sv[r][c]) || 0))));
+    const diffChanged = !!saved.difficulty && saved.difficulty !== state.difficulty;
     state.notes = saved.notes.map(arr => new Set(arr));
     state.errorCount = saved.errorCount || 0;
     state.hintCount = saved.hintCount || 0;
@@ -3360,10 +3368,12 @@ function initPuzzle() {
       }
     }
     if (state.mode === 'niebla') {
-      if (Array.isArray(saved.revealed) && saved.revealed.length === 81) {
+      if (Array.isArray(saved.revealed) && saved.revealed.length === 81 && !diffChanged) {
         // Restore the exact fog state (includes any clues the player probed).
         state.revealed = saved.revealed.map(Boolean);
       } else {
+        // Difficulty changed (or legacy save): rebuild the fog from THIS
+        // difficulty's seed and re-open around the player's correct placements.
         // Legacy save (pre-true-fog): rebuild from the fog seed + the player's
         // correct placements, each of which lifts its 3x3 neighborhood.
         state.revealed = computeNieblaSeed(puzzle, solution, state.difficulty, state.iso + '-' + state.difficulty).slice();
@@ -4442,6 +4452,9 @@ function switchDate(iso) {
 
 // ---------- DIFFICULTY / MODE SWITCH ----------
 function applyDifficulty(newDiff) {
+  // Persist the current session FIRST (per date+mode), so the re-init below
+  // re-merges your entries/timer/score onto the new difficulty instead of resetting.
+  saveProgress();
   // If descending below current floor, lower the floor.
   if (state.minDifficulty && DIFF_ORDER[newDiff] < DIFF_ORDER[state.minDifficulty]) {
     state.minDifficulty = newDiff;
