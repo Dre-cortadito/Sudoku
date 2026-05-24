@@ -1639,6 +1639,10 @@
     --fog:          #222c31;
     --fog-stripe:   #33424a;
   }
+  /* Niebla is precision-scored, so the rank-bar bubble holds a DERIVED score that
+     means nothing to the player. Hide the number (like the Mini bar) — the label
+     beside it carries the rank name; the bubble just marks your position. */
+  body.niebla-game #rank-bar .rank-dot.current { width: 16px; height: 16px; font-size: 0; }
 
   /* Disabled mode pill (Diagonales — deferred) + Próximamente tag. */
   .landing-mode-row { align-items: center; }
@@ -2315,16 +2319,17 @@
     <h2 class="modal-title">Cómo jugar — Niebla</h2>
     <p>Niebla es el sudoku de <strong>9 × 9</strong> de siempre, pero el tablero empieza casi todo cubierto: sólo ves <strong>algunas pistas</strong> y vas descubriendo el resto a medida que resuelves. Es su propio juego, con su tablero, su reto y sus medallas, aparte del Sudoku normal.</p>
 
-    <h3>La niebla</h3>
-    <p>Al empezar, casi todo el tablero —y unas cuantas pistas— están escondidos bajo la niebla. Cada número que colocas, <strong>acertado o no</strong>, despeja la niebla a su alrededor y descubre más tablero (a veces, nuevas pistas).</p>
-    <p>Despejar la niebla <strong class="hl-accent">no te dice si acertaste</strong>: igual que en el Sudoku normal, el juego no te corrige. Por eso "tantear hasta que se abra el tablero" descubre el mapa, no las respuestas.</p>
+    <h3>La niebla se abre con aciertos</h3>
+    <p>Al empezar, casi todo el tablero —y unas cuantas pistas— están escondidos bajo la niebla. Usa las pistas que ves para deducir qué va en una celda y colócalo: si <strong class="hl-accent">aciertas</strong>, la niebla se despeja a su alrededor y descubres más tablero (a veces, nuevas pistas escondidas).</p>
+    <p>Si el número es <strong class="hl-accent">incorrecto</strong>, la niebla no se mueve. Que el tablero se abra es la señal de que vas bien — <em>abrir = acertar</em>.</p>
     <p>Las pistas que ves <strong class="hl-accent">siempre alcanzan para resolverlo con pura lógica</strong> — nunca tienes que adivinar por culpa de algo que no puedes ver.</p>
 
     <h3>Las tres reglas</h3>
     <p>Cada <strong class="hl-accent">fila</strong>, cada <strong class="hl-accent">columna</strong> y cada <strong class="hl-accent">bloque de 3 × 3</strong> lleva los números del 1 al 9, sin repetir.</p>
 
-    <h3>Como en papel: el juego no te corrige</h3>
-    <p>El tablero no te dice si un número está bien cuando lo colocas. Resuelves con pura lógica; la única forma de comprobar es usar <strong class="hl-accent">Verificar</strong> — y eso cuesta puntos.</p>
+    <h3>Puntaje — por precisión</h3>
+    <p>Tu rango mide <strong class="hl-accent">la puntería</strong>: empiezas en <strong class="hl-accent">Maestro/a</strong> y cada número <strong>equivocado</strong> que colocas te baja cerca de un rango (<span class="hl-yellow">−4</span> cada uno). Despeja todo el tablero <strong>sin un solo error</strong> y terminas en Maestro/a.</p>
+    <p class="muted">Adivinar al azar sale caro —cada intento fallido cuenta—, así que mejor deducir.</p>
 
     <h3>Cómo se juega acá</h3>
     <p><strong>Notas</strong>: anota a mano los candidatos. Sólo puedes poner notas en celdas que <strong>ya ves</strong>; una celda en la niebla hay que destaparla primero colocando un número.<br>
@@ -2339,15 +2344,15 @@
     <p><strong>1ª vez</strong> — marca con un borde rosa una celda donde sólo hay una opción, y despeja su niebla. Tú deduces el número. Cuesta <span class="hl-yellow">−3 pts</span>.<br>
     <strong>2ª vez sobre esa misma celda</strong> — rellena la respuesta. <span class="hl-yellow">−3 pts más</span> (total <span class="hl-yellow">−6 pts</span>).</p>
 
-    <h3>Puntaje</h3>
-    <p>Empiezas el día en <strong class="hl-accent">Maestro/a</strong> (la puntuación máxima) y cada ayuda te baja: <span class="hl-yellow">−2</span> verificar celda · <span class="hl-yellow">−8</span> verificar tablero · <span class="hl-yellow">−3</span> pista · <span class="hl-yellow">−6</span> revelar.</p>
-    <p class="muted">Resuelve sin ayuda y terminas en Maestro/a. Adivinar al azar no sirve: para saber si acertaste tendrías que gastar una verificación.</p>
+    <h3>Las ayudas también restan</h3>
+    <p>Si te apoyas en una ayuda, tu rango también baja: <span class="hl-yellow">−2</span> verificar celda · <span class="hl-yellow">−8</span> verificar tablero · <span class="hl-yellow">−3</span> pista · <span class="hl-yellow">−6</span> revelar.</p>
+    <p class="muted">No necesitas verificar para saber si acertaste —la niebla ya te lo dice al abrirse—, pero los botones siguen ahí si te atascas.</p>
 
     <h3>Reto del día</h3>
-    <p>Niebla tiene <strong class="hl-accent">su propio reto</strong>: terminar en cierto rango o mejor. En la barra de rangos, la <span class="line-marker">|</span> <strong class="hl-accent">línea</strong> marca esa meta — termina en o por encima de ella y mantienes tu racha de Niebla.</p>
+    <p>Niebla tiene <strong class="hl-accent">su propio reto</strong>: terminar con pocos errores o menos. En la barra de rangos, la <span class="line-marker">|</span> <strong class="hl-accent">línea</strong> marca esa meta — alcánzala y mantienes tu racha de Niebla.</p>
 
     <h3>Medallas</h3>
-    <p><strong class="hl-accent">✨ Sin verificar</strong>: termina sin usar Verificar.<br>
+    <p><strong class="hl-accent">✨ Sin errores</strong>: despeja toda la niebla sin colocar un solo número equivocado (terminas en Maestro/a).<br>
     <strong class="hl-accent">✨ Sin pistas</strong>: termina sin pedir ninguna pista.<br>
     <strong class="hl-accent">✨ Sin descender</strong>: termina en la dificultad en la que empezaste, sin bajar a una más fácil.</p>
 
@@ -2355,7 +2360,7 @@
     <p><strong>Fácil · Medio · Difícil</strong> cambian cuántas pistas ves al empezar. Cuanto más difícil, más tablero por descubrir bajo la niebla — y cada juego (Normal y Niebla) recuerda su propia dificultad.</p>
 
     <h3>Rangos</h3>
-    <p>Diez rangos, de <em>Debutante</em> a <strong class="hl-accent">Maestro/a</strong>, por puntos (igual que el Sudoku normal). Toca la barra de rangos arriba para ver la escalera completa.</p>
+    <p>Diez rangos, de <em>Debutante</em> a <strong class="hl-accent">Maestro/a</strong>, según tu precisión. Toca la barra de rangos arriba para ver la escalera completa.</p>
   </div>
 
   <div class="modal" id="stats-modal" data-modal-content style="display:none">
@@ -2660,6 +2665,10 @@ const RANK_THRESHOLDS = [0, 5, 10, 15, 20, 25, 30, 34, 38, 42];
 // no per-cell right/wrong feedback (pen & paper), so the board never reveals
 // whether a placement is correct; the only way to check is to spend a Verificar.
 const MAX_SCORE = RANK_THRESHOLDS[RANK_THRESHOLDS.length - 1];   // 42 = Maestro
+// Niebla is scored on PRECISION, not aids: you start at the top (Maestro) and
+// each wrong placement drops you ~one rank. Expressing it as a derived score
+// lets the rank bar, reto and celebration all keep working unchanged.
+const NIEBLA_WRONG_PENALTY = 4;   // ~1 rank step per wrong placement
 // Aid costs (in points off the ceiling). Tuned so each aid bites in rank-steps.
 const COST_CHECK_CELL  = 2;   // Verificar una celda
 const COST_CHECK_BOARD = 8;   // Verificar todo el tablero (a big peek)
@@ -3200,6 +3209,7 @@ function saveProgress() {
       errorCount: state.errorCount,
       hintCount: state.hintCount,
       checkCount: state.checkCount,
+      wrongCount: state.wrongCount,
       elapsed: state.elapsed,
       revealedErrors: Array.from(state.revealedErrors),
       hintedCells: Array.from(state.hintedCells),
@@ -3277,6 +3287,7 @@ function initPuzzle() {
   state.errorCount = 0;
   state.hintCount = 0;
   state.checkCount = 0;
+  state.wrongCount = 0;   // niebla precision: cumulative wrong placements
   state.elapsed = 0;
   state.pendingHint = null;
   state.history = [];
@@ -3312,6 +3323,7 @@ function initPuzzle() {
     state.errorCount = saved.errorCount || 0;
     state.hintCount = saved.hintCount || 0;
     state.checkCount = saved.checkCount || 0;
+    state.wrongCount = saved.wrongCount || 0;
     state.elapsed = saved.elapsed || 0;
     state.revealedErrors = new Set(saved.revealedErrors || []);
     state.hintedCells = new Set(saved.hintedCells || []);
@@ -3378,7 +3390,13 @@ function revealAround(r, c) {
 // Correctness of placements does NOT move the score — that's what keeps the
 // board from leaking whether you're right.
 function score() {
-  return MAX_SCORE - (state.hintCount || 0) - (state.checkCount || 0);
+  let s = MAX_SCORE - (state.hintCount || 0) - (state.checkCount || 0);
+  // Niebla is precision-scored: each wrong placement drops you ~a rank, ON TOP of
+  // the usual aid costs (so Verificar can't be used as a free correctness peek).
+  // In normal reveal-on-correct play you rarely verify, so it reads as pure
+  // precision — your rank ≈ how few wrong numbers you placed.
+  if (state.mode === 'niebla') s -= NIEBLA_WRONG_PENALTY * (state.wrongCount || 0);
+  return s;
 }
 
 function currentRankIndex() {
@@ -3589,15 +3607,31 @@ function renderDesktopPanels() {
   if (pd) pd.textContent = formatLongDate(state.iso);
   const reto = document.getElementById('aside-reto');
   if (!reto) return;                         // not the Normal/Niebla page
-  reto.textContent = state.reto + ' pts';
+  const niebla = state.mode === 'niebla';
+  const errFor = (s) => Math.floor((MAX_SCORE - s) / NIEBLA_WRONG_PENALTY);   // score → max wrong
+  const errLong = (n) => n + (n === 1 ? ' error' : ' errores');
   let retoIdx = 0;
   for (let i = 0; i < RANK_THRESHOLDS.length; i++) if (state.reto >= RANK_THRESHOLDS[i]) retoIdx = i;
   const sub = document.getElementById('aside-reto-sub');
-  if (sub) sub.innerHTML = 'Llega a <strong style="color:var(--ink)">' + RANK_NAMES[retoIdx] + '</strong> para completar la racha de hoy.';
+  if (niebla) {
+    reto.textContent = '≤ ' + errLong(errFor(state.reto));
+    if (sub) sub.innerHTML = 'Termina con <strong style="color:var(--ink)">' + errLong(errFor(state.reto)) + '</strong> o menos para completar la racha de hoy.';
+  } else {
+    reto.textContent = state.reto + ' pts';
+    if (sub) sub.innerHTML = 'Llega a <strong style="color:var(--ink)">' + RANK_NAMES[retoIdx] + '</strong> para completar la racha de hoy.';
+  }
   const setT = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  setT('aside-pts', score());
+  setT('aside-pts', niebla ? (state.wrongCount || 0) : score());
   setT('aside-cells', state.correctCount);
   setT('aside-checks', state.checkCount || 0);
+  // For niebla the headline stat is Errores (wrong placements); the other two
+  // stay meaningful. Scoped to .page so the Mini panel is never touched.
+  const progLabels = document.querySelectorAll('.page .aside-progress i');
+  if (progLabels.length >= 3) {
+    progLabels[0].textContent = niebla ? 'Errores' : 'Puntos';
+    progLabels[1].textContent = 'Casillas';
+    progLabels[2].textContent = 'Verificaciones';
+  }
   const ranks = document.getElementById('aside-ranks');
   if (ranks) {
     const cur = currentRankIndex();
@@ -3606,7 +3640,8 @@ function renderDesktopPanels() {
       const row = document.createElement('div');
       row.className = 'aside-rank-row' + (i <= cur ? ' reached' : '') + (i === cur ? ' current' : '');
       const name = document.createElement('span'); name.className = 'aside-rank-name'; name.textContent = RANK_NAMES[i];
-      const pts = document.createElement('span'); pts.className = 'aside-rank-pts'; pts.textContent = RANK_THRESHOLDS[i] + ' pts';
+      const pts = document.createElement('span'); pts.className = 'aside-rank-pts';
+      pts.textContent = niebla ? ('≤' + errFor(RANK_THRESHOLDS[i]) + ' err') : (RANK_THRESHOLDS[i] + ' pts');
       row.appendChild(name); row.appendChild(pts);
       ranks.appendChild(row);
     }
@@ -3706,6 +3741,8 @@ function placeNumber(n) {
     if (state.pendingHint === idx) state.pendingHint = null;   // solved the nudged cell yourself
   } else {
     state.errors[idx] = true;
+    // Niebla precision: every wrong placement is a permanent ding on your rank.
+    if (state.mode === 'niebla') state.wrongCount = (state.wrongCount || 0) + 1;
     if (prev !== 0 && prev === state.solution[r][c]) state.correctCount--;
   }
   // Niebla (fog of war): you always SEE the cell you just filled, but only a
@@ -4091,7 +4128,9 @@ function buildShareText() {
   // score starts at the top, so an untouched board would otherwise look solved.)
   if (!state.completed) {
     lines.push('⏳ Todavía sin terminar');
-    lines.push(`🎯 Reto del día: ${state.reto} pts`);
+    lines.push(realMode() === 'niebla'
+      ? `🎯 Reto del día: ≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores`
+      : `🎯 Reto del día: ${state.reto} pts`);
     lines.push(`📐 ${diff} · ${modeLbl}`);
     lines.push('');
     lines.push('https://cortadito.news');
@@ -4101,7 +4140,9 @@ function buildShareText() {
   // help you used (you start at the top and only drop when you lean on an aid).
   if (isMaestro) {
     lines.push(`👑 Rango: ${rank}`);
-    lines.push('   Lo resolví sin ninguna ayuda.');
+    lines.push(realMode() === 'niebla' ? '   Lo resolví sin un solo error.' : '   Lo resolví sin ninguna ayuda.');
+  } else if (realMode() === 'niebla') {
+    lines.push(`🏆 Rango: ${rank}  ·  ${state.wrongCount || 0} ${(state.wrongCount || 0) === 1 ? 'error' : 'errores'}`);
   } else {
     lines.push(`🏆 Rango: ${rank}  ·  ${sc} pts`);
   }
@@ -4114,12 +4155,16 @@ function buildShareText() {
   lines.push(`📐 ${diff} · ${modeLbl}`);
   lines.push('');
   if (sc >= state.reto) lines.push('✅ Reto del día logrado');
-  else lines.push(`📌 Reto del día: ${state.reto} pts`);
-  // Clean-solve badges
+  else lines.push(realMode() === 'niebla'
+    ? `📌 Reto del día: ≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores`
+    : `📌 Reto del día: ${state.reto} pts`);
+  // Clean-solve badges — clásico only; Niebla's rank already reflects precision.
   const bonuses = [];
-  if (state.completed && (state.checkCount || 0) === 0) bonuses.push('Sin verificar');
-  if (state.completed && (state.hintCount || 0) === 0) bonuses.push('Sin pistas');
-  if (state.completed && isSinDescender()) bonuses.push('Sin descender');
+  if (realMode() !== 'niebla') {
+    if (state.completed && (state.checkCount || 0) === 0) bonuses.push('Sin verificar');
+    if (state.completed && (state.hintCount || 0) === 0) bonuses.push('Sin pistas');
+    if (state.completed && isSinDescender()) bonuses.push('Sin descender');
+  }
   if (bonuses.length) lines.push(`✨ ${bonuses.join(' · ')}`);
   // Time is flavor only (never affects rank): include it if the timer was on.
   if (state.completed && settings.timer && state.elapsed > 0) lines.push(`⏱ ${miniFmt(state.elapsed)}`);
