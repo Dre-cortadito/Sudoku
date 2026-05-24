@@ -804,7 +804,7 @@
     display: flex; align-items: center; justify-content: center;
     font-family: var(--font-display);
     font-size: clamp(20px, 5vw, 28px);
-    color: var(--accent);
+    color: var(--cell-ink, var(--accent));   /* entered-digit colour; falls back to --accent (Normal/Niebla). Mini overrides it so its bright-yellow accent never lands on a digit. */
     cursor: pointer;
     position: relative;
     transition: background 0.08s ease;
@@ -1554,9 +1554,6 @@
     content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
     height: 2.5px; background: var(--accent);
   }
-  /* Mini's speed-yellow is too light for a 2.5px line on the pale paper — fall
-     back to the deep gold so the active MINI tab's underline still reads. */
-  body.mini-landing .landing-tab.active::after { background: var(--accent-deep); }
   /* ALL tabs pulse greyish → black in unison so the games always read as
      switchable; the underline above marks the one you've chosen. Color-only
      (no opacity) so the active underline stays solid. */
@@ -1616,24 +1613,26 @@
     --accent-2-deep: #6b4259;
     --accent-2-soft: #271a22;
   }
-  /* ---- Mini · "the Flash" red + yellow. Yellow stays the primary (speed);
-     red replaces brown as the secondary (bean crease, Notas, feedback box).
-     The bright speed-yellow is too light for thin lines on white, so
-     --accent-deep carries a legible gold for those cases. ---- */
+  /* ---- Mini · "the Flash" yellow + red. Yellow is the primary identity, red the
+     secondary (bean crease, Notas, feedback box). NOTE: --accent doubles as a
+     TEXT colour across the app (timer, rank labels, even the board digits), so it
+     must stay legible on white — a neon #f9e70f there is invisible. The accent is
+     therefore a legible goldenrod; the bright speed-yellow lives in the board's
+     cell-bg highlight tints (backgrounds, read with dark digits) below. ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #f9e70f;   /* Flash yellow — speed; bean fill + accents */
-    --accent-deep:   #caa600;   /* deep gold — thin underlines / pressed on white */
-    --accent-soft:   #fdf8cf;
-    --accent-2:      #fa0c0c;   /* Flash red — bean crease, Notas, feedback box */
+    --accent:        #b8860b;   /* goldenrod — legible gold for all accent text + bean crease */
+    --accent-deep:   #8a6d00;
+    --accent-soft:   #fbf0c4;
+    --accent-2:      #fa0c0c;   /* Flash red — bean body, Notas, feedback box */
     --accent-2-deep: #c40808;
     --accent-2-soft: #fde3e3;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
-    --accent:        #f9e70f;   /* Flash yellow pops on the dark surface */
-    --accent-deep:   #d4c50d;
-    --accent-soft:   #2a2606;
+    --accent:        #f1cf3a;   /* bright gold — reads as a foreground on the dark surface */
+    --accent-deep:   #d4b528;
+    --accent-soft:   #2a2406;
     --accent-2:      #e62525;   /* Flash red, dark enough for white feedback text */
     --accent-2-deep: #c01a1a;
     --accent-2-soft: #2a1010;
@@ -1659,6 +1658,27 @@
     --cell-bg-peer: #20303a;
     --fog:          #222c31;
     --fog-stripe:   #33424a;
+  }
+  /* In-game only: Mini's board takes the speed-yellow identity (parallels Normal's
+     all-terracota board). LIGHT theme — bright warm-yellow tints for row/col/box/
+     same; entered digits are a dark gold (--cell-ink) so they read on the tints. */
+  body.mini-active {
+    --cell-ink:     #8a6d00;   /* entered digits — dark gold, legible on white + tints */
+    --cell-bg-line: #fdf2c8;   /* faint — row + column */
+    --cell-bg-box:  #fbe79c;   /* clearer — 3×3 box */
+    --cell-bg-same: #f7d24f;   /* strongest tint — same number (speed-yellow) */
+    --cell-bg-sel:  #a8780a;   /* deep gold — selected (white digit + ring read on it) */
+    --cell-bg-peer: #fdf2c8;
+  }
+  /* Dark Mini: bright-yellow digits already pop on the dark tiles, so use DARK
+     amber tints for the highlights (light tints would swallow the digits). */
+  body[data-theme="black"].mini-active {
+    --cell-ink:     #f9e70f;   /* full speed-yellow digits on the dark surface */
+    --cell-bg-line: #2e2606;
+    --cell-bg-box:  #41350a;
+    --cell-bg-same: #5c4a0e;
+    --cell-bg-sel:  #a8780a;
+    --cell-bg-peer: #2e2606;
   }
   /* Niebla is precision-scored, so the rank-bar bubble holds a DERIVED score that
      means nothing to the player. Hide the number (like the Mini bar) — the label
