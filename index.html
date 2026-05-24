@@ -852,12 +852,12 @@
       45deg,
       var(--fog),
       var(--fog) 4px,
-      color-mix(in oklab, var(--fog) 80%, var(--ink) 20%) 4px,
-      color-mix(in oklab, var(--fog) 80%, var(--ink) 20%) 8px
+      var(--fog-stripe) 4px,
+      var(--fog-stripe) 8px
     );
   }
   .cell.fog .notes { display: none; }
-  .cell.fog:hover, .cell.fog.peer, .cell.fog.selected { background-image: repeating-linear-gradient(45deg, var(--fog), var(--fog) 4px, color-mix(in oklab, var(--fog) 80%, var(--ink) 20%) 4px, color-mix(in oklab, var(--fog) 80%, var(--ink) 20%) 8px); }
+  .cell.fog:hover, .cell.fog.peer, .cell.fog.selected { background-image: repeating-linear-gradient(45deg, var(--fog), var(--fog) 4px, var(--fog-stripe) 4px, var(--fog-stripe) 8px); }
 
   /* 3x3 block separators */
   .cell.bb-right { border-right: 2px solid var(--ink); margin-right: -1px; padding-right: 1px; }
