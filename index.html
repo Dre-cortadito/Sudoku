@@ -1653,8 +1653,8 @@
     --cell-bg-same: #d0a8c0;   /* strong plum — same number */
     --cell-bg-sel:  #8a5572;   /* solid plum — selected (white digit + ring) */
     --cell-bg-peer: #f2e4ec;
-    --fog:          #e7ecef;   /* light base */
-    --fog-stripe:   #5c849a;   /* the Niebla blue — fog's diagonal stripes read as the brand colour */
+    --fog:          #e7ecef;       /* light base */
+    --fog-stripe:   var(--accent); /* exact bean blue (#294f61) — fog stripes match the logo */
   }
   /* Dark Niebla: same plum progression, gone DARK so the light-blue digits stay
      legible (light tints would swallow them). */
@@ -1664,8 +1664,8 @@
     --cell-bg-same: #503546;   /* strong */
     --cell-bg-sel:  #8a5572;   /* solid plum — selected */
     --cell-bg-peer: #2a1e26;
-    --fog:          #222c31;   /* dark base */
-    --fog-stripe:   #46647a;   /* the Niebla blue (lighter than the base so the stripes show) */
+    --fog:          #222c31;       /* dark base */
+    --fog-stripe:   var(--accent); /* exact bean blue (#8fb1c0 in dark) — matches the logo */
   }
   /* In-game only: Mini's board is a marigold tonal progression (parallels Normal's
      all-terracota board and Niebla's all-plum board). LIGHT theme — warm marigold
