@@ -388,17 +388,16 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    padding-top: 52px;   /* mobile: drop the tab strip below the pinned theme toggle */
-    justify-content: center;   /* center the whole group (tabs + info) on the page */
+    padding-top: 52px;   /* mobile: tabs sit near the top, below the pinned theme toggle */
   }
   .landing-logo-row {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    /* The whole group is centered via .landing-inner justify-content:center, so
-       the tabs stay glued to the info instead of being pinned to the top. */
-    margin-top: 0;
+    /* Mobile: auto top margin centers the info below the tabs, leaving the tab
+       strip at its height near the top. (Desktop overrides this to group-center.) */
+    margin-top: auto;
   }
   .landing-logo {
     width: 90px; height: 90px;     /* trimmed from 110 so the landing fits one screen */
@@ -520,7 +519,7 @@
     color: var(--ink-soft);
     font-size: 12px;
     margin-top: 8px;
-    margin-bottom: 0;
+    margin-bottom: auto;
     line-height: 1.5;
     letter-spacing: 0.2px;
   }
