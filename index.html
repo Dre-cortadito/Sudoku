@@ -1602,6 +1602,27 @@
     --accent-2-deep: #3a505a;
     --accent-2-soft: #1d2429;
   }
+  /* ---- Mini · its own coffee-brown identity (landing tab + in-game), so it
+     reads as distinct as Niebla's blue — the tab underline, header bean, Reglas
+     link and beans all go brown when Mini is selected. ---- */
+  body.mini-landing,
+  body.mini-active {
+    --accent:        #6f4a2a;   /* coffee brown — bean fill */
+    --accent-deep:   #543620;
+    --accent-soft:   #efe7df;
+    --accent-2:      #a87d54;   /* lighter tan — bean crease + middle */
+    --accent-2-deep: #82603f;
+    --accent-2-soft: #f0e8de;
+  }
+  body[data-theme="black"].mini-landing,
+  body[data-theme="black"].mini-active {
+    --accent:        #c79c70;   /* light coffee beans on the dark surface */
+    --accent-deep:   #a87f54;
+    --accent-soft:   #241c14;
+    --accent-2:      #7a5a3c;
+    --accent-2-deep: #5e472f;
+    --accent-2-soft: #221a12;
+  }
   /* In-game only: cool the cell highlights + the fog so the board reads as Niebla. */
   body.niebla-game {
     --cell-bg-sel:  #5f7e8c;
@@ -1908,8 +1929,10 @@
   @media (min-width: 1024px) {
     /* --- Landing: large, top-anchored info (no centered gap under the tabs) --- */
     .landing-inner { max-width: 580px; gap: 22px; padding-top: 104px; }   /* clear the shared top header */
-    .landing-logo-row { margin-top: 10px; gap: 18px; }   /* overrides margin-top:auto */
-    .landing-credit   { margin-bottom: 0; }              /* overrides margin-bottom:auto */
+    /* Center the game info in the space below the tab strip (auto margins) so it
+       sits mid-page instead of jammed up under the header. */
+    .landing-logo-row { margin-top: auto; gap: 18px; }
+    .landing-credit   { margin-bottom: auto; }
     .landing-logo  { width: 160px; height: 160px; }
     /* The Mini landing swaps in a different logo element + shrinks the title to
        40px — both need the desktop bump too, or Mini looks tiny next to Normal. */
@@ -4212,10 +4235,14 @@ let openModalId = null;   // which modal is currently open (resolved id), or nul
 // stays shared between Normal and Niebla (both rank by points; only Mini ranks
 // by time), so it only swaps for Mini.
 function resolveModalId(id) {
-  if (document.body.classList.contains('mini-active')) {
+  const cl = document.body.classList;
+  // Route to the active game's rules — whether playing it (…-active/…-game) OR
+  // just previewing it on the landing (…-landing), so the header's Reglas always
+  // matches the selected tab.
+  if (cl.contains('mini-active') || cl.contains('mini-landing')) {
     if (id === 'reglas-modal') return 'mini-reglas-modal';
     if (id === 'rangos-modal') return 'mini-rangos-modal';
-  } else if (document.body.classList.contains('niebla-game')) {
+  } else if (cl.contains('niebla-game') || cl.contains('niebla-landing')) {
     if (id === 'reglas-modal') return 'niebla-reglas-modal';
   }
   return id;
