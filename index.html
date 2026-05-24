@@ -5551,7 +5551,7 @@ document.getElementById('mini-notes').addEventListener('click', () => {
   if (!miniState) return;
   miniState.notesMode = !miniState.notesMode;
   document.getElementById('mini-notes').classList.toggle('active', miniState.notesMode);
-  miniRenderBoard();
+  miniRenderBoard(); miniRenderPad();   // re-render the PAD too so it tints to the secondary colour (was only re-rendering the board)
 });
 document.getElementById('mini-hint').addEventListener('click', miniHint);
 document.getElementById('mini-rank-bar').addEventListener('click', () => openModal('mini-rangos-modal'));
