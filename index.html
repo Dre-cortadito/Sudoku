@@ -181,7 +181,11 @@
   .aside-rank-row.reached { color: var(--ink); }
   .aside-rank-row.current { font-weight: 700; }
   .aside-rank-row.current .aside-rank-name { color: var(--accent); }
-  .aside-rank-pts { font-feature-settings: "tnum"; color: var(--ink-soft); }
+  /* The value follows the row colour (reached rows brighten to --ink) instead of
+     staying a faint --ink-soft, and the CURRENT rank's number takes the accent
+     colour like its name — so it's easy to read in both Claro and dark. */
+  .aside-rank-pts { font-feature-settings: "tnum"; color: inherit; }
+  .aside-rank-row.current .aside-rank-pts { color: var(--accent); }
 
   .page-date { display: none; }   /* desktop-only; the date row under the header */
   @media (min-width: 1024px) {
