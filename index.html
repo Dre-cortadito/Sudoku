@@ -244,35 +244,45 @@
   /* Landing gets a touch roomier on wide screens: the MODE tab strip drops
      below the pinned theme toggle (padding-top), and the info reads larger. */
   @media (min-width: 1024px) {
-    .landing-inner { max-width: 520px; gap: 18px; padding-top: 60px; }
-    .landing-logo  { width: 116px; height: 116px; }
-    .landing-tabs  { gap: 42px; margin: 0 0 6px; }
-    .landing-tab   { font-size: 18px; letter-spacing: 2.2px; padding: 10px 8px 13px; }
+    .landing-inner { max-width: 560px; gap: 20px; padding-top: 60px; }
+    /* Kill the auto-centering so the game info sits right under the tabs (no big
+       empty gap) and give every element a lot more presence. */
+    .landing-logo-row { margin-top: 4px; gap: 16px; }
+    .landing-credit   { margin-bottom: 0; }
+    .landing-logo  { width: 150px; height: 150px; }
+    .landing-tabs  { gap: 46px; margin: 0; }
+    .landing-tab   { font-size: 19px; letter-spacing: 2.4px; padding: 10px 8px 13px; }
     .landing-tab.active::after { height: 3px; }
-    .landing-title   { font-size: 60px; }
-    .landing-tagline { font-size: 23px; max-width: 380px; }
-    .landing-date    { font-size: 17px; }
-    .landing-reto-label { font-size: 11px; }
-    .landing-reto-value { font-size: 21px; }
-    .pickrow-label   { font-size: 13px; letter-spacing: 1.9px; }
-    .landing-diff-btn  { font-size: 14px; padding: 8px 16px; }
-    .landing-diff-desc { font-size: 15px; }
-    .landing-play { font-size: 17px; padding: 14px 26px; width: 250px; }
-    .landing-sub  { font-size: 14px; }
-    .landing-credit { font-size: 13px; }
+    .landing-title   { font-size: 78px; }
+    .landing-tagline { font-size: 27px; max-width: 440px; }
+    .landing-date    { font-size: 20px; }
+    .landing-reto-label { font-size: 12px; }
+    .landing-reto-value { font-size: 27px; }
+    .pickrow-label   { font-size: 14px; letter-spacing: 2px; }
+    .landing-diff-btn  { font-size: 16px; padding: 10px 20px; }
+    .landing-diff-desc { font-size: 17px; }
+    .landing-play { font-size: 19px; padding: 16px 30px; width: 290px; }
+    .landing-sub  { font-size: 15px; }
+    .landing-credit { font-size: 14px; }
   }
   /* Desktop: a much bigger header — the bean, the "Sudoku" wordmark, and the nav
-     all scale up to suit the wide layout. High-specificity so it wins over the
-     mobile/spec sizes regardless of source order. */
+     all scale up to suit the wide layout. Plain `.page-header` selectors so it
+     applies to EVERY game (Normal, Niebla AND Mini); the header is hidden on the
+     landing anyway. The bottom line is full-bleed (100vw) so it touches the
+     screen edges, matching the full-width line under the date row. */
   @media (min-width: 1024px) {
-    body.game-active .page-header { padding: 16px 48px 18px; gap: 28px; }
-    body.game-active .page-header .page-logo { width: 52px; height: 52px; }
-    body.game-active .page-header .wordmark  { font-size: 40px; }
-    body.game-active .page-header .header-nav { gap: 30px; font-size: 19px; }
-    body.game-active .page-header .header-home { width: 44px; height: 44px; }
-    body.game-active .page-header .header-home svg { width: 23px; height: 23px; }
-    body.game-active .page-header .header-nav .more { width: 44px; height: 44px; }
-    body.game-active .page-header .header-nav .more svg { width: 28px; height: 28px; }
+    .page-header { padding: 16px 48px 18px; gap: 28px; position: relative; border-bottom: none; }
+    .page-header::after {
+      content: ""; position: absolute; left: 50%; margin-left: -50vw; bottom: 0; width: 100vw;
+      border-bottom: 1px solid var(--ink-line);
+    }
+    .page-header .page-logo { width: 52px; height: 52px; }
+    .page-header .wordmark  { font-size: 40px; }
+    .page-header .header-nav { gap: 30px; font-size: 19px; }
+    .page-header .header-home { width: 44px; height: 44px; }
+    .page-header .header-home svg { width: 23px; height: 23px; }
+    .page-header .header-nav .more { width: 44px; height: 44px; }
+    .page-header .header-nav .more svg { width: 28px; height: 28px; }
   }
 
   /* ============ HEADER ============ */
@@ -2156,10 +2166,7 @@
   <aside class="page-aside is-right" aria-hidden="true">
     <div>
       <h4>Tu progreso</h4>
-      <div class="aside-progress">
-        <span><b id="mini-aside-time">0:00</b><i>Tu reloj</i></span>
-      </div>
-      <p id="mini-aside-rank-line" style="margin-top:12px">Vas por <strong style="color:var(--accent)">—</strong></p>
+      <p id="mini-aside-rank-line">Vas por <strong style="color:var(--accent)">—</strong></p>
     </div>
     <div class="aside-block">
       <h4>Rangos de hoy</h4>
@@ -5242,8 +5249,6 @@ function renderMiniDesktopPanels() {
   const sub = document.getElementById('mini-aside-reto-sub');
   if (sub) sub.innerHTML = 'Llega a <strong style="color:var(--ink)">' + miniRankName(target) + '</strong> o mejor para completar la racha de hoy.';
   const t = miniState.elapsed || 0;
-  const timeEl = document.getElementById('mini-aside-time');
-  if (timeEl) timeEl.textContent = miniFmt(t);
   const rankLine = document.getElementById('mini-aside-rank-line');
   if (rankLine) rankLine.innerHTML = 'Vas por <strong style="color:var(--accent)">' + miniRankName(t) + '</strong>';
   const ranks = document.getElementById('mini-aside-ranks');
