@@ -1162,11 +1162,6 @@
   .modal .btn-row button.primary {
     background: var(--accent); border-color: var(--accent); color: #ffffff;
   }
-  /* Mini's marigold accent is light — white text on it vanishes. Mini's primary
-     pill buttons (celebration + modal CTAs) take dark text instead. */
-  body.mini-active .celebration button.primary,
-  body.mini-active .modal .btn-row button.primary,
-  body.mini-landing .modal .btn-row button.primary { color: #3a2800; }
   .modal .btn-row button:active { transform: scale(0.97); }
 
   /* ---- Goal card anatomy (spec: cn-goal-* ) ---- */
@@ -1621,29 +1616,27 @@
     --accent-2-deep: #6b4259;
     --accent-2-soft: #271a22;
   }
-  /* ---- Mini · warm marigold + coral. Main = #fab92e (marigold), secondary =
-     #d64933 (coral). The marigold is light, so it shines as a FILL (bean, board
-     tints) but is low-contrast as text on white — the hero timer/rank use --ink
-     (safe) and the board digits use --cell-ink (dark), so the few accent-text
-     spots that remain are non-critical. Coral drives the bean, Notas pad +
-     feedback box (it's dark enough for white text). ---- */
+  /* ---- Mini · fresh green + charcoal. Main = green ("go"/quick); secondary =
+     charcoal/graphite (grounds it, white text reads on it for the feedback box +
+     Notas pad). The green is a legible forest green so it works as accent TEXT too;
+     a brighter green lives in the board tints below. ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #fab92e;   /* marigold — main identity (bean, board, accents) */
-    --accent-deep:   #c47d10;   /* deep marigold — legible for pressed / exhausted text */
-    --accent-soft:   #fef1d6;
-    --accent-2:      #d64933;   /* coral — bean, Notas pad, feedback box (white text reads) */
-    --accent-2-deep: #b53824;
-    --accent-2-soft: #fbe4df;
+    --accent:        #15803d;   /* forest green — main identity (bean, board, accents, legible text) */
+    --accent-deep:   #0f6b32;
+    --accent-soft:   #e4f3e9;
+    --accent-2:      #2f3640;   /* charcoal — bean, Notas pad, feedback box (white text reads) */
+    --accent-2-deep: #1f2630;
+    --accent-2-soft: #e7eaee;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
-    --accent:        #fab92e;   /* marigold pops on the dark surface */
-    --accent-deep:   #d99e2a;
-    --accent-soft:   #2f2408;
-    --accent-2:      #d64933;   /* coral — dark enough for white feedback text */
-    --accent-2-deep: #b53824;
-    --accent-2-soft: #2e1410;
+    --accent:        #3ad07e;   /* bright green pops on the dark surface */
+    --accent-deep:   #2aa863;
+    --accent-soft:   #102017;
+    --accent-2:      #4a5260;   /* lifted charcoal — distinct from the near-black page, white text reads */
+    --accent-2-deep: #353c47;
+    --accent-2-soft: #1c2027;
   }
   /* In-game only (Niebla): all highlights are PLUM in a tonal progression
      (line < box < same < selected), exactly like Normal's terracota board and
@@ -1670,26 +1663,26 @@
     --fog:          #222c31;       /* dark base */
     --fog-stripe:   var(--accent); /* exact bean blue (#8fb1c0 in dark) — matches the logo */
   }
-  /* In-game only: Mini's board is a marigold tonal progression (parallels Normal's
-     all-terracota board and Niebla's all-plum board). LIGHT theme — warm marigold
-     tints; entered digits are a dark amber (--cell-ink) so they read on the tints. */
+  /* In-game only: Mini's board is a green tonal progression (parallels Normal's
+     all-terracota board and Niebla's all-plum board). LIGHT theme — green tints;
+     entered digits are a dark green (--cell-ink) so they read on the tints. */
   body.mini-active {
-    --cell-ink:     #8a5a14;   /* entered digits — dark amber, legible on white + tints */
-    --cell-bg-line: #fef0d2;   /* faint — row + column */
-    --cell-bg-box:  #fde1a8;   /* clearer — 3×3 box */
-    --cell-bg-same: #fbc763;   /* strong marigold — same number */
-    --cell-bg-sel:  #b06d12;   /* deep burnt-marigold — selected (white digit + ring read) */
-    --cell-bg-peer: #fef0d2;
+    --cell-ink:     #14663a;   /* entered digits — dark green, legible on white + tints */
+    --cell-bg-line: #e6f5ec;   /* faint — row + column */
+    --cell-bg-box:  #c4ecd0;   /* clearer — 3×3 box */
+    --cell-bg-same: #93dbab;   /* strong green — same number */
+    --cell-bg-sel:  #1f8a4d;   /* deep green — selected (white digit + ring read) */
+    --cell-bg-peer: #e6f5ec;
   }
-  /* Dark Mini: bright marigold digits pop on the dark tiles, so use DARK
-     amber tints for the highlights (light tints would swallow the digits). */
+  /* Dark Mini: bright green digits pop on the dark tiles, so use DARK green
+     tints for the highlights (light tints would swallow the digits). */
   body[data-theme="black"].mini-active {
-    --cell-ink:     #fab92e;   /* marigold digits on the dark surface */
-    --cell-bg-line: #332408;
-    --cell-bg-box:  #46320c;
-    --cell-bg-same: #5e4310;
-    --cell-bg-sel:  #b06d12;
-    --cell-bg-peer: #332408;
+    --cell-ink:     #3ad07e;   /* green digits on the dark surface */
+    --cell-bg-line: #15291d;
+    --cell-bg-box:  #1d3b29;
+    --cell-bg-same: #275237;
+    --cell-bg-sel:  #1f8a4d;
+    --cell-bg-peer: #15291d;
   }
   /* Niebla is precision-scored, so the rank-bar bubble holds a DERIVED score that
      means nothing to the player. Hide the number (like the Mini bar) — the label
