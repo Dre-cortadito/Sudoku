@@ -214,15 +214,6 @@
     body.game-active .page > .page-date { display: none; }
     body.game-active .page > .rank-bar   { grid-area: rank;  max-width: none; margin: 0; }
     body.game-active .page > .daily-meta { grid-area: meta;  max-width: none; margin: 2px 0 0; }
-    /* Rank bar more present on the full-width desktop bar (matches Racimo): bigger
-       rank name, taller track, larger current bubble. Rank elements only render in
-       the rank bar, so these are safe to set globally at this breakpoint. Niebla
-       and Mini keep their small marker bubble via their own higher-specificity rules. */
-    .rank-label { font-size: 17px; letter-spacing: 2.4px; min-width: 158px; }
-    .rank-track { height: 30px; }
-    .rank-dot   { width: 8px; height: 8px; }
-    .rank-dot.current { width: 32px; height: 32px; font-size: 14px; }
-    .rank-chev  { font-size: 18px; }
     body.game-active .page > .board-wrap { grid-area: board; max-width: none; margin: 6px 0 0; }
     body.game-active .page > .pad-wrap   { grid-area: pad;   max-width: none; margin: 10px 0 0; }
     body.game-active .page > .page-aside           { display: flex; align-self: start; }
@@ -381,6 +372,7 @@
     background: var(--bg);
     z-index: 1000;
     display: flex;
+    justify-content: center;   /* center the whole landing block (tabs + game info) horizontally on the page */
     /* inner stretches to full height (default align-items:stretch) so the
        content can be vertically centered BELOW the pinned toggle via the
        auto-margins on .landing-logo-row / .landing-credit (see below). */
@@ -2046,6 +2038,20 @@
        Header occupies ~28px body padding + ~86px header ≈ 114px; start at 116px
        so the panel clears it and the header stays fully visible + bright. */
     .modal-overlay { top: 116px; padding: 20px 20px 48px; }
+  }
+
+  /* Rank bar more present on the full-width desktop bar (matches Racimo). Placed at
+     the END of the sheet + scoped with body.game-active/.mini-active so it beats the
+     base .rank-* rules (which come earlier and would otherwise win on source order). */
+  @media (min-width: 1024px) {
+    body.game-active .rank-bar,   body.mini-active .rank-bar   { padding: 12px 26px; gap: 20px; }
+    body.game-active .rank-label, body.mini-active .rank-label { font-size: 17px; letter-spacing: 2.4px; min-width: 158px; }
+    body.game-active .rank-track, body.mini-active .rank-track { height: 30px; }
+    body.game-active .rank-dot,   body.mini-active .rank-dot   { width: 8px; height: 8px; }
+    body.game-active .rank-chev,  body.mini-active .rank-chev  { font-size: 18px; }
+    /* Bigger current-rank bubble for Normal (shows the score). Niebla and Mini keep
+       their small marker bubble via their own higher-specificity rules. */
+    body.game-active .rank-dot.current { width: 32px; height: 32px; font-size: 14px; }
   }
 </style>
 </head>
