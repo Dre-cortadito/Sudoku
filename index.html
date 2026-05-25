@@ -3656,12 +3656,12 @@ function renderRankBar() {
   const track = document.getElementById('rank-track');
   track.innerHTML = '';
   const topIdx = RANK_THRESHOLDS.length - 1;
-  const maxScore = RANK_THRESHOLDS[topIdx] + 4;
+  const maxScore = RANK_THRESHOLDS[topIdx];   // scale to the real max (42) so Maestro lands at the right edge
   const curIdx = currentRankIndex();
   const sc = score();
-  // Position helper: clamp the last dot a bit in from the right edge.
+  // Position helper: dots sit proportionally; the last one (Maestro = max points)
+  // reaches 100% — the right edge of the track.
   function pctFor(i) {
-    if (i === topIdx) return 96;
     return Math.max(0, Math.min(100, (RANK_THRESHOLDS[i] / maxScore) * 100));
   }
   // Base line
