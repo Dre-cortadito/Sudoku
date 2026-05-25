@@ -197,7 +197,7 @@
       display: grid;
       grid-template-columns: 1fr 460px 1fr;
       grid-template-areas:
-        ".     rank  ."
+        "rank  rank  rank"
         "left  meta  right"
         "left  board right"
         "left  pad   right";
@@ -214,6 +214,15 @@
     body.game-active .page > .page-date { display: none; }
     body.game-active .page > .rank-bar   { grid-area: rank;  max-width: none; margin: 0; }
     body.game-active .page > .daily-meta { grid-area: meta;  max-width: none; margin: 2px 0 0; }
+    /* Rank bar more present on the full-width desktop bar (matches Racimo): bigger
+       rank name, taller track, larger current bubble. Rank elements only render in
+       the rank bar, so these are safe to set globally at this breakpoint. Niebla
+       and Mini keep their small marker bubble via their own higher-specificity rules. */
+    .rank-label { font-size: 17px; letter-spacing: 2.4px; min-width: 158px; }
+    .rank-track { height: 30px; }
+    .rank-dot   { width: 8px; height: 8px; }
+    .rank-dot.current { width: 32px; height: 32px; font-size: 14px; }
+    .rank-chev  { font-size: 18px; }
     body.game-active .page > .board-wrap { grid-area: board; max-width: none; margin: 6px 0 0; }
     body.game-active .page > .pad-wrap   { grid-area: pad;   max-width: none; margin: 10px 0 0; }
     body.game-active .page > .page-aside           { display: flex; align-self: start; }
@@ -1923,7 +1932,7 @@
       display: grid;
       grid-template-columns: 1fr 460px 1fr;
       grid-template-areas:
-        ".     rank  ."
+        "rank  rank  rank"
         "left  meta  right"
         "left  board right"
         "left  pad   right";
@@ -1939,7 +1948,7 @@
     }
     /* Date moved to the shared header bar — the Mini in-grid date row is gone. */
     body.mini-active .mini-page > .page-date { display: none; }
-    body.mini-active .mini-page > .mini-rank-bar   { grid-area: rank;  max-width: var(--mini-w); margin: 0 auto; }
+    body.mini-active .mini-page > .mini-rank-bar   { grid-area: rank;  max-width: none; margin: 0; }
     body.mini-active .mini-page > .mini-meta       { grid-area: meta;  max-width: var(--mini-w); margin: 2px auto 0; }
     body.mini-active .mini-page > .mini-board-wrap { grid-area: board; max-width: var(--mini-w); margin: 6px auto 0; }
     body.mini-active .mini-page > .mini-pad-wrap   { grid-area: pad;   max-width: var(--mini-w); margin: 10px auto 0; }
@@ -1967,7 +1976,10 @@
     /* --- Landing: large, top-anchored info (no centered gap under the tabs) --- */
     /* Center the WHOLE group (tabs + game info) together below the header so the
        mode selector stays glued to the game area instead of pinned to the top. */
-    .landing-inner { max-width: 580px; gap: 22px; padding-top: 104px; justify-content: center; }
+    /* Top-anchored (not centered): keeps the mode tabs fixed at padding-top so they
+       don't jump when switching Normal/Niebla/Mini (those change the content height
+       below, which would reposition a vertically-centered group). */
+    .landing-inner { max-width: 580px; gap: 22px; padding-top: 104px; justify-content: flex-start; }
     .landing-logo-row { margin-top: 0; gap: 18px; }
     .landing-credit   { margin-bottom: 0; }
     .landing-logo  { width: 160px; height: 160px; }
