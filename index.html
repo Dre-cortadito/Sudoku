@@ -4224,60 +4224,52 @@ function isSinDescender() {
   return true;
 }
 function buildShareText() {
-  const dateStr = formatPrettyDate(state.iso);
+  // Order (per request): 1) full date in Spanish, 2) game mode, 3) achievement
+  // (rank), 4) any other info (reto, badges, time), then the link.
   const sc = score();
+  const niebla = realMode() === 'niebla';
   const diff = DIFFICULTY[realDifficulty()].label;
-  const modeLbl = MODES[realMode()].label;
   const rank = RANK_NAMES[currentRankIndex()];
   const isMaestro = currentRankIndex() === RANK_NAMES.length - 1;
   const lines = [];
-  lines.push(`Sudoku${realMode() === 'niebla' ? ' Niebla' : ''} · ${dateStr}`);
+  lines.push(formatLongDate(state.iso));                 // 1. full Spanish date
+  lines.push(`🧩 Sudoku ${MODES[realMode()].label} · ${diff}`);   // 2. game mode (+ difficulty)
   lines.push('');
   // Not finished yet — never claim a rank or the reto. (In the ceiling model the
   // score starts at the top, so an untouched board would otherwise look solved.)
   if (!state.completed) {
     lines.push('⏳ Todavía sin terminar');
-    lines.push(realMode() === 'niebla'
+    lines.push(niebla
       ? `🎯 Reto del día: ≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores`
       : `🎯 Reto del día: ${state.reto} pts`);
-    lines.push(`📐 ${diff} · ${modeLbl}`);
     lines.push('');
     lines.push('https://cortadito.news');
     return lines.join('\n');
   }
-  // The RANK is the headline — in the clean-solve model it reflects how little
+  // 3. Achievement — the RANK. In the clean-solve model it reflects how little
   // help you used (you start at the top and only drop when you lean on an aid).
   if (isMaestro) {
     lines.push(`👑 Rango: ${rank}`);
-    lines.push(realMode() === 'niebla' ? '   Lo resolví sin un solo error.' : '   Lo resolví sin ninguna ayuda.');
-  } else if (realMode() === 'niebla') {
+    lines.push(niebla ? '   Lo resolví sin un solo error.' : '   Lo resolví sin ninguna ayuda.');
+  } else if (niebla) {
     lines.push(`🏆 Rango: ${rank}  ·  ${state.wrongCount || 0} ${(state.wrongCount || 0) === 1 ? 'error' : 'errores'}`);
   } else {
     lines.push(`🏆 Rango: ${rank}  ·  ${sc} pts`);
   }
-  // Niebla seal — prestige for clearing the fog-of-war mode. The rank itself
-  // stays mode-agnostic (how little help you used); this is recognition only.
-  if (state.completed && realMode() === 'niebla') {
-    lines.push(isMaestro ? '   🌫️ …y en plena niebla.' : '🌫️ Resuelto en Niebla');
-  }
-  // The mode you played is the first factual line right under the rank headline.
-  lines.push(`📐 ${diff} · ${modeLbl}`);
-  lines.push('');
+  // 4. Other info — niebla seal, reto, clean-solve badges, finish time.
+  if (niebla) lines.push(isMaestro ? '   🌫️ …y en plena niebla.' : '🌫️ Resuelto en Niebla');
   if (sc >= state.reto) lines.push('✅ Reto del día logrado');
-  else lines.push(realMode() === 'niebla'
+  else lines.push(niebla
     ? `📌 Reto del día: ≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores`
     : `📌 Reto del día: ${state.reto} pts`);
-  // Clean-solve badges — clásico only; Niebla's rank already reflects precision.
   const bonuses = [];
-  if (realMode() !== 'niebla') {
-    if (state.completed && (state.checkCount || 0) === 0) bonuses.push('Sin verificar');
-    if (state.completed && (state.hintCount || 0) === 0) bonuses.push('Sin pistas');
-    if (state.completed && isSinDescender()) bonuses.push('Sin descender');
+  if (!niebla) {
+    if ((state.checkCount || 0) === 0) bonuses.push('Sin verificar');
+    if ((state.hintCount || 0) === 0) bonuses.push('Sin pistas');
+    if (isSinDescender()) bonuses.push('Sin descender');
   }
   if (bonuses.length) lines.push(`✨ ${bonuses.join(' · ')}`);
-  // Time is a visible stat now (still never affects rank): always show the finish
-  // time on completion, with a ⚡ when you beat the speed target.
-  if (state.completed && state.elapsed > 0) lines.push(finishTimeLine());
+  if (state.elapsed > 0) lines.push(finishTimeLine());
   lines.push('');
   lines.push('https://cortadito.news');
   return lines.join('\n');
@@ -5065,9 +5057,10 @@ function miniGeneratePuzzle(solution, targetGivens, rng) {
   const puzzle = solution.map(r => r.slice());
   const positions = [];
   for (let r = 0; r < MINI_N; r++) for (let c = 0; c < MINI_N; c++) positions.push([r, c]);
-  shuffle(positions, rng);
+  const order = shuffle(positions, rng);   // CAPTURE it — shuffle returns a new array; the result was being
+                                           // discarded, so removal ran row-major and always kept the middle rows full
   let givens = MINI_N * MINI_N;
-  for (const [r, c] of positions) {
+  for (const [r, c] of order) {
     if (givens <= targetGivens) break;
     if (puzzle[r][c] === 0) continue;
     const sr = MINI_N - 1 - r, sc = MINI_N - 1 - c;
@@ -5529,15 +5522,16 @@ function goHome() {
   saveSession();   // remember we're on the landing now
 }
 function buildMiniShareText() {
-  const dateStr = formatPrettyDate(state.iso);
+  // Same order as the 9×9 share: full Spanish date, then mode, then achievement, then the rest.
+  const dateStr = formatLongDate(state.iso);
   if (!miniState || !miniState.done) {
     const tgt = miniState ? ` (≤ ${miniFmt(miniRetoForDate(miniState.iso))})` : '';
-    return `Sudoku Mini · ${dateStr}\n\n⏳ Todavía sin terminar\n🎯 Reto del día${tgt}\n\nhttps://cortadito.news`;
+    return `${dateStr}\n🧩 Sudoku Mini\n\n⏳ Todavía sin terminar\n🎯 Reto del día${tgt}\n\nhttps://cortadito.news`;
   }
   const t = miniState.elapsed;
   const target = miniRetoForDate(miniState.iso);
   const met = t <= target;
-  return `Sudoku Mini · ${dateStr}\n\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\nhttps://cortadito.news`;
+  return `${dateStr}\n🧩 Sudoku Mini\n\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\nhttps://cortadito.news`;
 }
 async function shareMini() {
   const text = buildMiniShareText();
