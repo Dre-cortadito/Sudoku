@@ -4233,8 +4233,8 @@ function buildShareText() {
   const isMaestro = currentRankIndex() === RANK_NAMES.length - 1;
   const lines = [];
   lines.push(formatLongDate(state.iso));                 // 1. full Spanish date
+  lines.push('');                                        // blank line under the date
   lines.push(`🧩 Sudoku ${MODES[realMode()].label} · ${diff}`);   // 2. game mode (+ difficulty)
-  lines.push('');
   // Not finished yet — never claim a rank or the reto. (In the ceiling model the
   // score starts at the top, so an untouched board would otherwise look solved.)
   if (!state.completed) {
@@ -5526,12 +5526,12 @@ function buildMiniShareText() {
   const dateStr = formatLongDate(state.iso);
   if (!miniState || !miniState.done) {
     const tgt = miniState ? ` (≤ ${miniFmt(miniRetoForDate(miniState.iso))})` : '';
-    return `${dateStr}\n🧩 Sudoku Mini\n\n⏳ Todavía sin terminar\n🎯 Reto del día${tgt}\n\nhttps://cortadito.news`;
+    return `${dateStr}\n\n🧩 Sudoku Mini\n⏳ Todavía sin terminar\n🎯 Reto del día${tgt}\n\nhttps://cortadito.news`;
   }
   const t = miniState.elapsed;
   const target = miniRetoForDate(miniState.iso);
   const met = t <= target;
-  return `${dateStr}\n🧩 Sudoku Mini\n\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\nhttps://cortadito.news`;
+  return `${dateStr}\n\n🧩 Sudoku Mini\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\nhttps://cortadito.news`;
 }
 async function shareMini() {
   const text = buildMiniShareText();
