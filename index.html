@@ -4300,14 +4300,18 @@ function buildShareText() {
   // Order (per request): 1) full date in Spanish, 2) game mode, 3) achievement
   // (rank), 4) any other info (reto, badges, time), then the link.
   const sc = score();
-  const niebla = realMode() === 'niebla';
-  const diff = DIFFICULTY[realDifficulty()].label;
+  // Label by the mode/difficulty actually being played now — NOT realMode()/
+  // realDifficulty(), which return the day's "floor" (the easiest you dropped
+  // to). Playing Normal then switching up to Niebla left the floor at clasico,
+  // so the share mislabeled a Niebla game as "Clásico".
+  const niebla = state.mode === 'niebla';
+  const diff = DIFFICULTY[state.difficulty].label;
   const rank = RANK_NAMES[currentRankIndex()];
   const isMaestro = currentRankIndex() === RANK_NAMES.length - 1;
   const lines = [];
   lines.push(formatLongDate(state.iso));                 // 1. full Spanish date
   lines.push('');                                        // blank line under the date
-  lines.push(`🧩 Sudoku ${MODES[realMode()].label} · ${diff}`);   // 2. game mode (+ difficulty)
+  lines.push(`🧩 Sudoku ${MODES[state.mode].label} · ${diff}`);   // 2. game mode (+ difficulty)
   // Not finished yet — never claim a rank or the reto. (In the ceiling model the
   // score starts at the top, so an untouched board would otherwise look solved.)
   if (!state.completed) {
@@ -4736,7 +4740,14 @@ document.getElementById('info-bar').addEventListener('click', () => openModal('s
 document.getElementById('goal-share').addEventListener('click', () => { shareResult(); closeModal(); });
 document.getElementById('maestro-share').addEventListener('click', () => { shareResult(); closeModal(); });
 document.getElementById('complete-share').addEventListener('click', () => { shareResult(); closeModal(); });
-document.getElementById('more-share').addEventListener('click', () => { closeDropdowns(); shareResult(); });
+document.getElementById('more-share').addEventListener('click', () => {
+  closeDropdowns();
+  // Route by the active screen: on the Mini board, share the Mini result —
+  // otherwise this ☰ item would build from the (untouched) Normal engine and
+  // mislabel a Mini finish as "Clásico".
+  if (document.body.classList.contains('mini-active')) shareMini();
+  else shareResult();
+});
 document.getElementById('more-subscribe').addEventListener('click', () => {
   closeDropdowns();
   window.open('https://cortadito.news', '_blank');
