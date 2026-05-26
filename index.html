@@ -1143,11 +1143,17 @@
     font-size: 14px;
   }
   .celebration button.primary { background: var(--accent); border-color: var(--accent); color: #ffffff; }
-  /* The close ✕ is NOT a pill button — strip the pill border/padding the
-     generic `.celebration button` rule above would add, but otherwise let the
-     shared .modal-close style (size, position, hover) flow through so the
-     finish-prompt X is identical to the X in every other modal. */
-  .celebration .modal-close { border: none; padding: 0; }
+  /* The close ✕ is NOT a pill button. The generic `.celebration button` rule
+     above (0,1,1) outranks the base `.modal-close` (0,1,0), so it would force a
+     small 14px BLACK glyph with a pill border. Re-assert the standard look here
+     (22px, soft-grey, no border/pad, round) so the finish-prompt ✕ is identical
+     to the ✕ in every other modal. Size (36px) + position (16px) come from the
+     base rule, which `.celebration button` doesn't touch. */
+  .celebration .modal-close {
+    border: none; padding: 0; background: none;
+    border-radius: 50%; font-size: 22px; color: var(--ink-soft);
+  }
+  .celebration .modal-close:hover { background: var(--paper); color: var(--ink); }
 
   /* Mini's finish prompt wears Mini's own identity colour (forest green) —
      the shared .celebration palette forces terracota (that's Normal's hue),
