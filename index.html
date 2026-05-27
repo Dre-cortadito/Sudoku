@@ -1436,12 +1436,14 @@
     cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .cal-hoy:active { background: var(--accent-deep); transform: scale(.98); }
   @media (hover: hover) { .cal-hoy:hover { background: var(--accent-deep); } }
-  #archive-modal h2 { margin: 0 0 6px; }
+  #archive-modal h2 { margin: 0 0 6px; padding: 0 40px; text-align: center; }
   #archive-modal .cal-grid { gap: 5px; padding: 0; }
   #archive-modal .cal-day { height: 44px; font-size: 16px; border-radius: 10px; }
   #archive-modal .cal-dow { font-size: 11px; }
   #archive-modal .cal-title { font-size: 18px; }
   #archive-modal .cal-nav { width: 36px; height: 36px; font-size: 18px; }
+  /* Kill mobile double-tap-to-zoom inside the calendar popup */
+  #archive-modal, #archive-modal * { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .dropdown-menu button,
   .dropdown-menu a.archive-item {
     display: flex;
