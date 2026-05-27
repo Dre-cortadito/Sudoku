@@ -3336,6 +3336,7 @@ const state = {
   notes: null,          // Set of numbers per cell
   errors: null,         // boolean per cell — true if current value != solution (tracked silently)
   revealedErrors: null, // Set of idx the player has *paid to reveal* via Verificar (shown red)
+  checkedWrong: null,   // Set of distinct cells ever flagged wrong by a check (Normal share "mistakes" = once checked)
   revealed: null,       // boolean per cell — for niebla, true if visible
   hintedCells: null,    // Set of cell indices revealed via hint
   errorCount: 0,
@@ -3416,6 +3417,7 @@ function saveProgress() {
       wrongCount: state.wrongCount,
       elapsed: state.elapsed,
       revealedErrors: Array.from(state.revealedErrors),
+      checkedWrong: Array.from(state.checkedWrong),
       hintedCells: Array.from(state.hintedCells),
       revealed: state.revealed,            // niebla fog state (incl. probed clues)
       completed: state.completed
@@ -3486,6 +3488,7 @@ function initPuzzle() {
   state.notes = [];
   state.errors = new Array(81).fill(false);
   state.revealedErrors = new Set();
+  state.checkedWrong = new Set();   // reset per puzzle
   state.revealed = new Array(81).fill(false);
   state.hintedCells = new Set();
   state.errorCount = 0;
@@ -3549,6 +3552,7 @@ function initPuzzle() {
     state.wrongCount = saved.wrongCount || 0;
     state.elapsed = saved.elapsed || 0;
     state.revealedErrors = new Set(saved.revealedErrors || []);
+    state.checkedWrong = new Set(saved.checkedWrong || []);
     state.hintedCells = new Set(saved.hintedCells || []);
     state.completed = !!saved.completed;
     // Rebuild errors + revealed
@@ -4397,8 +4401,14 @@ function buildShareText() {
   if (niebla) lines.push(isMaestro ? '   🌫️ …y en plena niebla.' : '🌫️ Resuelto en Niebla');
   if (sc >= state.reto) lines.push('✅ Reto del día logrado');
   else lines.push(niebla
-    ? `📌 Reto del día: ≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores`
-    : `📌 Reto del día: ${state.reto} pts`);
+    ? `❌ Reto del día: ≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores`
+    : `❌ Reto del día: ${state.reto} pts`);
+  // Mistakes. Normal counts the cells Verificar caught; Niebla already prints its
+  // entered-error count on the rank line above, so we don't repeat it there.
+  if (!niebla) {
+    const m = state.checkedWrong ? state.checkedWrong.size : 0;
+    lines.push(m === 0 ? '✏️ Sin errores' : `✏️ ${m} ${m === 1 ? 'error' : 'errores'}`);
+  }
   const bonuses = [];
   if (!niebla) {
     if ((state.checkCount || 0) === 0) bonuses.push('Sin verificar');
@@ -4973,6 +4983,7 @@ function checkCell() {
   } else {
     flash('✗ Incorrecto (−2)', 'error');
     state.revealedErrors.add(idx);   // mark it red so the player can find & fix it
+    state.checkedWrong.add(idx);     // count it as a checked mistake (for the share)
   }
   renderAll(); saveProgress();
 }
@@ -4984,6 +4995,7 @@ function checkPuzzle() {
     if (state.puzzle[r][c] === 0 && state.values[r][c] !== 0 && state.values[r][c] !== state.solution[r][c]) {
       wrongCount++;
       state.revealedErrors.add(idx);   // light up every wrong cell
+      state.checkedWrong.add(idx);     // count distinct cells caught by a check (for the share)
     }
   }
   if (boardIsFull() && wrongCount === 0) {
@@ -5309,7 +5321,7 @@ function initMini() {
     notes: {}, errors: {},
     selected: null, notesMode: false, history: [],
     elapsed: 0, startedAt: null, timer: null, done: false,
-    started: false, hintCount: 0,
+    started: false, hintCount: 0, mistakes: 0,   // cumulative wrong numbers entered (for the share)
   };
   try {
     const saved = JSON.parse(localStorage.getItem(miniProgressKey(iso)) || 'null');
@@ -5320,6 +5332,7 @@ function initMini() {
       miniState.done = !!saved.done;
       miniState.started = !!saved.started || miniState.elapsed > 0 || miniState.done;
       miniState.hintCount = saved.hintCount || 0;
+      miniState.mistakes = saved.mistakes || 0;
       for (let r = 0; r < MINI_N; r++) for (let c = 0; c < MINI_N; c++) {
         const v = miniState.values[r][c];
         if (puzzle[r][c] === 0 && v !== 0 && v !== solution[r][c]) miniState.errors[r + ',' + c] = true;
@@ -5332,7 +5345,8 @@ function miniSave() {
   try {
     localStorage.setItem(miniProgressKey(miniState.iso), JSON.stringify({
       values: miniState.values, notes: miniState.notes, elapsed: miniState.elapsed,
-      done: miniState.done, started: miniState.started, hintCount: miniState.hintCount
+      done: miniState.done, started: miniState.started, hintCount: miniState.hintCount,
+      mistakes: miniState.mistakes
     }));
   } catch (e) {}
 }
@@ -5440,6 +5454,7 @@ function miniPlace(n) {
   if (miniState.values[r][c] !== 0) delete miniState.notes[k];
   if (miniState.values[r][c] !== 0 && miniState.values[r][c] !== miniState.solution[r][c]) {
     miniState.errors[k] = true;
+    miniState.mistakes = (miniState.mistakes || 0) + 1;   // count it for the share
     // Wrong number costs time, so you can't brute-force by tapping every digit.
     // The penalty is permanent — Deshacer reverts the number but not the time.
     miniState.elapsed += MINI_ERROR_PENALTY;
@@ -5731,7 +5746,9 @@ function buildMiniShareText() {
   const t = miniState.elapsed;
   const target = miniRetoForDate(miniState.iso);
   const met = t <= target;
-  return `${dateStr}\n\n🧩 Sudoku Mini\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌'}\n\nhttps://cortadito.news`;
+  const m = miniState.mistakes || 0;
+  const mLine = m === 0 ? '✏️ Sin errores' : `✏️ ${m} ${m === 1 ? 'error' : 'errores'}`;
+  return `${dateStr}\n\n🧩 Sudoku Mini\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌ no logrado'}\n${mLine}\n\nhttps://cortadito.news`;
 }
 async function shareMini() {
   const text = buildMiniShareText();
