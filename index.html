@@ -1150,8 +1150,16 @@
      to the ✕ in every other modal. Size (36px) + position (16px) come from the
      base rule, which `.celebration button` doesn't touch. */
   .celebration .modal-close {
+    /* Lock to the exact standard close-✕ box (mirrors base .modal-close). The
+       generic `.celebration button` rule sets font:inherit + font-size:14px, so
+       re-assert every box/size property here and pin the glyph with !important
+       so nothing can shrink it — this is the ✕ that kept rendering small on the
+       ¡Buen sorbo! / Mini results card. */
     border: none; padding: 0; background: none;
-    border-radius: 50%; font-size: 22px; color: var(--ink-soft);
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; line-height: 1;
+    font-size: 22px !important; color: var(--ink-soft);
   }
   .celebration .modal-close:hover { background: var(--paper); color: var(--ink); }
 
@@ -4640,6 +4648,9 @@ function renderArchiveCal(today) {
     }
     grid.appendChild(cell);
   }
+  /* Pad to a full 6 rows (42 day cells) so the calendar is always the same
+     height — otherwise months that fit in 5 rows make the modal shrink. */
+  for (let i = lead + dim; i < 42; i++) { const b = document.createElement('div'); b.className = 'cal-day blank'; grid.appendChild(b); }
   menu.appendChild(grid);
 }
 
