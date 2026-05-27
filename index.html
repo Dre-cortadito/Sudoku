@@ -1430,6 +1430,18 @@
   .cal-day.current { background: var(--accent); color: #fff; font-weight: 700; }
   .cal-day:not(.disabled):not(.current):active { background: var(--accent-soft); }
   @media (hover: hover) { .cal-day:not(.disabled):not(.current):hover { background: var(--accent-soft); } }
+  /* Anteriores modal: HOY button + bigger tap targets */
+  .cal-hoy { display: block; width: 100%; margin: 2px 0 14px; padding: 12px; border: none; border-radius: 999px;
+    background: var(--accent); color: #fff; font-family: var(--font-ui); font-weight: 700; font-size: 15px;
+    cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .cal-hoy:active { background: var(--accent-deep); transform: scale(.98); }
+  @media (hover: hover) { .cal-hoy:hover { background: var(--accent-deep); } }
+  #archive-modal h2 { margin: 0 0 6px; }
+  #archive-modal .cal-grid { gap: 5px; padding: 0; }
+  #archive-modal .cal-day { height: 44px; font-size: 16px; border-radius: 10px; }
+  #archive-modal .cal-dow { font-size: 11px; }
+  #archive-modal .cal-title { font-size: 18px; }
+  #archive-modal .cal-nav { width: 36px; height: 36px; font-size: 18px; }
   .dropdown-menu button,
   .dropdown-menu a.archive-item {
     display: flex;
@@ -2392,6 +2404,12 @@
 
 <!-- ============ MODALS ============ -->
 <div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="archive-modal" data-modal-content style="display:none">
+    <button class="modal-close" data-close>×</button>
+    <h2 style="text-align:center">Anteriores</h2>
+    <button class="cal-hoy" id="archive-hoy">Hoy</button>
+    <div id="archive-cal"></div>
+  </div>
   <div class="modal" id="reglas-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">Cómo jugar — Normal</h2>
@@ -4562,12 +4580,14 @@ document.getElementById('more-btn').addEventListener('click', (e) => {
 document.getElementById('archive-btn').addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
-  const open = document.getElementById('archive-menu').classList.contains('open');
   closeDropdowns();
-  if (!open) {
-    populateArchive();
-    document.getElementById('archive-menu').classList.add('open');
-  }
+  populateArchive();
+  openModal('archive-modal');
+});
+document.getElementById('archive-hoy').addEventListener('click', () => {
+  const t = new Date();
+  const ti = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  location.hash = ''; switchDate(ti); closeModal();
 });
 document.addEventListener('click', () => closeDropdowns());
 
@@ -4583,7 +4603,8 @@ function populateArchive() {
   renderArchiveCal(today);
 }
 function renderArchiveCal(today) {
-  const menu = document.getElementById('archive-menu');
+  const menu = document.getElementById('archive-cal');
+  if (!menu) return;
   menu.innerHTML = '';
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
   const pad = n => String(n).padStart(2, '0');
@@ -4613,7 +4634,7 @@ function renderArchiveCal(today) {
     else {
       if (di === todayIso) cell.classList.add('today');
       if (di === state.iso) cell.classList.add('current');
-      cell.addEventListener('click', () => { location.hash = (di === todayIso) ? '' : di; switchDate(di); closeDropdowns(); });
+      cell.addEventListener('click', () => { location.hash = (di === todayIso) ? '' : di; switchDate(di); closeModal(); });
     }
     grid.appendChild(cell);
   }
