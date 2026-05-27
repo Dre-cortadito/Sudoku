@@ -1415,6 +1415,21 @@
     padding: 9px 14px 4px; position: sticky; top: 0;
     background: var(--paper); z-index: 1;
   }
+  /* Archive month-calendar (day selector) */
+  #archive-menu { min-width: 272px; max-height: none; }
+  .cal-head { display: flex; align-items: center; gap: 8px; padding: 4px 4px 10px; }
+  .cal-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--ink); text-transform: capitalize; flex: 1; text-align: center; }
+  .cal-nav { width: 30px; height: 30px; flex: none; border-radius: 50%; border: 1px solid var(--ink-line); background: var(--bg); color: var(--ink); font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .cal-nav[disabled] { opacity: .3; cursor: default; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; padding: 0 2px 4px; }
+  .cal-dow { text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .4px; color: var(--ink-soft); padding-bottom: 2px; }
+  .cal-day { height: 34px; display: flex; align-items: center; justify-content: center; font-size: 13px; border-radius: 8px; color: var(--ink); cursor: pointer; font-family: var(--font-ui); }
+  .cal-day.blank { visibility: hidden; }
+  .cal-day.disabled { color: var(--ink-soft); opacity: .3; cursor: default; }
+  .cal-day.today { font-weight: 800; box-shadow: inset 0 0 0 1.5px var(--ink-line); }
+  .cal-day.current { background: var(--accent); color: #fff; font-weight: 700; }
+  .cal-day:not(.disabled):not(.current):active { background: var(--accent-soft); }
+  @media (hover: hover) { .cal-day:not(.disabled):not(.current):hover { background: var(--accent-soft); } }
   .dropdown-menu button,
   .dropdown-menu a.archive-item {
     display: flex;
@@ -4556,42 +4571,53 @@ document.getElementById('archive-btn').addEventListener('click', (e) => {
 });
 document.addEventListener('click', () => closeDropdowns());
 
-// Archive lists every day from today back to the launch date (Jan 1, 2026),
-// newest first, grouped under sticky month subheaders. Puzzles are generated
-// deterministically per date, so any past day produces a valid puzzle.
+// Archive: an Excel-style month calendar. Navigate months with ‹ ›, tap a day
+// to load that puzzle. Bounds: launch (Jan 1, 2026) → today. Puzzles are
+// generated deterministically per date, so any day in range is playable.
 const ARCHIVE_START = new Date(2026, 0, 1, 12, 0, 0, 0);
+let archiveYM = null;
 function populateArchive() {
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  const cur = state.iso ? new Date(state.iso + 'T12:00:00') : today;   // open on the loaded puzzle's month
+  archiveYM = { y: cur.getFullYear(), m: cur.getMonth() };
+  renderArchiveCal(today);
+}
+function renderArchiveCal(today) {
   const menu = document.getElementById('archive-menu');
   menu.innerHTML = '';
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-  const isoOf = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const today = new Date(); today.setHours(12, 0, 0, 0);
-  const todayIso = isoOf(today);
-  let curMonth = '', i = 0;
-  for (const d = new Date(today); d >= ARCHIVE_START; d.setDate(d.getDate() - 1), i++) {
-    const iso = isoOf(d);
-    const mk = d.getFullYear() + '-' + d.getMonth();
-    if (mk !== curMonth) {
-      curMonth = mk;
-      const h = document.createElement('div');
-      h.className = 'archive-month';
-      h.textContent = cap(d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }));
-      menu.appendChild(h);
+  const pad = n => String(n).padStart(2, '0');
+  const iso = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const y = archiveYM.y, m = archiveYM.m;
+  const todayIso = iso(today.getFullYear(), today.getMonth(), today.getDate());
+  const sY = ARCHIVE_START.getFullYear(), sM = ARCHIVE_START.getMonth();
+  const canPrev = (y > sY) || (y === sY && m > sM);
+  const canNext = (y < today.getFullYear()) || (y === today.getFullYear() && m < today.getMonth());
+  const head = document.createElement('div'); head.className = 'cal-head';
+  const prev = document.createElement('button'); prev.type = 'button'; prev.className = 'cal-nav'; prev.textContent = '‹'; prev.disabled = !canPrev;
+  const next = document.createElement('button'); next.type = 'button'; next.className = 'cal-nav'; next.textContent = '›'; next.disabled = !canNext;
+  const title = document.createElement('div'); title.className = 'cal-title';
+  title.textContent = cap(new Date(y, m, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }));
+  prev.addEventListener('click', (e) => { e.stopPropagation(); if (!canPrev) return; if (--archiveYM.m < 0) { archiveYM.m = 11; archiveYM.y--; } renderArchiveCal(today); });
+  next.addEventListener('click', (e) => { e.stopPropagation(); if (!canNext) return; if (++archiveYM.m > 11) { archiveYM.m = 0; archiveYM.y++; } renderArchiveCal(today); });
+  head.appendChild(prev); head.appendChild(title); head.appendChild(next); menu.appendChild(head);
+  const grid = document.createElement('div'); grid.className = 'cal-grid';
+  ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(w => { const c = document.createElement('div'); c.className = 'cal-dow'; c.textContent = w; grid.appendChild(c); });
+  const lead = (new Date(y, m, 1).getDay() + 6) % 7;          // Monday-first
+  const dim = new Date(y, m + 1, 0).getDate();
+  for (let i = 0; i < lead; i++) { const b = document.createElement('div'); b.className = 'cal-day blank'; grid.appendChild(b); }
+  for (let d = 1; d <= dim; d++) {
+    const cell = document.createElement('div'); cell.className = 'cal-day'; cell.textContent = d;
+    const dObj = new Date(y, m, d, 12, 0, 0, 0), di = iso(y, m, d);
+    if (dObj < ARCHIVE_START || dObj > today) { cell.classList.add('disabled'); }
+    else {
+      if (di === todayIso) cell.classList.add('today');
+      if (di === state.iso) cell.classList.add('current');
+      cell.addEventListener('click', () => { location.hash = (di === todayIso) ? '' : di; switchDate(di); closeDropdowns(); });
     }
-    const weekday = cap(d.toLocaleDateString('es-ES', { weekday: 'long' }));
-    const label = i === 0 ? 'Hoy' : (i === 1 ? 'Ayer' : String(d.getDate()));
-    const a = document.createElement('a');
-    a.className = 'archive-item' + (iso === state.iso ? ' current' : '');
-    a.href = '#' + (iso === todayIso ? '' : iso);
-    a.innerHTML = '<span>' + label + '</span><span class="day-name">' + weekday + '</span>';
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      location.hash = (iso === todayIso) ? '' : iso;
-      switchDate(iso);
-      closeDropdowns();
-    });
-    menu.appendChild(a);
+    grid.appendChild(cell);
   }
+  menu.appendChild(grid);
 }
 
 // ---------- DATE SWITCHING ----------
