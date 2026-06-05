@@ -1639,7 +1639,12 @@
     text-align: center;
     margin: 8px 0 -2px;
   }
-  body.mini-landing .pickrow-label { visibility: hidden; }
+  body.mini-landing .pickrow-label { display: none; }
+  .mini-reto { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 92px; text-align: center; }
+  .mini-reto-label { font-family: var(--font-ui); font-size: 11px; text-transform: uppercase; letter-spacing: 1.6px; font-weight: 700; color: var(--ink); }
+  .mini-reto-time { font-family: var(--font-display); font-weight: 700; font-size: 32px; color: var(--accent); line-height: 1; margin: 4px 0 0; }
+  .mini-reto-streak { font-size: 13px; color: var(--ink-soft); margin: 10px 0 0; }
+  .mini-reto-streak b { color: var(--accent); }
   .landing-tab {
     background: none; border: none;
     padding: 8px 6px 11px;
@@ -2195,6 +2200,11 @@
       <button class="landing-diff-btn" data-landing-diff="dificil">Difícil</button>
     </div>
     <div class="landing-diff-desc" id="landing-diff-desc">Cantidad estándar de números visibles.</div>
+      <div class="mini-reto" id="mini-reto">
+        <div class="mini-reto-label">Reto de hoy</div>
+        <div class="mini-reto-time" id="mini-reto-time">≤ 2:45</div>
+        <div class="mini-reto-streak" id="mini-reto-streak"></div>
+      </div>
     <button class="landing-play" id="landing-play">Jugar</button>
     <button class="landing-sub" id="landing-sub">Suscribirse al boletín</button>
     <div class="landing-credit">
@@ -5146,8 +5156,24 @@ function setLandingTab(tab) {
     retoLbl.textContent = 'Tu récord';
     const best = bestMiniTime();
     retoVal.textContent = best ? best : '—';
-    diffRow.style.display  = ''; diffRow.style.visibility  = 'hidden';
-    diffDesc.style.display = ''; diffDesc.style.visibility = 'hidden';
+    diffRow.style.display  = 'none';
+    diffDesc.style.display = 'none';
+    const mr = document.getElementById('mini-reto');
+    if (mr) {
+      mr.style.display = 'flex';
+      const tEl = document.getElementById('mini-reto-time');
+      if (tEl) tEl.textContent = '≤ ' + miniFmt(miniRetoForDate(state.iso));
+      const sObj = miniLoadStreak(); let alive = 0;
+      if (sObj.last) {
+        const d = isoToDate(state.iso); d.setDate(d.getDate() - 1);
+        const yest = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        if (sObj.last === state.iso || sObj.last === yest) alive = sObj.count;
+      }
+      const stEl = document.getElementById('mini-reto-streak');
+      if (stEl) stEl.innerHTML = alive > 0
+        ? ('Racha actual: <b>' + alive + '</b> día' + (alive === 1 ? '' : 's') + ' \uD83D\uDD25')
+        : 'Resuélvelo a tiempo y empieza tu racha.';
+    }
     playBtn.textContent = 'Jugar';
     playBtn.classList.remove('is-soon');
     playBtn.classList.add('is-mini-cta');
@@ -5165,8 +5191,9 @@ function setLandingTab(tab) {
   tagline.textContent = isNiebla ? 'Despeja la niebla, celda a celda.' : '¿Qué patrón encontrarás hoy?';
   retoLbl.textContent = 'Reto del día';
   retoVal.textContent = retoForDate(state.iso, mode) + ' pts';
-  diffRow.style.display  = ''; diffRow.style.visibility  = 'visible';
-  diffDesc.style.display = ''; diffDesc.style.visibility = 'visible';
+  diffRow.style.display  = '';
+  diffDesc.style.display = '';
+  const mrOff = document.getElementById('mini-reto'); if (mrOff) mrOff.style.display = 'none';
   playBtn.textContent = 'Jugar';
   playBtn.classList.remove('is-soon', 'is-mini-cta');
   playBtn.disabled = false;
