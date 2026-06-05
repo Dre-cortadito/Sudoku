@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
 <title>Sudoku — Cortadito News</title>
-<meta name="description" content="Un acertijo diario de números de Cortadito News. ¿Qué patrón encontrarás hoy? Tres juegos cada día: Normal, Niebla y Mini.">
+<meta name="description" content="Un acertijo diario de números de Cortadito News. ¿Qué patrón encontrarás hoy? Tres juegos cada día: Clásico, Niebla y Mini.">
 <style>
   /* ================================================================
      CORTADITO SUDOKU
@@ -412,10 +412,10 @@
   }
   .landing-title {
     font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 48px;               /* trimmed from 56 to fit */
-    letter-spacing: -1.2px;
-    line-height: 0.92;
+    font-weight: 800;
+    font-size: clamp(52px, 13vw, 84px);
+    letter-spacing: -2px;
+    line-height: 0.95;
     margin: 0;
     color: var(--ink);
   }
@@ -1687,12 +1687,12 @@
   /* Mini landing differentiation: 2×2 BeanFour cluster (64px) instead
      of the 3×3 tray, smaller italic wordmark — "espresso shot" vs
      "full ritual". */
-  .landing-logo-mini { display: none; width: 64px; height: 64px; flex-shrink: 0; }
+  .landing-logo-mini { display: none; width: 90px; height: 90px; flex-shrink: 0; }
   body.mini-landing .landing-logo { display: none; }
   body.mini-landing .landing-logo-mini { display: block; }
-  body.mini-landing .landing-title { font-size: 40px; font-style: italic; }
+  /* Mini/Niebla keep the same title size & style as Clásico (consistency) */
   /* Niebla landing: its own italic wordmark (logo recolours via --accent below). */
-  body.niebla-landing .landing-title { font-style: italic; }
+  body.niebla-landing .landing-title { }
 
   /* ---- Niebla · its own foggy slate identity (landing tab + in-game) ----
      Niebla is a separate game, so it carries a cooler "fog" accent pair
@@ -2072,7 +2072,7 @@
     /* The Mini landing swaps in a different logo element + shrinks the title to
        40px — both need the desktop bump too, or Mini looks tiny next to Normal. */
     .landing-logo-mini { width: 160px; height: 160px; }
-    body.mini-landing .landing-title { font-size: 64px; }
+    /* Mini title stays the standard size on desktop too */
     .landing-tabs  { gap: 48px; margin: 0; }
     .landing-tab   { font-size: 20px; letter-spacing: 2.6px; padding: 10px 10px 14px; }
     .landing-tab.active::after { height: 3px; }
@@ -2173,7 +2173,7 @@
   <div class="landing-inner">
     <div class="landing-tabs" role="tablist">
       <button class="landing-tab" id="tab-mini" data-tab="mini" role="tab">Mini</button>
-      <button class="landing-tab active" id="tab-diario" data-tab="diario" role="tab">Normal</button>
+      <button class="landing-tab active" id="tab-diario" data-tab="diario" role="tab">Clásico</button>
       <button class="landing-tab" id="tab-niebla" data-tab="niebla" role="tab">Niebla</button>
     </div>
     <div class="landing-logo-row">
@@ -2422,7 +2422,7 @@
   </div>
   <div class="modal" id="reglas-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
-    <h2 class="modal-title">Cómo jugar — Normal</h2>
+    <h2 class="modal-title">Cómo jugar — Clásico</h2>
     <p>El sudoku es una cuadrícula de <strong>9 × 9</strong> dividida en nueve bloques de <strong>3 × 3</strong>. Empiezas con algunos números ya puestos y tu trabajo es llenar el resto.</p>
 
     <h3>Las tres reglas</h3>
@@ -2529,7 +2529,7 @@
     <strong class="hl-accent">✨ Sin descender</strong>: termina en la dificultad en la que empezaste, sin bajar a una más fácil.</p>
 
     <h3>Dificultad</h3>
-    <p><strong>Fácil · Medio · Difícil</strong> cambian cuántas pistas ves al empezar. Cuanto más difícil, más tablero por descubrir bajo la niebla — y cada juego (Normal y Niebla) recuerda su propia dificultad.</p>
+    <p><strong>Fácil · Medio · Difícil</strong> cambian cuántas pistas ves al empezar. Cuanto más difícil, más tablero por descubrir bajo la niebla — y cada juego (Clásico y Niebla) recuerda su propia dificultad.</p>
 
     <h3>Rangos</h3>
     <p>Diez rangos, de <em>Debutante</em> a <strong class="hl-accent">Maestro/a</strong>, según tu precisión. Toca la barra de rangos arriba para ver la escalera completa.</p>
@@ -2641,14 +2641,14 @@
   <div class="modal" id="mini-reglas-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">Cómo jugar — Mini</h2>
-    <p>El Mini es un sudoku de <strong>6 × 6</strong> dividido en bloques de <strong>2 × 3</strong>. Más pequeño y rápido que la versión Normal — un sorbo de café.</p>
+    <p>El Mini es un sudoku de <strong>6 × 6</strong> dividido en bloques de <strong>2 × 3</strong>. Más pequeño y rápido que la versión Clásica — un sorbo de café.</p>
 
     <h3>Las reglas</h3>
     <p>Cada <strong class="hl-accent">fila</strong>, cada <strong class="hl-accent">columna</strong> y cada <strong class="hl-accent">bloque de 2 × 3</strong> lleva los números del <strong>1 al 6</strong>, sin repetir.</p>
 
     <h3>Cómo se juega</h3>
     <p>Toca <strong>Empezar</strong> para destapar el tablero y arrancar el cronómetro — no corre hasta que empiezas.<br>
-    <strong>Notas</strong> funciona como en la versión Normal: anotas los candidatos a mano.<br>
+    <strong>Notas</strong> funciona como en la versión Clásica: anotas los candidatos a mano.<br>
     Un número <strong>equivocado</strong> suma <span class="hl-yellow">+10 s</span> — no adivines al azar.<br>
     <strong>Pista</strong> revela una celda, pero suma <span class="hl-yellow">+30 s</span> a tu tiempo.<br>
     La tecla de borrar (⌫) quita el número de la celda elegida (no recupera el tiempo perdido).</p>
@@ -2657,7 +2657,7 @@
     <p>Aquí no hay puntos: tu rango lo decide <strong class="hl-accent">cuánto tardas</strong>. Cuanto más rápido resuelvas, más alto el rango (de <strong>Debutante</strong> a <strong>Maestro/a</strong>). La barra de arriba te muestra para qué rango vas y baja a medida que pasa el tiempo. Recibes tu rango al terminar.</p>
 
     <h3>Reto del día</h3>
-    <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. La <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> en la barra de rangos marca ese objetivo — la misma que en el modo Normal — y se pone <strong>marrón</strong> mientras vas en camino de lograrlo.</p>
+    <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. La <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> en la barra de rangos marca ese objetivo — la misma que en el modo Clásico — y se pone <strong>marrón</strong> mientras vas en camino de lograrlo.</p>
   </div>
 
   <div class="modal" id="timer-info-modal" data-modal-content style="display:none">
@@ -2671,7 +2671,7 @@
   <div class="modal" id="about-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2>Sobre Sudoku</h2>
-    <p>Un acertijo diario de <strong>Cortadito News</strong>. Cada día, tres juegos para elegir: <strong>Normal</strong>, <strong>Niebla</strong> y <strong>Mini</strong>.</p>
+    <p>Un acertijo diario de <strong>Cortadito News</strong>. Cada día, tres juegos para elegir: <strong>Clásico</strong>, <strong>Niebla</strong> y <strong>Mini</strong>.</p>
     <p>El Sudoku normal es lógica pura. Niebla esconde casi todo el tablero —y algunas pistas— y lo vas descubriendo a medida que resuelves; las pistas visibles siempre bastan para resolverlo sin adivinar. El Mini es un 6 × 6 rápido, contra el reloj.</p>
     <p class="muted">¡Lo esencial en un sorbo!</p>
   </div>
@@ -5161,7 +5161,7 @@ function setLandingTab(tab) {
   state.mode = mode;
   state.difficulty = loadDiffPref(mode);
   title.textContent   = isNiebla ? 'Niebla' : 'Sudoku';
-  eyebrow.textContent = isNiebla ? 'Sudoku' : 'Normal';
+  eyebrow.textContent = isNiebla ? 'Sudoku' : 'Clásico';
   tagline.textContent = isNiebla ? 'Despeja la niebla, celda a celda.' : '¿Qué patrón encontrarás hoy?';
   retoLbl.textContent = 'Reto del día';
   retoVal.textContent = retoForDate(state.iso, mode) + ' pts';
