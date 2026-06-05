@@ -980,8 +980,8 @@
   }
   .num-btn {
     height: 44px;
-    background: var(--paper);
-    border: 1px solid var(--ink-line);
+    background: var(--ink-line);
+    border: 0;
     border-radius: 10px;
     font-family: var(--font-display);
     font-size: 22px;
@@ -1347,6 +1347,8 @@
     line-height: 1;
   }
   .stat-value.accent { color: var(--accent); }
+  #stats-modal .stats-footer { margin: 22px 0 0; font-size: 12px; color: var(--ink-soft); font-style: italic; line-height: 1.55; }
+  #stats-modal .stats-footer strong { color: var(--accent); font-weight: 700; }
   .stat-label {
     font-size: 11px;
     font-weight: 700;
@@ -1638,8 +1640,8 @@
   /* Tab strip flows as the first element of the landing column so it
      never overlaps the logo. Reads as page-level navigation. */
   .landing-tabs {
-    display: flex; gap: 30px; justify-content: center;
-    margin: 6px 0 4px;   /* a little breathing room — not tucked at the very top */
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    margin: 6px 0 4px;   /* 3 equal columns keep the middle tab centered */
   }
   /* Uppercase label above each picker row (Dificultad / Modo). */
   .pickrow-label {
@@ -1659,8 +1661,7 @@
   .landing-tab {
     background: none; border: none;
     padding: 8px 6px 11px;
-    min-width: 5.5em;   /* equal width so the 3-tab strip is symmetric (MINI is
-                           shorter than NIEBLA) and the middle tab is truly centered */
+    justify-self: center;   /* grid centers the middle tab regardless of label length */
     text-align: center;
     font-family: var(--font-ui);
     font-size: 15px; font-weight: 700;
@@ -2630,6 +2631,7 @@
         </div>
       </div>
     </div>
+    <p class="stats-footer">Tus estadísticas se guardan <strong>solo en este navegador</strong>. Nada se envía a Cortadito ni a ningún servidor. Si limpias los datos del navegador, las cookies o el historial del sitio, <strong>tus estadísticas se borrarán</strong>. Tampoco se sincronizan entre dispositivos: cada navegador tiene su propio registro.</p>
   </div>
 
   <div class="modal" id="rangos-modal" data-modal-content style="display:none">
@@ -4399,7 +4401,7 @@ function buildShareText() {
   const lines = [];
   lines.push(formatLongDate(state.iso));                 // 1. full Spanish date
   lines.push('');                                        // blank line under the date
-  lines.push(`🧩 Sudoku ${MODES[state.mode].label} · ${diff}`);   // 2. game mode (+ difficulty)
+  lines.push(`🧩 Sudoku ${state.mode==='niebla'?'🌫️ ':'💎 '}${MODES[state.mode].label} · ${diff}`);   // 2. game mode (+ difficulty)
   // Not finished yet — never claim a rank or the reto. (In the ceiling model the
   // score starts at the top, so an untouched board would otherwise look solved.)
   if (!state.completed) {
@@ -5770,14 +5772,14 @@ function buildMiniShareText() {
   const dateStr = formatLongDate(state.iso);
   if (!miniState || !miniState.done) {
     const tgt = miniState ? ` (≤ ${miniFmt(miniRetoForDate(miniState.iso))})` : '';
-    return `${dateStr}\n\n🧩 Sudoku Mini\n⏳ Todavía sin terminar\n🎯 Reto del día${tgt}\n\nhttps://cortadito.news`;
+    return `${dateStr}\n\n🧩 Sudoku 🐣 Mini\n⏳ Todavía sin terminar\n🎯 Reto del día${tgt}\n\nhttps://cortadito.news`;
   }
   const t = miniState.elapsed;
   const target = miniRetoForDate(miniState.iso);
   const met = t <= target;
   const m = miniState.mistakes || 0;
   const mLine = m === 0 ? '✏️ Sin errores' : `✏️ ${m} ${m === 1 ? 'error' : 'errores'}`;
-  return `${dateStr}\n\n🧩 Sudoku Mini\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌ no logrado'}\n${mLine}\n\nhttps://cortadito.news`;
+  return `${dateStr}\n\n🧩 Sudoku 🐣 Mini\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌ no logrado'}\n${mLine}\n\nhttps://cortadito.news`;
 }
 async function shareMini() {
   const text = buildMiniShareText();
