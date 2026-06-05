@@ -385,6 +385,7 @@
      centered when it fits, but lets it scroll from the TOP when it's
      taller than the screen — so the Diario/Mini tabs are never clipped
      above the viewport. */
+  .landing-head { height: 275px; display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
   .landing-inner {
     margin: 0 auto;
     width: 100%;
@@ -2089,6 +2090,7 @@
     .landing-tab   { font-size: 20px; letter-spacing: 2.6px; padding: 10px 10px 14px; }
     .landing-tab.active::after { height: 3px; }
     .landing-title   { font-size: 84px; }
+    .landing-head    { height: auto; }
     .landing-tagline { font-size: 28px; max-width: 460px; }
     /* Date now lives in the shared top header (same spot on landing + game), so
        the standalone landing dateline is gone. */
@@ -2188,6 +2190,7 @@
       <button class="landing-tab active" id="tab-diario" data-tab="diario" role="tab">Clásico</button>
       <button class="landing-tab" id="tab-niebla" data-tab="niebla" role="tab">Niebla</button>
     </div>
+    <div class="landing-head">
     <div class="landing-logo-row">
       <svg class="landing-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="rotate(-28 22 22)"><ellipse cx="22" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 23.5 Q 22 18.25 33.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(14 60 22)"><ellipse cx="60" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 23.5 Q 60 18.25 71.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-18 98 22)"><ellipse cx="98" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 23.5 Q 98 18.25 109.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(22 22 60)"><ellipse cx="22" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 61.5 Q 22 56.25 33.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(0 60 60)"><ellipse cx="60" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent-2)"/><path d="M 48.75 61.5 Q 60 56.25 71.25 60.5" style="fill:none;stroke:var(--accent);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-22 98 60)"><ellipse cx="98" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 61.5 Q 98 56.25 109.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-14 22 98)"><ellipse cx="22" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 99.5 Q 22 94.25 33.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(24 60 98)"><ellipse cx="60" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 99.5 Q 60 94.25 71.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-30 98 98)"><ellipse cx="98" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 99.5 Q 98 94.25 109.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g></svg>
       <svg class="landing-logo-mini" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="translate(60 60) scale(1.27) translate(-60 -60)"><g transform="rotate(-22 36 36)"><ellipse cx="36" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent-2)"/><path d="M 22.05 37.86 Q 36 31.35 49.95 36.62" style="fill:none;stroke:var(--accent);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(18 84 36)"><ellipse cx="84" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 70.05 37.86 Q 84 31.35 97.95 36.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(14 36 84)"><ellipse cx="36" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 22.05 85.86 Q 36 79.35 49.95 84.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(-26 84 84)"><ellipse cx="84" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent-2)"/><path d="M 70.05 85.86 Q 84 79.35 97.95 84.62" style="fill:none;stroke:var(--accent);stroke-width:3.1;stroke-linecap:round"/></g></g></svg>
@@ -2196,6 +2199,7 @@
     </div>
     <p class="landing-tagline" id="landing-tagline">¿Qué patrón encontrarás hoy?</p>
     <div class="landing-date" id="landing-date"></div>
+    </div><!-- /landing-head -->
     <div class="landing-reto" id="landing-reto">
       <span class="landing-reto-label" id="landing-reto-label">Reto del día</span>
       <span class="landing-reto-value" id="landing-reto-value">— pts</span>
