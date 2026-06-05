@@ -429,6 +429,13 @@
     font-family: var(--font-display);   /* spec: italic Newsreader */
     font-style: italic;
     font-weight: 400;
+    /* Reserve 2 lines so a 1-line vs 2-line tagline (per mode) never shifts the
+       reto + everything below it. */
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
   .landing-date {
     margin: 0;
