@@ -1674,7 +1674,7 @@
 
   /* Mini eyebrow above the wordmark when the Mini tab is active. */
   .landing-eyebrow {
-    display: none;
+    display: block;
     font-family: var(--font-ui);
     font-size: 11px; font-weight: 700;
     letter-spacing: 3px; text-transform: uppercase;
@@ -5131,6 +5131,7 @@ function setLandingTab(tab) {
   syncTabBlink();   // keep the blinking tabs in phase after the selection changes
 
   const title    = document.getElementById('landing-title');
+  const eyebrow  = document.getElementById('landing-eyebrow');
   const tagline  = document.getElementById('landing-tagline');
   const retoLbl  = document.getElementById('landing-reto-label');
   const retoVal  = document.getElementById('landing-reto-value');
@@ -5140,6 +5141,7 @@ function setLandingTab(tab) {
 
   if (isMini) {
     title.textContent   = 'Mini';
+    eyebrow.textContent = 'Sudoku';
     tagline.textContent = 'Un sorbo. Tres minutos.';
     retoLbl.textContent = 'Tu récord';
     const best = bestMiniTime();
@@ -5159,6 +5161,7 @@ function setLandingTab(tab) {
   state.mode = mode;
   state.difficulty = loadDiffPref(mode);
   title.textContent   = isNiebla ? 'Niebla' : 'Sudoku';
+  eyebrow.textContent = isNiebla ? 'Sudoku' : 'Normal';
   tagline.textContent = isNiebla ? 'Despeja la niebla, celda a celda.' : '¿Qué patrón encontrarás hoy?';
   retoLbl.textContent = 'Reto del día';
   retoVal.textContent = retoForDate(state.iso, mode) + ' pts';
