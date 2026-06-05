@@ -385,7 +385,7 @@
      centered when it fits, but lets it scroll from the TOP when it's
      taller than the screen — so the Diario/Mini tabs are never clipped
      above the viewport. */
-  .landing-head { height: 275px; display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
+  .landing-head { height: 275px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
   .landing-inner {
     margin: 0 auto;
     width: 100%;
@@ -452,6 +452,8 @@
     justify-content: center;
     gap: 8px;
     letter-spacing: 0.3px;
+    height: 24px;              /* fixed: reto + everything below it cannot shift per mode */
+    line-height: 24px;
   }
   .landing-reto-label {
     color: var(--ink-soft);
@@ -466,6 +468,7 @@
     font-size: 17px;            /* spec: 17px */
     font-weight: 700;
     letter-spacing: 0;
+    line-height: 1;             /* lock: prevents the "≤" glyph from inflating the row */
   }
   .landing-mode-row {
     display: flex; gap: 6px;
