@@ -1639,7 +1639,7 @@
     text-align: center;
     margin: 8px 0 -2px;
   }
-  body.mini-landing .pickrow-label { display: none; }
+  body.mini-landing .pickrow-label { visibility: hidden; }
   .landing-tab {
     background: none; border: none;
     padding: 8px 6px 11px;
@@ -5146,8 +5146,8 @@ function setLandingTab(tab) {
     retoLbl.textContent = 'Tu récord';
     const best = bestMiniTime();
     retoVal.textContent = best ? best : '—';
-    diffRow.style.display  = 'none';
-    diffDesc.style.display = 'none';
+    diffRow.style.display  = ''; diffRow.style.visibility  = 'hidden';
+    diffDesc.style.display = ''; diffDesc.style.visibility = 'hidden';
     playBtn.textContent = 'Jugar';
     playBtn.classList.remove('is-soon');
     playBtn.classList.add('is-mini-cta');
@@ -5165,8 +5165,8 @@ function setLandingTab(tab) {
   tagline.textContent = isNiebla ? 'Despeja la niebla, celda a celda.' : '¿Qué patrón encontrarás hoy?';
   retoLbl.textContent = 'Reto del día';
   retoVal.textContent = retoForDate(state.iso, mode) + ' pts';
-  diffRow.style.display  = '';
-  diffDesc.style.display = '';
+  diffRow.style.display  = ''; diffRow.style.visibility  = 'visible';
+  diffDesc.style.display = ''; diffDesc.style.visibility = 'visible';
   playBtn.textContent = 'Jugar';
   playBtn.classList.remove('is-soon', 'is-mini-cta');
   playBtn.disabled = false;
