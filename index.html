@@ -1640,7 +1640,8 @@
     margin: 8px 0 -2px;
   }
   body.mini-landing .pickrow-label { display: none; }
-  .mini-reto { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 92px; text-align: center; }
+  .diff-zone { min-height: 104px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .mini-reto { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .mini-reto-label { font-family: var(--font-ui); font-size: 11px; text-transform: uppercase; letter-spacing: 1.6px; font-weight: 700; color: var(--ink); }
   .mini-reto-note { font-size: 14px; color: var(--ink-soft); line-height: 1.5; max-width: 280px; margin: 8px 0 0; }
   .landing-tab {
@@ -2191,17 +2192,19 @@
       <span class="landing-reto-label" id="landing-reto-label">Reto del día</span>
       <span class="landing-reto-value" id="landing-reto-value">— pts</span>
     </div>
-    <div class="pickrow-label" id="landing-diff-label">Dificultad</div>
-    <div class="landing-diff-row" id="landing-diff-row">
-      <button class="landing-diff-btn" data-landing-diff="facil">Fácil</button>
-      <button class="landing-diff-btn active" data-landing-diff="medio">Medio</button>
-      <button class="landing-diff-btn" data-landing-diff="dificil">Difícil</button>
-    </div>
-    <div class="landing-diff-desc" id="landing-diff-desc">Cantidad estándar de números visibles.</div>
+    <div class="diff-zone">
+      <div class="pickrow-label" id="landing-diff-label">Dificultad</div>
+      <div class="landing-diff-row" id="landing-diff-row">
+        <button class="landing-diff-btn" data-landing-diff="facil">Fácil</button>
+        <button class="landing-diff-btn active" data-landing-diff="medio">Medio</button>
+        <button class="landing-diff-btn" data-landing-diff="dificil">Difícil</button>
+      </div>
+      <div class="landing-diff-desc" id="landing-diff-desc">Cantidad estándar de números visibles.</div>
       <div class="mini-reto" id="mini-reto">
         <div class="mini-reto-label">Dificultad</div>
         <div class="mini-reto-note">El Mini tiene una sola dificultad: siempre un 6×6 rápido.</div>
       </div>
+    </div>
     <button class="landing-play" id="landing-play">Jugar</button>
     <button class="landing-sub" id="landing-sub">Suscribirse al boletín</button>
     <div class="landing-credit">
@@ -5299,7 +5302,7 @@ function miniRankName(t) { return RANK_NAMES[miniRankIndexForTime(t)]; }
 
 // Daily target time (reto). Deterministic per date, snapped to 15s, in a
 // reachable window. Beating it earns ¡Buen sorbo! and feeds a Mini streak.
-const MINI_RETO_MIN = 120, MINI_RETO_MAX = 210;   // 2:00 – 3:30
+const MINI_RETO_MIN = 105, MINI_RETO_MAX = 135;   // 1:45 – 2:15 (tight 30s window)
 function miniRetoForDate(iso) {
   let h = 2166136261 >>> 0;
   for (let i = 0; i < iso.length; i++) { h ^= iso.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
