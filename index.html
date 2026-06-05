@@ -1613,6 +1613,7 @@
     background: var(--ink);
     color: var(--bg);
   }
+  .landing-diff-btn.is-locked { opacity: 1; cursor: default; }
   .landing-diff-desc {
     color: var(--ink);          /* was --ink-soft — too faint to read */
     font-size: 13px;            /* readable, but a step below the heading */
@@ -2206,10 +2207,10 @@
         <button class="landing-diff-btn active" data-landing-diff="medio">Medio</button>
         <button class="landing-diff-btn" data-landing-diff="dificil">Difícil</button>
       </div>
-      <div class="landing-diff-desc" id="landing-diff-desc">Cantidad estándar de números visibles.</div>
-      <div class="mini-reto" id="mini-reto">
-        <div class="mini-reto-note">El Mini tiene una sola dificultad: siempre un 6×6 rápido.</div>
+      <div class="landing-diff-row" id="landing-mini-diff-row" style="display:none">
+        <button class="landing-diff-btn active is-locked" type="button" disabled>Única</button>
       </div>
+      <div class="landing-diff-desc" id="landing-diff-desc">Cantidad estándar de números visibles.</div>
     </div>
     <button class="landing-play" id="landing-play">Jugar</button>
     <button class="landing-sub" id="landing-sub">Suscribirse al boletín</button>
@@ -5162,9 +5163,9 @@ function setLandingTab(tab) {
     retoLbl.textContent = 'Reto del día';
     retoVal.textContent = '≤ ' + miniFmt(miniRetoForDate(state.iso));
     diffRow.style.display  = 'none';
-    diffDesc.style.display = 'none';
-    const mr = document.getElementById('mini-reto');
-    if (mr) mr.style.display = 'flex';
+    document.getElementById('landing-mini-diff-row').style.display = '';
+    diffDesc.style.display = '';
+    diffDesc.textContent = 'El Mini siempre es un 6×6 rápido.';
     playBtn.textContent = 'Jugar';
     playBtn.classList.remove('is-soon');
     playBtn.classList.add('is-mini-cta');
@@ -5183,8 +5184,8 @@ function setLandingTab(tab) {
   retoLbl.textContent = 'Reto del día';
   retoVal.textContent = retoForDate(state.iso, mode) + ' pts';
   diffRow.style.display  = '';
+  document.getElementById('landing-mini-diff-row').style.display = 'none';
   diffDesc.style.display = '';
-  const mrOff = document.getElementById('mini-reto'); if (mrOff) mrOff.style.display = 'none';
   playBtn.textContent = 'Jugar';
   playBtn.classList.remove('is-soon', 'is-mini-cta');
   playBtn.disabled = false;
