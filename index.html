@@ -385,7 +385,7 @@
      centered when it fits, but lets it scroll from the TOP when it's
      taller than the screen — so the Diario/Mini tabs are never clipped
      above the viewport. */
-  .landing-head { height: 280px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 16px; flex-shrink: 0; }
+  .landing-head { display: flex; flex-direction: column; align-items: center; gap: 16px; flex-shrink: 0; }   /* auto height — content is identical across modes, so reto stays pinned without clipping */
   .landing-inner {
     margin: 0 auto;
     width: 100%;
