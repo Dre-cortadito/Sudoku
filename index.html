@@ -402,8 +402,8 @@
     align-items: center;
     gap: 12px;
     /* Mobile: auto top margin centers the info below the tabs, leaving the tab
-       strip at its height near the top. (Desktop overrides this to group-center.) */
-    margin-top: auto;
+       strip at its height near the top. */
+    margin-top: 0;
   }
   .landing-logo {
     width: 90px; height: 90px;     /* trimmed from 110 so the landing fits one screen */
@@ -1639,7 +1639,7 @@
     text-align: center;
     margin: 8px 0 -2px;
   }
-  body.mini-landing .pickrow-label { display: none; }
+  /* Mini keeps the shared 'Dificultad' label (same position as the other modes) */
   .diff-zone { height: 116px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; }
   .mini-reto { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .mini-reto-label { font-family: var(--font-ui); font-size: 11px; text-transform: uppercase; letter-spacing: 1.6px; font-weight: 700; color: var(--ink); }
