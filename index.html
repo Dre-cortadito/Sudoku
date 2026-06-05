@@ -385,7 +385,7 @@
      centered when it fits, but lets it scroll from the TOP when it's
      taller than the screen — so the Diario/Mini tabs are never clipped
      above the viewport. */
-  .landing-head { height: 275px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
+  .landing-head { height: 280px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 16px; flex-shrink: 0; }
   .landing-inner {
     margin: 0 auto;
     width: 100%;
@@ -394,7 +394,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     padding-top: 52px;   /* mobile: tabs sit near the top, below the pinned theme toggle */
   }
   .landing-logo-row {
@@ -407,7 +407,7 @@
     margin-top: 0;
   }
   .landing-logo {
-    width: 90px; height: 90px;     /* trimmed from 110 so the landing fits one screen */
+    width: 96px; height: 96px;     /* standardized logo box across games */
     flex-shrink: 0;
     margin: 0;
   }
@@ -1652,7 +1652,7 @@
     margin: 8px 0 -2px;
   }
   /* Mini keeps the shared 'Dificultad' label (same position as the other modes) */
-  .diff-zone { height: 116px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; }
+  .diff-zone { height: 96px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; }
   .mini-reto { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .mini-reto-label { font-family: var(--font-ui); font-size: 11px; text-transform: uppercase; letter-spacing: 1.6px; font-weight: 700; color: var(--ink); }
   .mini-reto-note { font-size: 14px; color: var(--ink-soft); line-height: 1.5; max-width: 280px; margin: 8px 0 0; }
@@ -1703,7 +1703,7 @@
   /* Mini landing differentiation: 2×2 BeanFour cluster (64px) instead
      of the 3×3 tray, smaller italic wordmark — "espresso shot" vs
      "full ritual". */
-  .landing-logo-mini { display: none; width: 90px; height: 90px; flex-shrink: 0; }
+  .landing-logo-mini { display: none; width: 96px; height: 96px; flex-shrink: 0; }
   body.mini-landing .landing-logo { display: none; }
   body.mini-landing .landing-logo-mini { display: block; }
   /* Mini/Niebla keep the same title size & style as Clásico (consistency) */
