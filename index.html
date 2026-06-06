@@ -51,7 +51,7 @@
     --font-display: 'Newsreader', 'DM Serif Display', Georgia, serif;
     --font-ui:      'Helvetica Neue', Helvetica, Arial, sans-serif;
   }
-  /* Layout standard (see cortadito-games-design.md): in-game mobile
+  /* Layout standard (see _kit/DESIGN-SYSTEM.md): in-game mobile
      header is a fixed 56px box; the rank bar sits at 66px from the top
      (10px below the header). Hardcoded, not variable-driven. */
 
@@ -259,7 +259,7 @@
   /* Date shown in the header only on desktop (unified top bar); hidden on mobile. */
   .header-date { display: none; }
   /* Home: returns to the landing. Lives in the shared header, so it appears in
-     every game (standard — see _docs/GAME-UI-STANDARDS.md). */
+     every game (standard — see _kit/DESIGN-SYSTEM.md). */
   .header-home {
     display: inline-flex; align-items: center; justify-content: center;
     width: 32px; height: 32px; flex-shrink: 0;
@@ -336,7 +336,7 @@
      those phones — that's the "rules bar doesn't appear" Samsung bug. Keep them
      visible like on wider phones (and like iOS); just tighten the spacing/sizing
      so they fit alongside ☰ + home. (Standard — matches Racimo. See
-     _docs/GAME-UI-STANDARDS.md.) */
+     _kit/DESIGN-SYSTEM.md.) */
   @media (max-width: 420px) {
     .page-header { padding: 6px 10px 12px; }
     .header-nav { gap: 9px; font-size: 12px; }
@@ -1921,7 +1921,7 @@
   body.mini-active .landing,
   body.mini-active .page { display: none; }
   /* STANDARD: every game reuses Diario's header + rank bar (see
-     _docs/GAME-UI-STANDARDS.md). Mini shows the SAME .page-header element,
+     _kit/DESIGN-SYSTEM.md). Mini shows the SAME .page-header element,
      not a forked copy. */
   body.mini-active .page-header { display: flex; }
   body.mini-active .mini-page {
@@ -2334,7 +2334,7 @@
         <span>Deshacer</span>
       </button>
       <button class="tool-btn" id="btn-hint">
-        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 14.6c.15-.75.55-1.3 1.1-1.85A3.9 3.9 0 1 0 8.2 10.9c0 1 .45 1.9 1.05 2.5.55.55.95 1.1 1.1 1.85"/><path d="M9.7 16.4h4.6"/><path d="M10.5 18.4h3"/><path d="M12 1.7V3.4"/><path d="M5.9 4.6 7.2 5.9"/><path d="M18.1 4.6 16.8 5.9"/><path d="M2.8 10.6h1.8"/><path d="M21.2 10.6h-1.8"/><path d="M5.3 15.4 6.7 14.3"/><path d="M18.7 15.4 17.3 14.3"/></svg>
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.7a4.7 4.7 0 0 0-2.9 8.4c.5.4.85.9 1 1.5h3.8c.15-.6.5-1.1 1-1.5A4.7 4.7 0 0 0 12 4.7z"/><path d="M10 8.1a3 3 0 0 1 1.7-1.4"/><path d="M9.9 16.1h4.2"/><path d="M10.3 17.7c.4.8 2.7.8 3.1 0"/><path d="M12 1.4V3.2"/><path d="M5.6 4.4 7 5.8"/><path d="M18.4 4.4 17 5.8"/><path d="M2.6 10.4h1.9"/><path d="M21.4 10.4h-1.9"/><path d="M5.1 15.7 6.6 14.4"/><path d="M18.9 15.7 17.4 14.4"/></svg>
         <span>Pista</span>
       </button>
     </div>
@@ -2422,7 +2422,7 @@
         <span>Deshacer</span>
       </button>
       <button class="tool-btn" id="mini-hint">
-        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 14.6c.15-.75.55-1.3 1.1-1.85A3.9 3.9 0 1 0 8.2 10.9c0 1 .45 1.9 1.05 2.5.55.55.95 1.1 1.1 1.85"/><path d="M9.7 16.4h4.6"/><path d="M10.5 18.4h3"/><path d="M12 1.7V3.4"/><path d="M5.9 4.6 7.2 5.9"/><path d="M18.1 4.6 16.8 5.9"/><path d="M2.8 10.6h1.8"/><path d="M21.2 10.6h-1.8"/><path d="M5.3 15.4 6.7 14.3"/><path d="M18.7 15.4 17.3 14.3"/></svg>
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.7a4.7 4.7 0 0 0-2.9 8.4c.5.4.85.9 1 1.5h3.8c.15-.6.5-1.1 1-1.5A4.7 4.7 0 0 0 12 4.7z"/><path d="M10 8.1a3 3 0 0 1 1.7-1.4"/><path d="M9.9 16.1h4.2"/><path d="M10.3 17.7c.4.8 2.7.8 3.1 0"/><path d="M12 1.4V3.2"/><path d="M5.6 4.4 7 5.8"/><path d="M18.4 4.4 17 5.8"/><path d="M2.6 10.4h1.9"/><path d="M21.4 10.4h-1.9"/><path d="M5.1 15.7 6.6 14.4"/><path d="M18.9 15.7 17.4 14.4"/></svg>
         <span>Pista</span>
       </button>
     </div>
@@ -3834,7 +3834,11 @@ function renderRankBar() {
   // Accent-colored fill behind current bubble
   const fill = document.createElement('div');
   fill.className = 'rank-track-fill';
-  fill.style.width = pctFor(curIdx) + '%';
+  /* Fill + bubble track the SCORE continuously on the same linear
+     scale as the dots and the reto marker, so the bubble meets the
+     marker at exactly the reto — see _kit/DESIGN-SYSTEM.md §3.2. */
+  const scPct = Math.max(0, Math.min(100, (sc / maxScore) * 100));
+  fill.style.width = scPct + '%';
   track.appendChild(fill);
   // Goal marker (Reto del día)
   const retoPct = Math.min(100, (state.reto / maxScore) * 100);
@@ -3847,17 +3851,22 @@ function renderRankBar() {
   for (let i = 0; i < RANK_THRESHOLDS.length; i++) {
     const dot = document.createElement('div');
     dot.className = 'rank-dot';
-    if (i < curIdx) dot.classList.add('passed');
-    if (i === curIdx) {
-      dot.classList.add('current');
-      if (sc >= state.reto) dot.classList.add('done');
-      if (sc < 0) dot.classList.add('negative');
-      if (curIdx === topIdx) dot.classList.add('at-maestro');   // pinnacle = orange
-      dot.textContent = sc;
-    }
+    if (sc >= RANK_THRESHOLDS[i]) dot.classList.add('passed');
     dot.style.left = pctFor(i) + '%';
     track.appendChild(dot);
   }
+  // Score bubble — glides continuously; clamp() keeps it on the track
+  // (negative scores pin to the left edge, espresso bubble).
+  const bubble = document.createElement('div');
+  bubble.className = 'rank-dot current';
+  if (sc >= state.reto) bubble.classList.add('done');
+  if (sc < 0) bubble.classList.add('negative');
+  if (curIdx === topIdx) bubble.classList.add('at-maestro');   // pinnacle = orange
+  bubble.textContent = sc;
+  bubble.style.left = scPct + '%';   /* fallback */
+  bubble.style.left = 'clamp(12px, ' + scPct + '%, calc(100% - 12px))';
+  bubble.style.zIndex = '5';
+  track.appendChild(bubble);
   // Label
   const labelEl = document.getElementById('rank-label');
   labelEl.textContent = RANK_NAMES[curIdx];
