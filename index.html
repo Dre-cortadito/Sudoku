@@ -4444,7 +4444,7 @@ function buildShareText() {
       ? `🎯 Reto del día: ≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores`
       : `🎯 Reto del día: ${state.reto} pts`);
     lines.push('');
-    lines.push('https://cortadito.news');
+    lines.push('https://sudoku.dre-c8f.workers.dev/');
     return lines.join('\n');
   }
   // 3. Achievement — the RANK. In the clean-solve model it reflects how little
@@ -4478,7 +4478,7 @@ function buildShareText() {
   if (bonuses.length) lines.push(`✨ ${bonuses.join(' · ')}`);
   if (state.elapsed > 0) lines.push(finishTimeLine());
   lines.push('');
-  lines.push('https://cortadito.news');
+  lines.push('https://sudoku.dre-c8f.workers.dev/');
   return lines.join('\n');
 }
 async function shareResult() {
