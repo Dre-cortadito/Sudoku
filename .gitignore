@@ -26,3 +26,6 @@ index.html.engine-backup
 # Local reference + archive (organized May 2026) — not part of the deployable game.
 _reference/
 _archive/
+
+# Local Finder shortcut to the live site — not part of the deployable game.
+*.webloc
