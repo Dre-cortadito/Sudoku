@@ -2110,9 +2110,8 @@
     .landing-title   { font-size: 84px; }
     .landing-head    { height: auto; }
     .landing-tagline { font-size: 28px; max-width: 460px; }
-    /* Date now lives in the shared top header (same spot on landing + game), so
-       the standalone landing dateline is gone. */
-    .landing-date { display: none; }
+    /* The standalone landing dateline stays visible until the date can fold
+       into the shared top bar at ≥1300px (see the block at the end of the sheet). */
     .landing-reto-label { font-size: 12px; }
     .landing-reto-value { font-size: 28px; }
     .pickrow-label   { font-size: 14px; letter-spacing: 2px; }
@@ -2139,12 +2138,10 @@
       content: ""; position: absolute; left: 50%; margin-left: -50vw; bottom: 0; width: 100vw;
       border-bottom: 1px solid var(--ink-line);
     }
-    /* Date centered in the bar — same position on landing + game. */
-    .header-date {
-      display: block; position: absolute; left: 50%; transform: translateX(-50%);
-      font-size: 18px; letter-spacing: 0.3px; color: var(--ink);
-      font-feature-settings: "tnum"; white-space: nowrap; pointer-events: none;
-    }
+    /* The centered date only folds INTO the bar once the window is wide enough
+       that it can't collide with the wordmark or the nav — see the
+       min-width:1300 block at the end of the sheet. Below 1300 the landing
+       dateline stays on its own row instead. */
     /* On the landing (no game active): hide the in-flow board page so the body
        can't scroll the static header away, hide the Inicio button (you're already
        home), and drop the floating theme toggle. */
@@ -2178,6 +2175,18 @@
     /* Bigger current-rank bubble for Normal (shows the score). Niebla and Mini keep
        their small marker bubble via their own higher-specificity rules. */
     body.game-active .rank-dot.current { width: 32px; height: 32px; font-size: 14px; }
+  }
+
+  /* ── Header date: only float it (absolutely centered) into the top bar once
+     the window is wide enough that it won't crunch into the wordmark or the
+     nav. Below 1300px the landing dateline stays on its own row instead. ── */
+  @media (min-width: 1300px) {
+    .header-date {
+      display: block; position: absolute; left: 50%; transform: translateX(-50%);
+      font-size: 18px; letter-spacing: 0.3px; color: var(--ink);
+      font-feature-settings: "tnum"; white-space: nowrap; pointer-events: none;
+    }
+    .landing-date { display: none; }
   }
 </style>
 </head>
@@ -5263,6 +5272,21 @@ function setLandingTab(tab) {
 document.getElementById('tab-diario').addEventListener('click', () => setLandingTab('diario'));
 document.getElementById('tab-mini').addEventListener('click', () => setLandingTab('mini'));
 document.getElementById('tab-niebla').addEventListener('click', () => setLandingTab('niebla'));
+
+// --- Deep link desde El Recreo: abrir un modo concreto (?modo=clasico|mini|niebla)
+//     y ocultar la barra de modos cuando se llega así. ---
+window.addEventListener('load', function () {
+  try {
+    var m = new URLSearchParams(location.search).get('modo');
+    if (!m) return;
+    var map = { clasico: 'diario', diario: 'diario', mini: 'mini', niebla: 'niebla' };
+    var tab = map[m.toLowerCase()];
+    if (!tab) return;
+    setLandingTab(tab);
+    var tabs = document.querySelector('.landing-tabs');
+    if (tabs) tabs.style.display = 'none';
+  } catch (e) {}
+});
 
 // ================================================================
 // MINI 6×6 ENGINE — espresso-shot sibling. Self-contained: its own
