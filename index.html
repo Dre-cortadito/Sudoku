@@ -5282,9 +5282,13 @@ window.addEventListener('load', function () {
     var map = { clasico: 'diario', diario: 'diario', mini: 'mini', niebla: 'niebla' };
     var tab = map[m.toLowerCase()];
     if (!tab) return;
+    // Always show the landing for the chosen mode — never jump straight into the game.
+    document.body.classList.remove('game-active');
+    document.body.classList.remove('mini-active');
     setLandingTab(tab);
     var tabs = document.querySelector('.landing-tabs');
     if (tabs) tabs.style.display = 'none';
+    if (location.hash === '#landing') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e2) {} }
   } catch (e) {}
 });
 
