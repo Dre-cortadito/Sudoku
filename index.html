@@ -1123,6 +1123,9 @@
      token palette so var(--accent)/var(--paper)/var(--ink-soft) inside
      the card resolve to light values even when the page is in dark
      mode (mirrors the spec's `.is-dark .cn-goal-card` contract). */
+  /* celebration confetti — single canvas, GPU-drawn (no lag) */
+  .confetti-box { position: fixed; inset: 0; pointer-events: none; z-index: 9500; }
+  @media (prefers-reduced-motion: reduce) { .confetti-box { display: none; } }
   .celebration {
     background: #ffffff !important;
     color: #1a1614 !important;
@@ -2458,7 +2461,7 @@
 </div>
 
 <!-- ============ FEEDBACK ============ -->
-<div class="feedback" id="feedback"></div>
+<div class="feedback" id="feedback" role="status" aria-live="polite"></div>
 
 <!-- ============ MODALS ============ -->
 <div class="modal-overlay" id="modal-overlay">
@@ -4291,6 +4294,32 @@ function checkCompletion() {
     fullWarned = false;   // reset once a cell is cleared again
   }
 }
+// Celebration confetti — a single canvas element drawn per frame (no lag on phones).
+function launchConfetti(n) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  n = n || 90;
+  const colors = ['#d9633b', '#15803d', '#e8b84b', '#c94f3b', '#2f8f5b', '#e08a4a'];
+  const cv = document.createElement('canvas'); cv.className = 'confetti-box';
+  const W = window.innerWidth, H = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  const P = [];
+  for (let i = 0; i < n; i++) P.push({ x: Math.random() * W, y: -20 - Math.random() * H * 0.3,
+    w: 5 + Math.random() * 5, h: 8 + Math.random() * 8, vx: (Math.random() - 0.5) * 1.6,
+    vy: 2.2 + Math.random() * 3, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.32,
+    c: colors[(Math.random() * colors.length) | 0] });
+  const t0 = performance.now();
+  (function frame(t) {
+    const dt = t - t0; ctx.clearRect(0, 0, W, H); let alive = false;
+    const a = dt > 2200 ? Math.max(0, 1 - (dt - 2200) / 700) : 1;
+    for (const p of P) { p.x += p.vx; p.y += p.vy; p.vy += 0.045; p.rot += p.vr;
+      if (p.y < H + 24) alive = true;
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore(); }
+    if (alive && dt < 3200) requestAnimationFrame(frame); else cv.remove();
+  })(t0);
+}
 // The actual win — fired by checkPuzzle when a FULL board verifies all-correct.
 function finalizeWin() {
   if (state.completed) return;
@@ -4388,12 +4417,12 @@ function showGoalModal() {
     bonusWrap.innerHTML = pills.map(p => `<span class="goal-bonus">✨ ${p}</span>`).join('');
   }
 
-  openModal('goal-modal');
+  openModal('goal-modal'); launchConfetti(90);
 }
 function showMaestroModal() {
   const t = document.getElementById('maestro-time');
   if (t) t.textContent = finishTimeLine();
-  openModal('maestro-modal');
+  openModal('maestro-modal'); launchConfetti(120);
 }
 function showCompleteModal() {
   const clean = (state.checkCount || 0) === 0;   // never spent a Verificar
@@ -4408,7 +4437,7 @@ function showCompleteModal() {
   document.getElementById('complete-bonus').textContent = bonusText;
   const ct = document.getElementById('complete-time');
   if (ct) ct.textContent = finishTimeLine();
-  openModal('complete-modal');
+  openModal('complete-modal'); launchConfetti(clean && noHint ? 110 : 70);
 }
 
 // ---------- SHARE ----------
@@ -4762,7 +4791,9 @@ function switchDate(iso) {
   renderAll();
   document.getElementById('landing-date').textContent = formatLongDate(state.iso);
   setHeaderDate(state.iso);
-  document.getElementById('landing-reto-value').textContent = retoForDate(state.iso, state.mode) + ' pts';
+  document.getElementById('landing-reto-value').textContent = (state.mode === 'niebla')
+    ? ('≤ ' + Math.floor((MAX_SCORE - retoForDate(state.iso, state.mode)) / NIEBLA_WRONG_PENALTY) + ' err')
+    : (retoForDate(state.iso, state.mode) + ' pts');
 }
 
 // ---------- DIFFICULTY / MODE SWITCH ----------
@@ -5023,6 +5054,10 @@ document.getElementById('landing-play').addEventListener('click', () => {
     state.minMode = state.mode;
     localStorage.setItem(startModeKey(), state.mode);
     localStorage.setItem(minModeKey(), state.mode);
+  } else if (state.startingMode === 'niebla' && state.mode === 'clasico' && state.minMode !== 'clasico') {
+    // Descended from Niebla to Clásico on a later play → forfeit "Sin descender".
+    state.minMode = 'clasico';
+    localStorage.setItem(minModeKey(), 'clasico');
   }
   refreshStats();
   dailyTimerStart();
@@ -5252,7 +5287,9 @@ function setLandingTab(tab) {
   eyebrow.textContent = isNiebla ? 'Sudoku' : 'Clásico';
   tagline.textContent = isNiebla ? 'Despeja la niebla, celda a celda.' : '¿Qué patrón encontrarás hoy?';
   retoLbl.textContent = 'Reto del día';
-  retoVal.textContent = retoForDate(state.iso, mode) + ' pts';
+  retoVal.textContent = isNiebla
+    ? ('≤ ' + Math.floor((MAX_SCORE - retoForDate(state.iso, mode)) / NIEBLA_WRONG_PENALTY) + ' err')
+    : (retoForDate(state.iso, mode) + ' pts');
   diffRow.style.display  = '';
   document.getElementById('landing-mini-diff-row').style.display = 'none';
   diffDesc.style.display = '';
@@ -5379,15 +5416,15 @@ function miniFmt(s) { const m = Math.floor(s / 60); return m + ':' + String(s % 
 //       instead of points: faster = higher rank). Cutoffs = max seconds.
 const MINI_ERROR_PENALTY = 10;   // seconds added for each wrong number (deters brute-forcing)
 const MINI_RANK_CUTOFFS = [
-  { idx: 9, max: 75  },   // Maestro/a — retuned (was 50); ≤1:15 is a strong 6×6 run vs the 1:45–2:15 reto
-  { idx: 8, max: 92  },   // Eminente
-  { idx: 7, max: 110 },   // Brillante
-  { idx: 6, max: 132 },   // Increíble
-  { idx: 5, max: 158 },   // Excelente
-  { idx: 4, max: 190 },   // Admirable
-  { idx: 3, max: 230 },   // Diligente
-  { idx: 2, max: 285 },   // Constante
-  { idx: 1, max: 360 },   // Eficiente
+  { idx: 9, max: 75  },   // Maestro/a — ≤1:15 is a strong 6×6 run vs the 1:45–2:15 reto
+  { idx: 8, max: 100 },   // Eminente — rescaled so the top band isn't a razor's edge
+  { idx: 7, max: 128 },   // Brillante
+  { idx: 6, max: 158 },   // Increíble
+  { idx: 5, max: 192 },   // Excelente
+  { idx: 4, max: 230 },   // Admirable
+  { idx: 3, max: 275 },   // Diligente
+  { idx: 2, max: 330 },   // Constante
+  { idx: 1, max: 400 },   // Eficiente
   { idx: 0, max: Infinity } // Debutante
 ];
 function miniRankIndexForTime(t) {
@@ -5745,7 +5782,7 @@ function miniCheckDone() {
   const _gm = document.querySelector('#goal-modal .goal-brand-mark');
   const _mm = document.getElementById('mini-done-mark');
   if (_gm && _mm) setMiniCup(_mm, _gm.getAttribute('src'));
-  openModal('mini-done-modal');
+  openModal('mini-done-modal'); launchConfetti(miniRankIndexForTime(miniState.elapsed||0) === 9 ? 120 : 85);
 }
 // Recolour the terracota Cortadito cup to Mini's green for the finish prompt.
 // The art is a flat single-colour silhouette, so a `source-in` fill keeps the
