@@ -5283,8 +5283,9 @@ function setLandingTab(tab) {
   const mode = isNiebla ? 'niebla' : 'clasico';
   state.mode = mode;
   state.difficulty = loadDiffPref(mode);
-  title.textContent   = isNiebla ? 'Niebla' : 'Sudoku';
-  eyebrow.textContent = isNiebla ? 'Sudoku' : 'Clásico';
+  // Family standard: eyebrow = family name (small), title = mode name (large).
+  title.textContent   = isNiebla ? 'Niebla' : 'Clásico';
+  eyebrow.textContent = 'Sudoku';
   tagline.textContent = isNiebla ? 'Despeja la niebla, celda a celda.' : '¿Qué patrón encontrarás hoy?';
   retoLbl.textContent = 'Reto del día';
   retoVal.textContent = isNiebla
