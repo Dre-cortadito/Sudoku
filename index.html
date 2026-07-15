@@ -5073,6 +5073,7 @@ document.querySelectorAll('[data-landing-mode]').forEach(btn => {
 });
 
 document.getElementById('landing-play').addEventListener('click', () => {
+  try{ setTimeout(()=>{ if(document.body.classList.contains('game-active')||document.body.classList.contains('mini-active')) history.pushState({v:'game'},'',location.pathname+location.search); },0); }catch(e){}   // so Back returns to the landing
   // Mini tab active → launch the 6×6 espresso shot instead of the Daily.
   if (document.body.classList.contains('mini-landing')) { launchMini(); return; }
   document.body.classList.add('game-active');
@@ -5191,7 +5192,8 @@ document.getElementById('daily-timer-btn').addEventListener('click', () => {
   // The clock is always on now; tapping it just explains it never affects your score.
   openModal('timer-info-modal');
 });
-document.getElementById('header-home').addEventListener('click', goHome);   // shared header → landing
+document.getElementById('header-home').addEventListener('click', ()=>{ location.href='https://recreo.dre-c8f.workers.dev/'; });   // Home = back to El Recreo (same tab)
+window.addEventListener('popstate', ()=>{ if(document.body.classList.contains('game-active')||document.body.classList.contains('mini-active')) goHome(); });   // Back inside the game = landing
 
 // ---------- SURFACE VARIANT (Sereno default · Crema opt-in) ----------
 // Sereno is the canonical look; Crema is a warm reading preference,
