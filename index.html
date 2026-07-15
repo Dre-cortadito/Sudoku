@@ -2191,6 +2191,35 @@
     }
     .landing-date { display: none; }
   }
+
+  /* ===== Tutorial (family standard — Flechas parity) ===== */
+  .tut-ov{ position:fixed; inset:0; z-index:9600; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(20,18,14,.62); }
+  .tut-ov.open{ display:flex; }
+  .tut-card{ position:relative; background:var(--paper, #fff); border-radius:20px; width:100%; max-width:360px; padding:16px 0 16px; box-shadow:0 20px 60px rgba(0,0,0,.3); overflow:hidden; }
+  .tut-x{ position:absolute; top:9px; right:13px; z-index:3; border:none; background:transparent; font-size:20px; color:var(--ink-soft); cursor:pointer; }
+  .tut-track{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .tut-track::-webkit-scrollbar{ display:none; }
+  .tut-slide{ flex:0 0 100%; scroll-snap-align:center; padding:16px 26px 2px; box-sizing:border-box; text-align:center; }
+  .tut-anim{ height:128px; display:flex; align-items:center; justify-content:center; margin:2px 0 14px; }
+  .tut-slide h3{ margin:0 0 7px; font-family:var(--font-display); font-size:21px; color:var(--ink); }
+  .tut-slide p{ margin:0; font-size:14px; line-height:1.55; color:var(--ink-soft); min-height:66px; }
+  .tut-slide p b{ color:var(--ink); }
+  .tut-dots{ display:flex; gap:7px; justify-content:center; margin:4px 0 12px; }
+  .tut-dot{ width:8px; height:8px; border-radius:50%; border:none; background:var(--ink-line); padding:0; cursor:pointer; }
+  .tut-dot.on{ background:var(--accent); }
+  .tut-next{ display:block; margin:0 auto; padding:11px 32px; border-radius:999px; border:none; background:var(--accent); color:#fff; font:700 15px var(--font-ui); cursor:pointer; }
+  .tut-again{ display:flex; align-items:center; justify-content:center; gap:8px; margin:12px 0 0; font:500 13px var(--font-ui); color:var(--ink-soft); cursor:pointer; user-select:none; -webkit-user-select:none; }
+  .tut-again input{ width:16px; height:16px; margin:0; accent-color:var(--accent); cursor:pointer; }
+  /* slide art from the REAL cells */
+  .tut-sbox{ display:grid; border:2.5px solid var(--ink); }
+  .tut-sbox .cell{ width:38px; height:38px; box-shadow:inset 0 0 0 1px var(--ink-line); font-size:21px; cursor:default; }
+  .tut-sbox.six .cell{ width:30px; height:30px; font-size:16px; }
+  .tut-sbox .cell .notes{ position:absolute; inset:2px; display:grid; grid-template-columns:repeat(3,1fr); font-family:var(--font-ui); font-size:8.5px; color:var(--ink-soft); line-height:1; }
+  .tut-sbox .cell .notes span{ display:flex; align-items:center; justify-content:center; }
+  @keyframes tutCellIn{ 0%,20%{opacity:0; transform:scale(.6)} 34%,86%{opacity:1; transform:scale(1)} 100%{opacity:0} }
+  .tut-cell-in{ animation:tutCellIn 3.6s ease infinite; }
+  @keyframes tutFogClear{ 0%,25%{opacity:1} 45%,86%{opacity:0} 100%{opacity:1} }
+  .tut-fog-top{ position:absolute; inset:0; background:var(--fog); background-image:repeating-linear-gradient(45deg, var(--fog), var(--fog) 4px, var(--fog-stripe, #e0d8c8) 4px, var(--fog-stripe, #e0d8c8) 8px); animation:tutFogClear 3.6s ease infinite; }
 </style>
 </head>
 <body data-theme="white">
@@ -2280,6 +2309,7 @@
       <div class="dropdown-menu" id="more-menu">
         <button id="more-theme"><span>Tema</span><span class="more-theme-name" id="more-theme-name">Claro</span></button>
         <button data-modal="settings-modal">Ajustes</button>
+        <button id="more-tut">Ver tutorial</button>
         <button id="more-share">Compartir resultado</button>
         <button data-modal="about-modal">Sobre el juego</button>
         <button id="more-subscribe" class="more-item-cta">Suscribirse al boletín</button>
@@ -6034,6 +6064,49 @@ boot();
   window.addEventListener("load",go);
   try{ matchMedia("(orientation: landscape)").addEventListener("change",go); }catch(e){ try{ matchMedia("(orientation: landscape)").addListener(go); }catch(e2){} }
   try{ new MutationObserver(go).observe(document.body,{attributes:true,attributeFilter:["class","data-theme","style"]}); }catch(e){}
+})();
+</script>
+
+<!-- ===== Tutorial (family standard) ===== -->
+<div class="tut-ov" id="tut-ov">
+  <div class="tut-card">
+    <button class="tut-x" id="tut-x" aria-label="Cerrar">&#10005;</button>
+    <div class="tut-track" id="tut-track"></div>
+    <div class="tut-dots" id="tut-dots"></div>
+    <button class="tut-next" id="tut-next">Siguiente</button>
+    <label class="tut-again" for="tut-chk"><input type="checkbox" id="tut-chk"> No volver a mostrar</label>
+  </div>
+</div>
+<script>
+(function(){
+  var ov=document.getElementById('tut-ov'); if(!ov) return;
+  var SETS={ clasico:"<section class=\"tut-slide\"><div class=\"tut-anim\"><div class=\"tut-sbox\" style=\"grid-template-columns:repeat(3,38px)\"><div class=\"cell given\">5</div><div class=\"cell given\">3</div><div class=\"cell tut-cell-in\">9</div><div class=\"cell \"></div><div class=\"cell given\">7</div><div class=\"cell given\">1</div><div class=\"cell given\">2</div><div class=\"cell selected\"></div><div class=\"cell given\">4</div></div></div><h3>Rellena la cuadr&iacute;cula</h3><p>Cada <b>fila</b>, <b>columna</b> y <b>caja 3&times;3</b> lleva los n&uacute;meros del <b>1 al 9</b> sin repetirse.</p></section><section class=\"tut-slide\"><div class=\"tut-anim\"><div class=\"tut-sbox\" style=\"grid-template-columns:repeat(3,38px)\"><div class=\"cell given\">5</div><div class=\"cell \"><div class=\"notes\"><span>1</span><span></span><span>3</span><span></span><span></span><span>6</span><span></span><span>8</span><span></span></div></div><div class=\"cell given\">9</div><div class=\"cell \"><div class=\"notes\"><span></span><span>2</span><span></span><span>4</span><span></span><span></span><span></span><span></span><span>9</span></div></div><div class=\"cell given\">7</div><div class=\"cell given\">1</div><div class=\"cell given\">2</div><div class=\"cell given\">6</div><div class=\"cell given\">4</div></div></div><h3>Usa el l&aacute;piz</h3><p>Activa el <b>l&aacute;piz</b> para apuntar <b>candidatos</b> en una celda mientras razonas el patr&oacute;n.</p></section><section class=\"tut-slide\"><div class=\"tut-anim\"><svg viewBox=\"0 0 120 120\" style=\"height:110px\" aria-hidden=\"true\"><g stroke=\"var(--accent)\" fill=\"none\" stroke-linecap=\"round\"><circle cx=\"54\" cy=\"64\" r=\"38\" stroke-width=\"8\"/><circle cx=\"54\" cy=\"64\" r=\"20\" stroke-width=\"7\"/></g><circle cx=\"54\" cy=\"64\" r=\"7.5\" fill=\"var(--accent)\"/><g transform=\"translate(54 64) rotate(-45)\"><line x1=\"0\" y1=\"0\" x2=\"56\" y2=\"0\" stroke=\"var(--accent)\" stroke-width=\"6.5\" stroke-linecap=\"round\"/><path d=\"M46 0 L74 -14 L67 0 L74 14 Z\" fill=\"var(--accent)\"/></g></svg></div><h3>El reto del d&iacute;a</h3><p>Sube por <b>diez rangos</b> hasta <b style=\"color:var(--accent)\">Maestro/a</b>. Termina bajo el <b>objetivo del d&iacute;a</b> y gana tu <b>&iexcl;Buen sorbo!</b></p></section>", mini:"<section class=\"tut-slide\"><div class=\"tut-anim\"><div style=\"display:flex;align-items:center;justify-content:center\"><div class=\"tut-sbox six\" style=\"grid-template-columns:repeat(3,30px)\"><div class=\"cell given\">4</div><div class=\"cell tut-cell-in\">1</div><div class=\"cell given\">6</div><div class=\"cell given\">2</div><div class=\"cell given\">5</div><div class=\"cell given\">3</div></div><div style=\"width:14px\"></div><div style=\"font-family:var(--font-display);font-weight:800;font-size:34px;color:var(--accent)\">3:00</div></div></div><h3>Un sorbo</h3><p>El Mini es un <b>6&times;6</b> r&aacute;pido: filas, columnas y cajas de <b>3&times;2</b> con los n&uacute;meros del <b>1 al 6</b>.</p></section><section class=\"tut-slide\"><div class=\"tut-anim\"><svg viewBox=\"0 0 120 120\" style=\"height:110px\" aria-hidden=\"true\"><g stroke=\"var(--accent)\" fill=\"none\" stroke-linecap=\"round\"><circle cx=\"54\" cy=\"64\" r=\"38\" stroke-width=\"8\"/><circle cx=\"54\" cy=\"64\" r=\"20\" stroke-width=\"7\"/></g><circle cx=\"54\" cy=\"64\" r=\"7.5\" fill=\"var(--accent)\"/><g transform=\"translate(54 64) rotate(-45)\"><line x1=\"0\" y1=\"0\" x2=\"56\" y2=\"0\" stroke=\"var(--accent)\" stroke-width=\"6.5\" stroke-linecap=\"round\"/><path d=\"M46 0 L74 -14 L67 0 L74 14 Z\" fill=\"var(--accent)\"/></g></svg></div><h3>Contra el reloj</h3><p>Tu rango es tu <b>tiempo</b>. Termina bajo el <b>reto del d&iacute;a</b> para tu <b>&iexcl;Buen sorbo!</b> \u2014 y cuida la racha.</p></section>", niebla:"<section class=\"tut-slide\"><div class=\"tut-anim\"><div class=\"tut-sbox\" style=\"grid-template-columns:repeat(3,38px)\"><div class=\"cell fog\"></div><div class=\"cell \">8<div class=\"tut-fog-top\"></div></div><div class=\"cell fog\"></div><div class=\"cell fog\"></div><div class=\"cell fog\"></div><div class=\"cell fog\"></div><div class=\"cell fog\"></div><div class=\"cell fog\"></div><div class=\"cell fog\"></div></div></div><h3>Despeja la niebla</h3><p>El tablero empieza <b>cubierto</b>. Cada n&uacute;mero correcto <b>despeja su celda</b> \u2014 y revela un poco m&aacute;s del patr&oacute;n.</p></section><section class=\"tut-slide\"><div class=\"tut-anim\"><div class=\"tut-sbox\" style=\"grid-template-columns:repeat(3,38px)\"><div class=\"cell given\">5</div><div class=\"cell given\">3</div><div class=\"cell given\">9</div><div class=\"cell selected error\">8</div><div class=\"cell given\">7</div><div class=\"cell given\">1</div><div class=\"cell given\">2</div><div class=\"cell given\">6</div><div class=\"cell given\">4</div></div></div><h3>Los errores cuestan</h3><p>En Niebla cada <b style=\"color:var(--error)\">error</b> resta puntos al final. Piensa antes de colocar.</p></section><section class=\"tut-slide\"><div class=\"tut-anim\"><svg viewBox=\"0 0 120 120\" style=\"height:110px\" aria-hidden=\"true\"><g stroke=\"var(--accent)\" fill=\"none\" stroke-linecap=\"round\"><circle cx=\"54\" cy=\"64\" r=\"38\" stroke-width=\"8\"/><circle cx=\"54\" cy=\"64\" r=\"20\" stroke-width=\"7\"/></g><circle cx=\"54\" cy=\"64\" r=\"7.5\" fill=\"var(--accent)\"/><g transform=\"translate(54 64) rotate(-45)\"><line x1=\"0\" y1=\"0\" x2=\"56\" y2=\"0\" stroke=\"var(--accent)\" stroke-width=\"6.5\" stroke-linecap=\"round\"/><path d=\"M46 0 L74 -14 L67 0 L74 14 Z\" fill=\"var(--accent)\"/></g></svg></div><h3>El reto del d&iacute;a</h3><p>Sube por <b>diez rangos</b> hasta <b style=\"color:var(--accent)\">Maestro/a</b>. Termina bajo el <b>objetivo del d&iacute;a</b> y gana tu <b>&iexcl;Buen sorbo!</b></p></section>" };
+  var track=document.getElementById('tut-track'), dotbox=document.getElementById('tut-dots'), nextb=document.getElementById('tut-next'), chk=document.getElementById('tut-chk');
+  var cur=0, curMode='clasico';
+  function KEY(){ return 'sudoku-tut-'+curMode+'-v1'; }
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function n(){ return track.children.length; }
+  function buildDots(){ dotbox.innerHTML=''; for(var i=0;i<n();i++){ (function(k){ var d=document.createElement('button'); d.className='tut-dot'; d.setAttribute('aria-label','Paso '+(k+1)); d.onclick=function(){ go(k); }; dotbox.appendChild(d); })(i); } }
+  function upd(){ var dd=dotbox.children; for(var i=0;i<n();i++) dd[i].className='tut-dot'+(i===cur?' on':''); nextb.textContent=(cur>=n()-1)?'¡A jugar!':'Siguiente'; }
+  function go(i){ cur=Math.max(0,Math.min(n()-1,i)); track.scrollTo({left:cur*track.clientWidth, behavior:'smooth'}); upd(); }
+  var st; track.addEventListener('scroll',function(){ clearTimeout(st); st=setTimeout(function(){ var i=Math.round(track.scrollLeft/track.clientWidth); if(i!==cur){ cur=i; upd(); } },60); });
+  nextb.onclick=function(){ if(cur>=n()-1) close(); else go(cur+1); };
+  document.getElementById('tut-x').onclick=close;
+  ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
+  function modeNow(){
+    if(document.body.classList.contains('mini-landing')||document.body.classList.contains('mini-active')) return 'mini';
+    try{ if(typeof state!=='undefined' && state.mode==='niebla') return 'niebla'; }catch(e){}
+    if(document.body.classList.contains('niebla-landing')||document.body.classList.contains('niebla-game')) return 'niebla';
+    return 'clasico'; }
+  function open(){ curMode=modeNow(); track.innerHTML=SETS[curMode]; buildDots();
+    chk.checked=!!lsGet(KEY()); ov.classList.add('open'); cur=0; track.scrollLeft=0; upd(); }
+  function close(){ ov.classList.remove('open'); try{ if(chk.checked) localStorage.setItem(KEY(),'1'); else localStorage.removeItem(KEY()); }catch(e){} }
+  window.openTutorial=open;
+  var mt=document.getElementById('more-tut');
+  if(mt) mt.addEventListener('click', function(e){ e.preventDefault(); var mm=document.getElementById('more-menu'); if(mm) mm.classList.remove('open'); open(); });
+  var pb=document.getElementById('landing-play');
+  if(pb) pb.addEventListener('click', function(){ try{ if(!lsGet('sudoku-tut-'+modeNow()+'-v1')) setTimeout(open, 600); }catch(e){} });
+  try{ if((document.body.classList.contains('game-active')||document.body.classList.contains('mini-active')) && !lsGet('sudoku-tut-'+modeNow()+'-v1')) setTimeout(open, 900); }catch(e){}
 })();
 </script>
 </body></html>
