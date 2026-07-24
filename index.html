@@ -36,7 +36,7 @@
     --accent-2-deep:#3f2616;
     --accent-2-soft:#efe2d6;      /* pale espresso tint */
 
-    --success:      #4F9E5F;    /* olive green — the "reto logrado / done" cue */
+    --success:      #548C4C;    /* olive green — the "reto logrado / done" cue */
     --error:        #CF2A2A;
 
     --cell-bg:        #ffffff;
@@ -1188,7 +1188,7 @@
      so restore Mini's green here. It flows to the Compartir button, the cup
      mark (recoloured in JS) and any accent text, the same way Normal's prompt
      reads terracota and Niebla's reads fog-blue. */
-  #mini-done-modal { --accent: #4F9E5F; --accent-deep: #3F7E4C; }
+  #mini-done-modal { --accent: #548C4C; --accent-deep: #43703D; }
 
   /* ============ Rotate-to-portrait lock (phones held sideways) ============
      The board + number pad need one tall portrait screen; turned landscape on
@@ -1758,8 +1758,8 @@
      a brighter green lives in the board tints below. ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #4F9E5F;   /* forest green — main identity (bean, board, accents, legible text) */
-    --accent-deep:   #3F7E4C;
+    --accent:        #548C4C;   /* forest green — main identity (bean, board, accents, legible text) */
+    --accent-deep:   #43703D;
     --accent-soft:   #e4f3e9;
     --accent-2:      #2f3640;   /* charcoal — bean, Notas pad, feedback box (white text reads) */
     --accent-2-deep: #1f2630;
@@ -4337,7 +4337,7 @@ function checkCompletion() {
 function launchConfetti(n) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   n = n || 90;
-  const colors = ['#d9633b', '#4F9E5F', '#e8b84b', '#c94f3b', '#2f8f5b', '#e08a4a'];
+  const colors = ['#d9633b', '#548C4C', '#e8b84b', '#c94f3b', '#2f8f5b', '#e08a4a'];
   const cv = document.createElement('canvas'); cv.className = 'confetti-box';
   const W = window.innerWidth, H = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
   cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
@@ -5879,7 +5879,7 @@ function setMiniCup(imgEl, srcDataUri) {
         const ctx = cv.getContext('2d');
         ctx.drawImage(probe, 0, 0, w, h);
         ctx.globalCompositeOperation = 'source-in';
-        ctx.fillStyle = '#4F9E5F';              // Mini's forest green
+        ctx.fillStyle = '#548C4C';              // Mini's forest green
         ctx.fillRect(0, 0, w, h);
         _miniCupGreen = cv.toDataURL('image/png');
         imgEl.src = _miniCupGreen;
