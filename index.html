@@ -770,8 +770,8 @@
     transition: background 0.25s ease;
   }
   .rank-meta.done {
-    background: var(--accent-2);   /* orange → espresso brown once passed
-                                      (like Racimo's line changing colour) */
+    background: var(--success);    /* orange → success green once passed
+                                      (family-wide "done" cue, like Racimo) */
     opacity: 1;
     z-index: 5;
   }
@@ -1363,6 +1363,7 @@
   #stats-modal .stats-rank-row .count { width: 56px; text-align: right; color: var(--ink); font-feature-settings: "tnum"; flex-shrink: 0; font-size: 12px; }
   #stats-modal .stats-rank-row .count .pct { color: var(--ink-soft); }
   #stats-modal .stats-rank-row.empty .name, #stats-modal .stats-rank-row.empty .count { opacity: .5; }
+  #stats-modal .stats-rank-row.best .name { color: var(--accent); font-weight: 800; }
   #stats-modal .stats-note { margin: -2px 0 10px; font-size: 12px; color: var(--ink-soft); font-style: italic; }
   #stats-modal .stats-footer { margin: 22px 0 0; font-size: 12px; color: var(--ink-soft); font-style: italic; line-height: 1.55; }
   #stats-modal .stats-footer strong { color: var(--accent); font-weight: 700; }
@@ -2748,7 +2749,7 @@
     <p>Aquí no hay puntos: tu rango lo decide <strong class="hl-accent">cuánto tardas</strong>. Cuanto más rápido resuelvas, más alto el rango (de <strong>Debutante</strong> a <strong>Maestro/a</strong>). La barra de arriba te muestra para qué rango vas y baja a medida que pasa el tiempo. Recibes tu rango al terminar.</p>
 
     <h3>Reto del día</h3>
-    <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. La <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> en la barra de rangos marca ese objetivo — la misma que en el modo Clásico — y se pone <strong>marrón</strong> mientras vas en camino de lograrlo.</p>
+    <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. La <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> en la barra de rangos marca ese objetivo — la misma que en el modo Clásico — y se pone <strong style="color: var(--success)">verde</strong> mientras vas en camino de lograrlo.</p>
   </div>
 
   <div class="modal" id="timer-info-modal" data-modal-content style="display:none">
@@ -2787,7 +2788,7 @@
 
   <div class="modal celebration" id="maestro-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
-    <div class="big-emoji">👑</div>
+    <div class="big-emoji"><img class="goal-brand-mark" id="maestro-mark" alt="Cortadito" /></div>
     <h2>¡Maestro/a del sudoku!</h2>
     <p>Llegaste al rango más alto.</p>
     <p class="muted">Pocos resuelven cada celda con tu precisión.</p>
@@ -4460,6 +4461,11 @@ function showGoalModal() {
 function showMaestroModal() {
   const t = document.getElementById('maestro-time');
   if (t) t.textContent = finishTimeLine();
+  // Brand mark — reuse the goal modal's Cortadito cup (same art, same
+  // .goal-brand-mark sizing) instead of a literal 👑 emoji.
+  const gm = document.querySelector('#goal-modal .goal-brand-mark');
+  const mm = document.getElementById('maestro-mark');
+  if (gm && mm && !mm.getAttribute('src')) mm.setAttribute('src', gm.getAttribute('src'));
   openModal('maestro-modal'); launchConfetti(120);
 }
 function showCompleteModal() {
@@ -4532,7 +4538,7 @@ function buildShareText() {
   // 3. Achievement — the RANK. In the clean-solve model it reflects how little
   // help you used (you start at the top and only drop when you lean on an aid).
   if (isMaestro) {
-    lines.push(`👑 Rango: ${rank}`);
+    lines.push('👑 ¡Maestro/a del sudoku!');
     lines.push(niebla ? '   Lo resolví sin un solo error.' : '   Lo resolví sin ninguna ayuda.');
   } else if (niebla) {
     lines.push(`🏆 Rango: ${rank}  ·  ${state.wrongCount || 0} ${(state.wrongCount || 0) === 1 ? 'error' : 'errores'}`);
@@ -4541,15 +4547,22 @@ function buildShareText() {
   }
   // 4. Other info — niebla seal, reto, clean-solve badges, finish time.
   if (niebla) lines.push(isMaestro ? '   🌫️ …y en plena niebla.' : '🌫️ Resuelto en Niebla');
-  if (sc >= state.reto) lines.push('✅ Reto del día logrado');
+  if (sc >= state.reto) lines.push('✅ ¡Reto del día logrado!');
   else lines.push(niebla
-    ? `❌ Reto del día: ≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores`
-    : `❌ Reto del día: ${state.reto} pts`);
+    ? `📌 Reto del día (≤ ${Math.floor((MAX_SCORE - state.reto) / NIEBLA_WRONG_PENALTY)} errores)`
+    : `📌 Reto del día (${state.reto} pts)`);
   // Mistakes. Normal counts the cells Verificar caught; Niebla already prints its
   // entered-error count on the rank line above, so we don't repeat it there.
   if (!niebla) {
     const m = state.checkedWrong ? state.checkedWrong.size : 0;
     lines.push(m === 0 ? '✏️ Sin errores' : `✏️ ${m} ${m === 1 ? 'error' : 'errores'}`);
+    // 💡 pistas line (family standard: `💡 N pista(s)` when hints were used).
+    // hintCount is a POINTS tally, not a use-count — every Pista tap (tier-1
+    // nudge or tier-2 reveal) adds exactly COST_HINT_NUDGE/COST_HINT_REVEAL
+    // (both 3), so taps = hintCount / 3. The no-hints case stays on the ✨
+    // bonus roll-up line below ("Sin pistas"), which doubles as the bonus list.
+    const hintTaps = Math.round((state.hintCount || 0) / COST_HINT_NUDGE);
+    if (hintTaps > 0) lines.push(`💡 ${hintTaps} pista${hintTaps === 1 ? '' : 's'}`);
   }
   const bonuses = [];
   if (!niebla) {
@@ -4563,20 +4576,42 @@ function buildShareText() {
   lines.push('https://sudoku.dre-c8f.workers.dev/');
   return lines.join('\n');
 }
-async function shareResult() {
-  const text = buildShareText();
-  if (navigator.share) {
-    // Use the native share sheet. If the user cancels (or it fails), do NOT fall
-    // back to clipboard/alert — that's what was surfacing the text after canceling.
-    try { await navigator.share({ text }); } catch (e) {}
+// Standard share mechanism (Racimo): native sheet ONLY on mobile UA (desktop
+// browsers expose navigator.share too, where the sheet is worse than a copy),
+// with {title, text}; else clipboard → legacy textarea/execCommand → prompt.
+// If the user cancels the native sheet, do NOT fall back to clipboard/prompt —
+// that's what was surfacing the text after canceling.
+async function shareTextStandard(text) {
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile && navigator.share) {
+    try {
+      await navigator.share({ title: 'Sudoku', text });
+      flash('Compartido', 'success');
+    } catch (e) {}
     return;
   }
   try {
     await navigator.clipboard.writeText(text);
     flash('Copiado al portapapeles', 'success');
   } catch (e) {
-    alert(text);
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      flash('Copiado al portapapeles', 'success');
+    } catch (e2) {
+      prompt('Copia tu resultado:', text);
+    }
   }
+}
+async function shareResult() {
+  await shareTextStandard(buildShareText());
 }
 
 // ---------- MODALS ----------
@@ -5937,15 +5972,17 @@ function buildMiniShareText() {
   const met = t <= target;
   const m = miniState.mistakes || 0;
   const mLine = m === 0 ? '✏️ Sin errores' : `✏️ ${m} ${m === 1 ? 'error' : 'errores'}`;
-  return `${dateStr}\n\n🧩 Sudoku 🐣 Mini\n🏆 Rango: ${miniRankName(t)}\n⏱️ ${miniFmt(t)}\n🎯 Reto ≤ ${miniFmt(target)} ${met ? '✅ logrado' : '❌ no logrado'}\n${mLine}\n\nhttps://sudoku.dre-c8f.workers.dev/`;
+  // At the top rank the 👑 headline REPLACES the 🏆 Rango line (same
+  // suppression as the 9×9 share); reto uses the standard ✅/📌 tokens.
+  const isMaestro = miniRankIndexForTime(t) === RANK_NAMES.length - 1;
+  const rankLine = isMaestro ? '👑 ¡Maestro/a del sudoku!' : `🏆 Rango: ${miniRankName(t)}`;
+  const retoLine = met
+    ? `✅ ¡Reto del día logrado! (≤ ${miniFmt(target)})`
+    : `📌 Reto del día (≤ ${miniFmt(target)})`;
+  return `${dateStr}\n\n🧩 Sudoku 🐣 Mini\n${rankLine}\n⏱️ ${miniFmt(t)}\n${retoLine}\n${mLine}\n\nhttps://sudoku.dre-c8f.workers.dev/`;
 }
 async function shareMini() {
-  const text = buildMiniShareText();
-  if (navigator.share) {
-    try { await navigator.share({ text }); } catch (e) {}
-    return;   // canceled or failed → don't fall back to clipboard
-  }
-  try { await navigator.clipboard.writeText(text); flash('Resultado copiado', 'success'); } catch (e) {}
+  await shareTextStandard(buildMiniShareText());
 }
 // Mini control wiring
 document.getElementById('mini-cog').addEventListener('click', () => openModal('settings-modal'));
