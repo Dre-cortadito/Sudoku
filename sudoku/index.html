@@ -4583,7 +4583,7 @@ function buildShareText() {
 // that's what was surfacing the text after canceling.
 async function shareTextStandard(text) {
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isMobile && navigator.share) {
+  if (isMobile && navigator.share && !navigator.standalone) {
     try {
       await navigator.share({ title: 'Sudoku', text });
       flash('Compartido', 'success');
