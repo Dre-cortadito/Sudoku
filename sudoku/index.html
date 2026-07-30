@@ -1657,7 +1657,7 @@
      underline, no pill chrome). Sits at the top of the landing. ---- */
   /* Tab strip flows as the first element of the landing column so it
      never overlaps the logo. Reads as page-level navigation. */
-  .landing-tabs {
+  .landing-tabs { display:none !important; /* mode tabs retired 2026-07-30 — hub cards are the navigation */
     display: grid; grid-template-columns: 1fr 1fr 1fr;
     width: min(350px, 92vw); margin: 6px auto 4px;   /* explicit width so it matches Palabreo exactly */
   }
