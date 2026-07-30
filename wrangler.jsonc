@@ -10,5 +10,11 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
+  ],
+  "routes": [
+    {
+      "pattern": "cortadito.games/sudoku*",
+      "zone_name": "cortadito.games"
+    }
   ]
 }
