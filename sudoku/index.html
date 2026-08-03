@@ -140,7 +140,7 @@
     body { padding: 28px 48px 64px; height: auto !important; overflow: auto !important; }
   }
 
-  .page { max-width: 720px; margin: 0 auto; position: relative; overflow: hidden; --game-w: min(92vw, 520px); }
+  .page { max-width: 720px; margin: 0 auto; position: relative; overflow: hidden; --game-w: min(92vw, max(520px, var(--cg-wide, 0px))); }
   /* On the locked, no-scroll mobile layout the board must also respect the
      available HEIGHT, not just width — otherwise a tall column overflows the
      screen and shoves the pinned rank bar up under the fixed header. Cap the
@@ -1926,7 +1926,7 @@
      ================================================================ */
   /* --mini-w is the shared column width: the board, the meta row (timer/cog)
      and the pad all use it, so everything lines up within the board edges. */
-  .mini-page { display: none; position: relative; max-width: 480px; margin: 0 auto; --mini-w: min(92vw, 400px); }
+  .mini-page { display: none; position: relative; max-width: 480px; margin: 0 auto; --mini-w: min(92vw, max(400px, var(--cg-wide, 0px))); }
   body.mini-active { height: 100dvh; overflow: hidden; overscroll-behavior: contain; }
   body.mini-active .landing,
   body.mini-active .page { display: none; }
@@ -2353,6 +2353,18 @@
   };
 })();
 </script>
+<!-- ===== CORTADITO — installable app (2026-08-02) =====
+     This manifest link is what makes Android install a REAL app (a WebAPK)
+     when a player adds a GAME page to their home screen. Without it Chrome
+     creates a plain bookmark shortcut that opens inside Chrome and inherits
+     the site's "Sitio para computadoras" setting — which is how a Samsung
+     tester ended up playing at a 980px CSS viewport with the board at 41% of
+     the screen. start_url/scope are "/", so installing from any page gives
+     one icon, "Cortadito Games", opening at the hub. -->
+<link rel="manifest" href="/site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cortadito Games">
 </head>
 <body data-theme="white">
 
@@ -6303,4 +6315,28 @@ boot();
   });
 })();
 </script>
+<style>
+  /* ===== Forced-desktop guard (2026-08-02) =====
+     Belt and suspenders for the manifest fix above: a player who switches on
+     "Sitio para computadoras" by hand still gets a ~980px CSS viewport on a
+     phone, and every board renders at its desktop px cap — about 41% of the
+     physical screen, adrift in whitespace.
+
+     A viewport that WIDE and that TALL and driven by a COARSE pointer is a
+     phone held upright; it is never a desktop window (those report
+     pointer: fine) and never a tablet (wrong aspect ratio). There, and only
+     there, boards use their vw width instead of their px cap.
+
+     --cg-wide is 0px everywhere else, so every patched
+     min(<n>vw, max(<cap>, var(--cg-wide, 0px))) computes to exactly the
+     original min(<n>vw, <cap>) outside this query — a provable no-op. */
+  :root { --cg-wide: 0px; }
+  @media (min-width: 700px) and (max-aspect-ratio: 2/3) and (pointer: coarse) {
+    :root { --cg-wide: 100vw; --max-page: 100vw; }
+    main, .page, .wrap, .shell, .container, .stage { max-width: none; }
+    /* Racimo's mobile branch caps the cherry cluster at 460px, which never
+       binds on a real phone (the column is ~340px) but does bind here. */
+    .cluster-stage { max-width: 92vw; }
+  }
+</style>
 </body></html>
