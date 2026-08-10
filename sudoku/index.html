@@ -5331,7 +5331,7 @@ document.getElementById('daily-timer-btn').addEventListener('click', () => {
   // The clock is always on now; tapping it just explains it never affects your score.
   openModal('timer-info-modal');
 });
-document.getElementById('header-home').addEventListener('click', ()=>{ location.href='https://cortadito.games/'; });   // Home = back to El Recreo (same tab)
+document.getElementById('header-home').addEventListener('click', ()=>{ location.href='https://cortadito.games/'; });   // Home = back to the hub (same tab)
 window.addEventListener('popstate', ()=>{ if(document.body.classList.contains('game-active')||document.body.classList.contains('mini-active')) goHome(); });   // Back inside the game = landing
 
 // ---------- SURFACE VARIANT (Sereno default · Crema opt-in) ----------
@@ -5489,7 +5489,7 @@ document.getElementById('tab-diario').addEventListener('click', () => setLanding
 document.getElementById('tab-mini').addEventListener('click', () => setLandingTab('mini'));
 document.getElementById('tab-niebla').addEventListener('click', () => setLandingTab('niebla'));
 
-// --- Deep link desde El Recreo: abrir un modo concreto (?modo=clasico|mini|niebla)
+// --- Deep link desde el hub: abrir un modo concreto (?modo=clasico|mini|niebla)
 //     y ocultar la barra de modos cuando se llega así. ---
 window.addEventListener('load', function () {
   try {
@@ -6175,6 +6175,32 @@ function boot() {
   document.body.classList.add('ready');   // always reveal the page
 }
 boot();
+
+/* Gate clamp (launch checklist §1): la restauración de la última sesión puede
+   reabrir Niebla o Mini en una visita sin ?modo — la puerta solo mira la URL y
+   asume Clásico. Tras arrancar la puerta (setTimeout 0 corre después de su
+   boot en DOMContentLoaded): si el modo restaurado ES el gratis de hoy,
+   quitamos un candado equivocado; si está bloqueado y no somos Premium,
+   navegamos al modo gratis del día. */
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    try{
+      var G = window.CGGate;
+      if (!G || !G.enforce || G.isPremium()) return;
+      if (new URLSearchParams(location.search).get('modo')) return;   // deep links ya pasan por la puerta
+      var m = (document.body.classList.contains('mini-active') || document.body.classList.contains('mini-landing'))
+        ? 'mini' : (state.mode === 'niebla' ? 'niebla' : 'clasico');
+      var ov = document.getElementById('cgk-ov');
+      if (G.isFree('sudoku', m)){
+        if (ov) ov.remove();   // el modo restaurado es el gratis de hoy — candado equivocado
+      } else if (!ov) {
+        // fuga real: modo bloqueado restaurado sin candado a la vista → al modo gratis del día.
+        // (Si el candado ya está en pantalla, se queda — es la página de venta.)
+        location.replace('/sudoku/?modo=' + (G.freeMode('sudoku') || 'clasico'));
+      }
+    }catch(e){}
+  }, 0);
+});
 
 })();
 </script>
