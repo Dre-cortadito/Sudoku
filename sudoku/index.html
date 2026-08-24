@@ -39,6 +39,14 @@
     --success:      #548C4C;    /* olive green — the "reto logrado / done" cue */
     --error:        #CF2A2A;
 
+    /* ---- Rank bar (DESIGN-SYSTEM.md §3.2) ---- */
+    --rank-outline:   #a8a29a;
+    --rank-tick-idle: #d8d3ca;
+    --rank-tick-done: #111111;   /* set from JS per accent */
+    --rank-goal-ring: #111111;   /* set from JS per accent */
+    --rank-cap:       14px;
+    --rank-inset:     12px;
+
     --cell-bg:        #ffffff;
     --cell-bg-given:  #f3eee2;
     /* Highlight progression — original terracota/orange tones (Normal). Niebla
@@ -95,6 +103,10 @@
     --accent-2-deep:#744f34;
     --accent-2-soft:#241a12;          /* deep espresso tint */
     --success:      #86a85a;          /* lifted olive */
+    --rank-outline:   #565049;
+    --rank-tick-idle: #4a453f;
+    /* --rank-tick-done and --rank-goal-ring are chosen from the live accent in
+       JS, in either theme — never hard-coded here. */
     --error:        #d96565;
     --cell-bg:        #2a241f;        /* tiles must read clearly on the near-black page */
     --cell-bg-given:  #3a3128;
@@ -676,13 +688,17 @@
   .info-bar:active { opacity: 0.7; }
   .info-bar .info-sep { opacity: 0.5; margin: 0 6px; }
 
-  /* ============ RANK BAR — Racimo style (transparent, track-fill) ============ */
+  /* ============ RANK BAR — DESIGN-SYSTEM.md §3.2 ============
+     One scale: fill, milestone ticks and the goal marker all sit at
+     (rank fraction x track width), interpolated through this mode's own
+     ladder. The daily marker shows while the reto is PENDING and is removed
+     entirely once achieved. */
   .rank-bar {
     display: flex; align-items: center; gap: 10px;
-    padding: 6px 0;   /* STANDARD (2026-07-08): zero side padding — rank-bar content spans exactly the board width */
+    padding: 6px 0;   /* STANDARD (2026-07-08): zero side padding */
     background: transparent;
     border-radius: 999px;
-    margin: 0 auto 8px;            /* tight gap to the content below — Racimo standard */
+    margin: 0 auto 8px;
     cursor: pointer;
     user-select: none;
     width: 100%;
@@ -694,10 +710,11 @@
     .rank-bar:hover { background: var(--paper); }
     .rank-bar:hover .rank-label, .rank-bar:hover .rank-chev { color: var(--accent); }
   }
+  .rank-bar:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .rank-label {
     font-size: 11px;
     color: var(--ink);
-    flex-shrink: 0;
+    flex: 0 0 auto;
     min-width: 88px;
     font-family: var(--font-ui);
     text-transform: uppercase;
@@ -706,89 +723,81 @@
     white-space: nowrap;
   }
   .rank-label.at-maestro { color: var(--accent); }
+
   .rank-track {
-    flex: 1;
-    height: 22px;
     position: relative;
+    flex: 1 1 auto; min-width: 0;
+    height: 22px;
+    border-radius: 999px;
+    border: 1.5px solid var(--rank-outline);
+    background: transparent;
+    box-sizing: border-box;
+    overflow: hidden;
   }
-  .rank-track-line {
-    position: absolute; left: 0; right: 0; top: 50%;
-    height: 3px; background: var(--ink-line);
-    transform: translateY(-50%); z-index: 0;
-    border-radius: 2px;
-  }
-  /* Accent-colored fill behind the current bubble — grows as you rank up */
-  .rank-track-fill {
-    position: absolute; left: 0; top: 50%;
-    width: 0;
-    height: 3px;
+  .rank-fill {
+    position: absolute; left: 2px; top: 2px; bottom: 2px;
+    border-radius: 999px;
     background: var(--accent);
-    transform: translateY(-50%);
-    border-radius: 2px;
-    z-index: 1;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: var(--rank-cap);
+    box-sizing: border-box;
     transition: width 0.3s ease;
+    overflow: hidden;
   }
-  .rank-dot {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    top: 50%;
-    width: 6px; height: 6px;
-    background: var(--ink-soft);
-    border-radius: 50%;
-    z-index: 3;
-  }
-  .rank-dot.passed { background: var(--ink); }
-  /* STANDARD (see design doc): current rank is a fixed 24px circle
-     in the game's accent — identical shape to Racimo, terracota here.
-     Centered via the base .rank-dot transform, so fixed width is fine. */
-  .rank-dot.current {
-    width: 24px; height: 24px;
-    background: var(--accent);
-    color: #ffffff;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
+  .rank-fill.empty { display: none; }
+  /* modes that hide their number keep an inset light end-cap so the fill still
+     reads as a position (Niebla, Mini) */
+  .rank-fill.scoreless { padding-right: 0; box-shadow: inset -3px 0 0 rgba(255,255,255,.55); }
+
+  .rank-score {
+    position: relative; z-index: 5;
+    font-size: 11px; font-weight: 700; color: #fff;
     font-family: var(--font-ui);
-    z-index: 4;
-    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    line-height: 1; white-space: nowrap;
+    background: var(--accent); padding: 1px 3px; border-radius: 4px;
   }
-  /* The current bubble stays brand orange even when you're above the reto line.
-     (In the ceiling model you start above it, so a green "done" bubble would be
-     green almost the whole game — the orange-line marker carries the reto cue.) */
-  .rank-dot.current.done { background: var(--accent); }
-  /* Negative score — espresso brown bubble (overrides the orange default).
-     Reto is always positive, so .done can't co-occur with .negative. */
-  .rank-dot.current.negative { background: var(--accent-2); }
-  /* Maestro/a — the pinnacle is ALWAYS the brand orange (overrides the green
-     "done" state). Standard across games; matches how Racimo paints its top
-     rank in-accent. The label turns orange too via .rank-label.at-maestro. */
-  .rank-dot.current.at-maestro { background: var(--accent); }
-  /* Goal marker (Reto del día) — vertical bar */
-  .rank-meta {
-    position: absolute;
-    top: 50%;
-    width: 3px; height: 26px;       /* trimmed 25% from 34 — slimmer, classier */
-    background: var(--accent);
-    border-radius: 2px;
-    transform: translate(-50%, -50%);
-    z-index: 4;                     /* above the dots/bubble so it stays visible */
+  .rank-score.out {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    color: var(--ink); background: transparent; padding: 0;
+  }
+  /* negative: a NEUTRAL plate — never --accent-2, which is the success green in
+     other games, and never a green cue on a negative number */
+  .rank-score.neg { background: var(--ink); color: var(--bg); padding: 1px 3px; }
+  .rank-score[hidden] { display: none; }
+
+  .rank-tick {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 2px; height: 54%;
+    border-radius: 1px;
+    background: var(--rank-tick-idle);
+    z-index: 2; opacity: 1;
+    transition: opacity 0.18s ease;
     pointer-events: none;
-    opacity: 0.95;
-    transition: background 0.25s ease;
   }
-  .rank-meta.done {
-    background: var(--success);    /* orange → success green once passed
-                                      (family-wide "done" cue, like Racimo) */
-    opacity: 1;
-    z-index: 5;
+  .rank-tick.passed { background: var(--rank-tick-done); }
+  .rank-tick.under-goal { opacity: 0; }
+
+  .rank-goal {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 3px; height: 76%;
+    border-radius: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 0 1.5px var(--rank-goal-ring);
+    z-index: 6; opacity: 1;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
   }
+  /* Achieved: the marker is removed. Opacity, not display — no reflow, no tick moves. */
+  .rank-goal.is-achieved { opacity: 0; }
+  .rank-goal[hidden] { display: none; }
+
   .rank-chev {
     font-size: 14px;
     font-weight: 500;
     color: var(--ink);
     transition: transform 0.2s, color 0.15s;
-    flex-shrink: 0;
+    flex: 0 0 auto;
   }
   .rank-bar.open .rank-chev { transform: rotate(180deg); }
 
@@ -1196,7 +1205,11 @@
      so restore Mini's green here. It flows to the Compartir button, the cup
      mark (recoloured in JS) and any accent text, the same way Normal's prompt
      reads terracota and Niebla's reads fog-blue. */
-  #mini-done-modal { --accent: #548C4C; --accent-deep: #43703D; }
+  #mini-done-modal { --accent: #A83254; --accent-deep: #862843; }
+  /* The rule above is theme-blind, so dark needs its own: the light frambuesa on
+     the dark card measures 2.78:1, the lifted one 6.95:1. (The old green had the
+     same defect at 4.48:1.) */
+  body[data-theme="black"] #mini-done-modal { --accent: #E8829F; --accent-deep: #CE6884; }
 
   /* ============ Rotate-to-portrait lock (phones held sideways) ============
      The board + number pad need one tall portrait screen; turned landscape on
@@ -1766,18 +1779,18 @@
      a brighter green lives in the board tints below. ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #548C4C;   /* forest green — main identity (bean, board, accents, legible text) */
-    --accent-deep:   #43703D;
-    --accent-soft:   #e4f3e9;
+    --accent:        #A83254;   /* frambuesa — identidad de Mini (2026-08-24) */
+    --accent-deep:   #862843;
+    --accent-soft:   #FBEBEF;
     --accent-2:      #2f3640;   /* charcoal — bean, Notas pad, feedback box (white text reads) */
     --accent-2-deep: #1f2630;
     --accent-2-soft: #e7eaee;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
-    --accent:        #3ad07e;   /* bright green pops on the dark surface */
-    --accent-deep:   #2aa863;
-    --accent-soft:   #102017;
+    --accent:        #E8829F;   /* frambuesa levantada sobre la superficie oscura */
+    --accent-deep:   #CE6884;
+    --accent-soft:   #2B161C;
     --accent-2:      #4a5260;   /* lifted charcoal — distinct from the near-black page, white text reads */
     --accent-2-deep: #353c47;
     --accent-2-soft: #1c2027;
@@ -1811,27 +1824,30 @@
      all-terracota board and Niebla's all-plum board). LIGHT theme — green tints;
      entered digits are a dark green (--cell-ink) so they read on the tints. */
   body.mini-active {
-    --cell-ink:     #14663a;   /* entered digits — dark green, legible on white + tints */
-    --cell-bg-line: #e6f5ec;   /* faint — row + column */
-    --cell-bg-box:  #c4ecd0;   /* clearer — 3×3 box */
-    --cell-bg-same: #93dbab;   /* strong green — same number */
-    --cell-bg-sel:  #1f8a4d;   /* deep green — selected (white digit + ring read) */
-    --cell-bg-peer: #e6f5ec;
+    --cell-ink:     #7E2340;   /* entered digits — deep enough to clear 4.5:1 on the
+                                  STRONGEST tint (the old green managed only 4.33) */
+    --cell-bg-line: #FBEBEF;   /* faint — row + column */
+    --cell-bg-box:  #F4D3DC;   /* clearer — 3×3 box */
+    --cell-bg-same: #E7A8B9;   /* strong — same number */
+    --cell-bg-sel:  #A83254;   /* solid frambuesa — selected (white digit + ring read) */
+    --cell-bg-peer: #FBEBEF;
   }
   /* Dark Mini: bright green digits pop on the dark tiles, so use DARK green
      tints for the highlights (light tints would swallow the digits). */
   body[data-theme="black"].mini-active {
-    --cell-ink:     #3ad07e;   /* green digits on the dark surface */
-    --cell-bg-line: #15291d;
-    --cell-bg-box:  #1d3b29;
-    --cell-bg-same: #275237;
-    --cell-bg-sel:  #1f8a4d;
-    --cell-bg-peer: #15291d;
+    --cell-ink:     #EE99B0;   /* one step lighter than --accent, so the digit clears
+                                  4.5:1 on the strongest tint (5.16) */
+    --cell-bg-line: #2B161C;
+    --cell-bg-box:  #3D1F28;
+    --cell-bg-same: #58303C;
+    --cell-bg-sel:  #B03D5C;
+    --cell-bg-peer: #2B161C;
   }
   /* Niebla is precision-scored, so the rank-bar bubble holds a DERIVED score that
      means nothing to the player. Hide the number (like the Mini bar) — the label
      beside it carries the rank name; the bubble just marks your position. */
-  body.niebla-game #rank-bar .rank-dot.current { width: 16px; height: 16px; font-size: 0; }
+  /* Niebla hides its number via the bar's own showsNumber flag (§3.2) — no CSS
+     override needed, and none that could leak a number back in. */
 
   /* Disabled mode pill (Diagonales — deferred) + Próximamente tag. */
   .landing-mode-row { align-items: center; }
@@ -2008,7 +2024,7 @@
   /* Normal's bubble holds the score number, which fills the 24px chip. Mini's
      bubble is empty (time-based), so the same 24px reads as an oversized blob —
      use a smaller, refined marker for the current rank. */
-  .mini-rank-bar .rank-dot.current { width: 16px; height: 16px; font-size: 0; }
+  /* Mini likewise hides its number through showsNumber (§3.2). */
 
   /* ===== Mini Start gate — board sits covered until "Empezar" ===== */
   .mini-start {
@@ -2037,6 +2053,9 @@
     transition: transform 0.1s ease, background 0.15s ease;
   }
   .mini-start-btn:active { transform: scale(0.97); }
+  /* The button hard-codes color:#fff on var(--accent); on the lifted frambuesa
+     that is 2.58:1 (it was 2.00:1 on the old bright green). Dark ink: 6.95:1. */
+  body[data-theme="black"] .mini-start-btn { color: #1a1614; }
   @media (hover: hover) { .mini-start-btn:hover { background: var(--accent-deep); } }
 
   /* Mini completion modal — rank + reto rows */
@@ -2182,11 +2201,9 @@
     body.game-active .rank-bar,   body.mini-active .rank-bar   { padding: 12px 0; gap: 20px; }
     body.game-active .rank-label, body.mini-active .rank-label { font-size: 17px; letter-spacing: 2.4px; min-width: 158px; }
     body.game-active .rank-track, body.mini-active .rank-track { height: 30px; }
-    body.game-active .rank-dot,   body.mini-active .rank-dot   { width: 8px; height: 8px; }
+    body.game-active .rank-track, body.mini-active .rank-track { --rank-cap: 16px; --rank-inset: 16px; }
+    body.game-active .rank-score, body.mini-active .rank-score { font-size: 14px; }
     body.game-active .rank-chev,  body.mini-active .rank-chev  { font-size: 18px; }
-    /* Bigger current-rank bubble for Normal (shows the score). Niebla and Mini keep
-       their small marker bubble via their own higher-specificity rules. */
-    body.game-active .rank-dot.current { width: 32px; height: 32px; font-size: 14px; }
   }
 
   /* ── Header date: only float it (absolutely centered) into the top bar once
@@ -2494,9 +2511,10 @@
     </div>
   </aside>
 
-  <div class="rank-bar" id="rank-bar" role="button" tabindex="0" aria-label="Ver rangos">
+  <div class="rank-bar" id="rank-bar" role="button" tabindex="0"
+       aria-expanded="false" aria-controls="rangos-modal" aria-label="Ver rangos">
     <span class="rank-label" id="rank-label">Debutante</span>
-    <div class="rank-track" id="rank-track"></div>
+    <div class="rank-track" id="rank-track"><div class="rank-fill empty" id="rank-fill"><span class="rank-score" id="rank-score"></span></div></div>
     <span class="rank-chev">▾</span>
   </div>
 
@@ -2584,9 +2602,10 @@
     </div>
   </aside>
 
-  <div class="rank-bar mini-rank-bar" id="mini-rank-bar" role="button" tabindex="0" aria-label="Ver rangos del Mini">
+  <div class="rank-bar mini-rank-bar" id="mini-rank-bar" role="button" tabindex="0"
+       aria-expanded="false" aria-controls="mini-rangos-modal" aria-label="Ver rangos del Mini">
     <span class="rank-label" id="mini-rank-label">Maestro/a</span>
-    <div class="rank-track" id="mini-rank-track"></div>
+    <div class="rank-track" id="mini-rank-track"><div class="rank-fill empty" id="mini-rank-fill"><span class="rank-score" id="mini-rank-score"></span></div></div>
     <span class="rank-chev">▾</span>
   </div>
   <div class="mini-meta">
@@ -4012,62 +4031,223 @@ function renderPad() {
   padEl.appendChild(eraseBtn);
 }
 
+/* ============================================================================
+   RANK BAR — DESIGN-SYSTEM.md §3.2
+   Fill, milestone ticks and the goal marker share ONE scale: a value becomes a
+   0-1 fraction by interpolating through this mode's own ladder, so the fill
+   always lands on the milestone of the rank it is showing. Dividing by the top
+   threshold does not work — the ladder is not linear.
+   The track's DOM is built ONCE and updated in place.
+   ========================================================================== */
+const RANK_CONTRAST_FLOOR = 3.0;                 /* WCAG 1.4.11 non-text */
+function rankLum(hex) {
+  hex = String(hex || '').trim().replace('#', '');
+  if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return null;
+  const v = [0,2,4].map(i => parseInt(hex.slice(i,i+2),16)/255)
+    .map(x => x <= 0.03928 ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4));
+  return 0.2126*v[0] + 0.7152*v[1] + 0.0722*v[2];
+}
+function rankContrast(a, b) {
+  const la = rankLum(a), lb = rankLum(b);
+  if (la === null || lb === null) return 1;
+  return (Math.max(la,lb) + 0.05) / (Math.min(la,lb) + 0.05);
+}
+/* BLACK by default — including on terracota and frambuesa, where black clears
+   the floor. White only where black FAILS it (Niebla's deep fog blue). */
+function rankInkOn(accent) {
+  return rankContrast('#111111', accent) >= RANK_CONTRAST_FLOOR ? '#111111' : '#ffffff';
+}
+/* value -> 0..1 through a ladder; a value at ladder[i] lands exactly on tick i */
+function rankFractionIn(value, ladder) {
+  const top = ladder.length - 1;
+  if (top <= 0) return 0;
+  if (!(value > ladder[0])) return 0;
+  if (value >= ladder[top]) return 1;
+  for (let i = 0; i < top; i++) {
+    const lo = ladder[i], hi = ladder[i+1];
+    if (value >= lo && value <= hi) {
+      const f = (hi === lo) ? 0 : (value - lo) / (hi - lo);
+      return Math.max(0, Math.min(1, (i + f) / top));
+    }
+  }
+  return 0;
+}
+/* time -> 0..1 through max-seconds-per-rank cutoffs, inverted.
+   t = 0 (clock not started) => 1 => a FULL bar, never an empty one. */
+function rankFractionForTime(seconds, cutoffs) {
+  const top = cutoffs.length - 1;
+  if (top <= 0) return 1;
+  if (!(seconds > 0)) return 1;
+  if (seconds <= cutoffs[top]) return 1;
+  for (let i = top; i >= 1; i--) {
+    const fast = cutoffs[i], slow = cutoffs[i-1];
+    if (!isFinite(slow)) {
+      const over = Math.min(1, (seconds - fast) / (fast * 2));
+      return Math.max(0, Math.min(1, ((i - 1) + (1 - over)) / top));
+    }
+    if (seconds <= slow) {
+      const f = (seconds - fast) / (slow - fast);
+      return Math.max(0, Math.min(1, (i - f) / top));
+    }
+  }
+  return 0;
+}
+
+const RANK_TICK_GAP = 6, RANK_SCORE_GAP = 4, RANK_OUT_PAD = 12, RANK_FIRST_CLEAR = 8;
+
+/* One controller per bar: '#rank-bar' (Clásico + Niebla) and '#mini-rank-bar'. */
+function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
+  let built = false, ticks = [], tickIdx = [], goalEl = null, ro = null;
+  let st = { frac: 0, goalFrac: null, achieved: false, curIdx: 0,
+             showsNumber: true, value: 0, negative: false, topIdx: 9 };
+
+  function build() {
+    if (built) return;
+    const track = document.getElementById(trackId);
+    if (!track) return;
+    /* interior milestones only — rank 0 is the empty bar, the top rank the full one */
+    for (let i = 1; i < st.topIdx; i++) {
+      const t = document.createElement('div');
+      t.className = 'rank-tick';
+      t.dataset.i = String(i);
+      track.appendChild(t);
+      ticks.push(t); tickIdx.push(i);
+    }
+    goalEl = document.createElement('div');
+    goalEl.className = 'rank-goal';
+    track.appendChild(goalEl);
+    if (typeof ResizeObserver === 'function') { ro = new ResizeObserver(place); ro.observe(track); }
+    else { window.addEventListener('resize', place); }
+    built = true;
+  }
+
+  function render(next) {
+    Object.assign(st, next || {});
+    build();
+    const bar   = document.getElementById(barId);
+    const track = document.getElementById(trackId);
+    const fill  = document.getElementById(fillId);
+    const sc    = document.getElementById(scoreId);
+    const label = document.getElementById(labelId);
+    if (!bar || !track || !fill || !sc) return;
+
+    const accent = getComputedStyle(bar).getPropertyValue('--accent').trim() || '#000000';
+    const ink = rankInkOn(accent);
+    bar.style.setProperty('--rank-tick-done', ink);
+    bar.style.setProperty('--rank-goal-ring', ink);
+
+    const pct = st.frac * 100;
+    fill.classList.toggle('empty', pct <= 0.5);
+    fill.classList.toggle('scoreless', !st.showsNumber);
+    /* left:2px + this width puts the fill's right edge at exactly frac x width */
+    fill.style.width = pct <= 0.5 ? '0px' : 'calc(' + pct + '% - 2px)';
+
+    /* A mode that hides its number hides it in EVERY state, negative included. */
+    sc.hidden = !st.showsNumber;
+    const outside = st.showsNumber && pct <= 0.5;
+    if (st.showsNumber) {
+      sc.textContent = st.value;
+      sc.classList.toggle('out', outside);
+      sc.classList.toggle('neg', st.negative);
+      if (outside  && sc.parentNode !== track) track.appendChild(sc);
+      if (!outside && sc.parentNode !== fill)  fill.appendChild(sc);
+    } else {
+      sc.classList.remove('out', 'neg');
+      if (sc.parentNode !== fill) fill.appendChild(sc);
+    }
+
+    for (let i = 0; i < ticks.length; i++) {
+      ticks[i].classList.toggle('passed', tickIdx[i] <= st.curIdx);
+    }
+
+    /* The marker shows while the reto is PENDING and is removed entirely once
+       ACHIEVED — driven by the caller's completion flag, never by the fill
+       crossing its position. */
+    goalEl.hidden = (st.goalFrac === null);
+    goalEl.classList.toggle('is-achieved', st.goalFrac !== null && st.achieved);
+    if (st.goalFrac !== null) goalEl.style.left = (st.goalFrac * 100) + '%';
+
+    if (label) {
+      label.textContent = RANK_NAMES[st.curIdx];
+      label.classList.toggle('at-maestro', st.curIdx === st.topIdx);
+    }
+    place();
+  }
+
+  /* pixel pass: tick positions, collisions, outside-score placement. Runs on
+     every render AND from the ResizeObserver — ticks are positioned in pixels,
+     so a resize must MOVE them, not merely re-test them. */
+  function place() {
+    if (!built) return;
+    const track = document.getElementById(trackId);
+    const sc = document.getElementById(scoreId);
+    if (!track || !sc) return;
+    const w = track.clientWidth;
+    if (!(w > 0)) return;
+
+    for (let i = 0; i < ticks.length; i++) {
+      ticks[i].style.left = ((w * tickIdx[i]) / st.topIdx) + 'px';
+    }
+
+    /* no marker on screen => nothing may be hidden on its account, so any tick
+       it was covering is restored automatically */
+    const markerVisible = st.goalFrac !== null && !st.achieved;
+    const goalPx = markerVisible ? st.goalFrac * w : null;
+    const fillPx = st.frac * w;
+
+    sc.style.left = ''; sc.style.marginRight = '';
+    if (!sc.hidden && sc.classList.contains('out')) {
+      sc.style.left = (Math.max(fillPx, w / st.topIdx + RANK_FIRST_CLEAR) + RANK_OUT_PAD) + 'px';
+    }
+    let sBox = null;
+    if (!sc.hidden) {
+      const tb = track.getBoundingClientRect(), sb = sc.getBoundingClientRect();
+      if (sb.width > 0) sBox = { left: sb.left - tb.left, right: sb.right - tb.left };
+    }
+    if (sBox && goalPx !== null && !sc.classList.contains('out') &&
+        goalPx > sBox.left - RANK_SCORE_GAP && goalPx < sBox.right + RANK_SCORE_GAP) {
+      sc.style.marginRight = (sBox.right - goalPx + RANK_SCORE_GAP) + 'px';
+    }
+    for (let i = 0; i < ticks.length; i++) {
+      const c = parseFloat(ticks[i].style.left) || 0;
+      let hide = goalPx !== null && Math.abs(c - goalPx) < RANK_TICK_GAP;
+      if (sBox && sc.classList.contains('out') &&
+          c > sBox.left - 4 && c < sBox.right + 4) hide = true;
+      ticks[i].classList.toggle('under-goal', hide);
+    }
+  }
+
+  return { render, place, state: () => st };
+}
+
+const _mainBar = makeRankBar('rank-bar', 'rank-track', 'rank-fill', 'rank-score', 'rank-label');
+
+/* Clásico and Niebla: points remaining (42 - aids [- 4 x errors]).
+   Niebla hides its number — including when it is negative. */
 function renderRankBar() {
-  const track = document.getElementById('rank-track');
-  track.innerHTML = '';
-  const topIdx = RANK_THRESHOLDS.length - 1;
-  const maxScore = RANK_THRESHOLDS[topIdx];   // scale to the real max (42) so Maestro lands at the right edge
-  const curIdx = currentRankIndex();
   const sc = score();
-  // Position helper: dots sit proportionally; the last one (Maestro = max points)
-  // reaches 100% — the right edge of the track.
-  function pctFor(i) {
-    return Math.max(0, Math.min(100, (RANK_THRESHOLDS[i] / maxScore) * 100));
+  const ladder = RANK_THRESHOLDS;
+  const niebla = (state.mode === 'niebla');
+  _mainBar.render({
+    topIdx: ladder.length - 1,
+    frac: rankFractionIn(sc, ladder),
+    goalFrac: rankFractionIn(state.reto, ladder),
+    /* THIS MODE's completion rule — a points comparison, owned by the game.
+       The bar never derives it. */
+    achieved: sc >= state.reto,
+    curIdx: currentRankIndex(),
+    showsNumber: !niebla,
+    value: sc,
+    negative: sc < 0
+  });
+  const bar = document.getElementById('rank-bar');
+  if (bar) {
+    bar.setAttribute('aria-label',
+      'Rango ' + RANK_NAMES[currentRankIndex()] +
+      (niebla ? '' : ', ' + sc + ' puntos') + '.' +
+      ' Reto del día ' + (sc >= state.reto ? 'logrado' : 'pendiente') + '. Ver rangos.');
   }
-  // Base line
-  const line = document.createElement('div');
-  line.className = 'rank-track-line';
-  track.appendChild(line);
-  // Accent-colored fill behind current bubble
-  const fill = document.createElement('div');
-  fill.className = 'rank-track-fill';
-  /* Fill + bubble track the SCORE continuously on the same linear
-     scale as the dots and the reto marker, so the bubble meets the
-     marker at exactly the reto — see _kit/DESIGN-SYSTEM.md §3.2. */
-  const scPct = Math.max(0, Math.min(100, (sc / maxScore) * 100));
-  fill.style.width = scPct + '%';
-  track.appendChild(fill);
-  // Goal marker (Reto del día)
-  const retoPct = Math.min(100, (state.reto / maxScore) * 100);
-  const retoMark = document.createElement('div');
-  retoMark.className = 'rank-meta' + (sc >= state.reto ? ' done' : '');
-  retoMark.style.left = retoPct + '%';
-  retoMark.title = 'Reto del día: ' + state.reto;
-  track.appendChild(retoMark);
-  // Dots
-  for (let i = 0; i < RANK_THRESHOLDS.length; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'rank-dot';
-    if (sc >= RANK_THRESHOLDS[i]) dot.classList.add('passed');
-    dot.style.left = pctFor(i) + '%';
-    track.appendChild(dot);
-  }
-  // Score bubble — glides continuously; clamp() keeps it on the track
-  // (negative scores pin to the left edge, espresso bubble).
-  const bubble = document.createElement('div');
-  bubble.className = 'rank-dot current';
-  if (sc >= state.reto) bubble.classList.add('done');
-  if (sc < 0) bubble.classList.add('negative');
-  if (curIdx === topIdx) bubble.classList.add('at-maestro');   // pinnacle = orange
-  bubble.textContent = sc;
-  bubble.style.left = scPct + '%';   /* fallback */
-  bubble.style.left = 'clamp(12px, ' + scPct + '%, calc(100% - 12px))';
-  bubble.style.zIndex = '5';
-  track.appendChild(bubble);
-  // Label
-  const labelEl = document.getElementById('rank-label');
-  labelEl.textContent = RANK_NAMES[curIdx];
-  labelEl.classList.toggle('at-maestro', curIdx === topIdx);
 }
 
 function renderAll() {
@@ -5880,40 +6060,53 @@ function refreshMiniRangos() {
   const retoEl = document.getElementById('mini-rangos-reto');
   if (retoEl && miniState) retoEl.textContent = '≤ ' + miniFmt(miniRetoForDate(miniState.iso));
 }
-let _miniRankShown = -1;
+/* (the old rank-index memo is gone: the bar is built once and updated in
+   place, so there is nothing to gate a rebuild on) */
+const _miniBar = makeRankBar('mini-rank-bar', 'mini-rank-track', 'mini-rank-fill',
+                             'mini-rank-score', 'mini-rank-label');
+
+/* Mini ranks on ELAPSED TIME, so its bar drains as the clock runs and an
+   unstarted clock (0 s) is a FULL bar, not an empty one. It shows no number.
+   The track is built once and updated in place — the fill now moves every
+   second, so the old innerHTML rebuild would violate §3.2's timer rule. */
+/* MINI_RANK_CUTOFFS is a list of {idx, max} ordered fastest-first. The bar needs
+   max-seconds indexed BY RANK, ascending, so flatten it once. */
+const MINI_CUTOFF_SECS = (function () {
+  const a = new Array(RANK_NAMES.length).fill(Infinity);
+  MINI_RANK_CUTOFFS.forEach(function (c) { a[c.idx] = c.max; });
+  return a;
+})();
+
 function miniRenderRankBar(force) {
-  const track = document.getElementById('mini-rank-track');
-  const labelEl = document.getElementById('mini-rank-label');
-  if (!track || !miniState) return;
-  const curIdx = miniRankIndexForTime(miniState.elapsed);
-  if (!force && curIdx === _miniRankShown) return;   // only rebuild when the rank changes
-  _miniRankShown = curIdx;
   const topIdx = RANK_NAMES.length - 1;
-  track.innerHTML = '';
-  const line = document.createElement('div'); line.className = 'rank-track-line'; track.appendChild(line);
-  const fill = document.createElement('div'); fill.className = 'rank-track-fill';
-  fill.style.width = (curIdx / topIdx * 100) + '%'; track.appendChild(fill);
-  // Daily goal line — the rank you'd earn if you finished at the target time.
-  // Goes "done" (rose) while you're on pace to beat it (curIdx >= goalIdx).
-  const goalIdx = miniRankIndexForTime(miniRetoForDate(miniState.iso));
-  const goalMark = document.createElement('div');
-  goalMark.className = 'rank-meta' + (curIdx >= goalIdx ? ' done' : '');
-  goalMark.style.left = (goalIdx / topIdx * 100) + '%';
-  goalMark.title = 'Reto del día';
-  track.appendChild(goalMark);
-  for (let i = 0; i < RANK_NAMES.length; i++) {
-    const dot = document.createElement('div'); dot.className = 'rank-dot';
-    if (i === curIdx) {
-      dot.classList.add('current');
-      if (miniState.done) dot.classList.add('done');
-      if (curIdx === topIdx) dot.classList.add('at-maestro');   // pinnacle = orange
-    }
-    dot.style.left = (i / topIdx * 100) + '%';
-    track.appendChild(dot);
-  }
-  if (labelEl) {
-    labelEl.textContent = RANK_NAMES[curIdx];
-    labelEl.classList.toggle('at-maestro', curIdx === topIdx);   // orange word at Maestro
+  /* Before a round exists (the landing), Mini's honest state is the one it
+     starts in: clock at zero, Maestro/a, reto pending — a FULL bar. */
+  const elapsed = miniState ? (miniState.elapsed || 0) : 0;
+  const iso     = (miniState && miniState.iso) ? miniState.iso : state.iso;
+  const curIdx = miniRankIndexForTime(elapsed);
+  const target = miniRetoForDate(iso);
+  /* THIS MODE's completion rule: the round must be FINISHED and the final time
+     under the target, compared in EXACT SECONDS — the same test the finish
+     modal uses (miniState.done + elapsed <= target). The old bar used the
+     coarse rank-bucket comparison curIdx >= goalIdx, which disagreed with the
+     modal at the boundary: on a 105 s target a 105 s run is a met reto that the
+     bucket called not-done. */
+  const achieved = !!(miniState && miniState.done) && elapsed > 0 && elapsed <= target;
+  _miniBar.render({
+    topIdx: topIdx,
+    frac: rankFractionForTime(elapsed, MINI_CUTOFF_SECS),
+    goalFrac: rankFractionForTime(target, MINI_CUTOFF_SECS),
+    achieved: achieved,
+    curIdx: curIdx,
+    showsNumber: false,      /* the time lives in the timer, never in the bar */
+    value: '',
+    negative: false
+  });
+  const bar = document.getElementById('mini-rank-bar');
+  if (bar) {
+    bar.setAttribute('aria-label',
+      'Rango ' + RANK_NAMES[curIdx] + '. Reto del día ' +
+      (achieved ? 'logrado' : 'pendiente') + '. Ver rangos del Mini.');
   }
 }
 function miniRenderStart() {
@@ -5977,9 +6170,10 @@ function miniCheckDone() {
 // monogram knockout and the soft edges intact. Cached after the first build;
 // falls back to the original terracota art if a canvas error ever throws, so
 // the cup is never left blank.
-let _miniCupGreen = null;
+let _miniCupTint = null, _miniCupTintTheme = null;
 function setMiniCup(imgEl, srcDataUri) {
-  if (_miniCupGreen) { imgEl.src = _miniCupGreen; return; }
+  const _theme = document.body.dataset.theme || 'white';
+  if (_miniCupTint && _miniCupTintTheme === _theme) { imgEl.src = _miniCupTint; return; }
   if (!srcDataUri) return;
   try {
     const probe = new Image();
@@ -5991,10 +6185,13 @@ function setMiniCup(imgEl, srcDataUri) {
         const ctx = cv.getContext('2d');
         ctx.drawImage(probe, 0, 0, w, h);
         ctx.globalCompositeOperation = 'source-in';
-        ctx.fillStyle = '#548C4C';              // Mini's forest green
+        /* Mini's frambuesa — theme-aware, because the cup sits on the done modal
+           and the light hex reads 2.78:1 on the dark card. */
+        ctx.fillStyle = (document.body.dataset.theme === 'black') ? '#E8829F' : '#A83254';
         ctx.fillRect(0, 0, w, h);
-        _miniCupGreen = cv.toDataURL('image/png');
-        imgEl.src = _miniCupGreen;
+        _miniCupTint = cv.toDataURL('image/png');
+        _miniCupTintTheme = _theme;
+        imgEl.src = _miniCupTint;
       } catch (e) { imgEl.src = srcDataUri; }    // fallback: terracota cup
     };
     probe.onerror = function () { imgEl.src = srcDataUri; };
