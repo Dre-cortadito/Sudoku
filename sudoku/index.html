@@ -43,7 +43,17 @@
     --rank-outline:   #a8a29a;
     --rank-tick-idle: #d8d3ca;
     --rank-tick-done: #111111;   /* set from JS per accent */
-    --rank-goal-ring: #111111;   /* set from JS per accent */
+    /* Target-marker line (DESIGN-SYSTEM.md §3.2). Two colours, chosen by what is
+       behind the marker:
+         --rank-goal-track  over the EMPTY track — var(--accent), unless the accent
+                            itself is under 3.2:1 on this page background.
+         --rank-goal-fill   over the FILL — a tint of THIS accent's own ramp: walk
+                            toward white and toward black, take whichever end clears
+                            3.2:1 against the accent with the SMALLER mix. Static;
+                            never computed at runtime.
+       Clásico light: #d9633b -> darker 58% -> #5b2a19 (3.24:1, dE00 47 from --success). */
+    --rank-goal-track: var(--accent);
+    --rank-goal-fill: #5b2a19;
     --rank-cap:       14px;
     --rank-inset:     12px;
 
@@ -67,6 +77,15 @@
   /* Layout standard (see _kit/DESIGN-SYSTEM.md): in-game mobile
      header is a fixed 56px box; the rank bar sits at 66px from the top
      (10px below the header). Hardcoded, not variable-driven. */
+
+  /* Crema is a lighter page than white, so Clásico's terracota measures 3.03:1
+     against it — under the 3.2:1 floor. Its own --accent-deep clears at 4.65:1, so
+     the marker's empty-track colour steps to it. Light theme only (in dark the page
+     is dark and --accent passes at 7.20:1), and Clásico only — Niebla's fog blue
+     (7.37:1) and Mini's frambuesa (5.41:1) both clear the floor on crema unchanged. */
+  body[data-variant="crema"]:not([data-theme="black"]):not(.mini-landing):not(.mini-active):not(.niebla-landing):not(.niebla-game) {
+    --rank-goal-track: var(--accent-deep);
+  }
 
   /* ---- Crema · opt-in warm reading surface (same accent pair) ---- */
   body[data-variant="crema"] {
@@ -105,7 +124,10 @@
     --success:      #86a85a;          /* lifted olive */
     --rank-outline:   #565049;
     --rank-tick-idle: #4a453f;
-    /* --rank-tick-done and --rank-goal-ring are chosen from the live accent in
+    /* Clásico dark: #ef7d57 -> darker 52% -> #733c2a (3.21:1, dE00 49). */
+    --rank-goal-track: var(--accent);
+    --rank-goal-fill: #733c2a;
+    /* --rank-tick-done is chosen from the live accent in
        JS, in either theme — never hard-coded here. */
     --error:        #d96565;
     --cell-bg:        #2a241f;        /* tiles must read clearly on the near-black page */
@@ -312,10 +334,28 @@
      dark theme so it pops on the near-black page. !important beats the SVG inline
      style. The landing 2×2 CLUSTER is NOT overridden here — it bakes an alternating
      2-coral / 2-marigold pattern into its own SVG inline styles. */
-  body.mini-active .page-logo ellipse { fill: var(--accent-2) !important; }
-  body.mini-active .page-logo path { stroke: var(--accent) !important; }
-  body[data-theme="black"].mini-active .page-logo ellipse { fill: var(--accent) !important; }
-  body[data-theme="black"].mini-active .page-logo path { stroke: var(--accent-2) !important; }
+  /* El GRANO lleva siempre el color que se lee contra la página, y la veta el otro:
+     en claro grano frambuesa 6.46:1 con veta de menta 5.25:1 sobre él; en oscuro
+     grano de menta 15.85:1 con veta de frambuesa. Al revés, en claro el grano de
+     menta quedaría a 1.23:1 — invisible. */
+  body.mini-active .page-logo ellipse { fill: var(--accent) !important; }
+  body.mini-active .page-logo path { stroke: var(--accent-2) !important; }
+  body[data-theme="black"].mini-active .page-logo ellipse { fill: var(--accent-2) !important; }
+  body[data-theme="black"].mini-active .page-logo path { stroke: var(--accent) !important; }
+  /* El racimo 2x2 de la portada conserva su X original: dos granos en menta
+     (--accent-2) en una diagonal y dos en frambuesa (--accent) en la otra, con
+     las vetas al color contrario. Esa alternancia vive en los style= del propio
+     SVG y NO se debe pisar en bloque — pisarla es exactamente lo que dejó los
+     cuatro granos del mismo color.
+     Lo único que hace falta es un borde: la menta mide 1.23:1 contra la página
+     clara, así que en claro los granos de menta llevan contorno de frambuesa
+     (6.46:1). Sobre la página oscura la menta da 15.85:1 y no necesita nada. */
+  body.mini-landing .landing-logo-mini .bean-menta {
+    stroke: var(--accent);
+    stroke-width: 1.4;
+    paint-order: stroke fill;
+  }
+  body[data-theme="black"].mini-landing .landing-logo-mini .bean-menta { stroke: none; }
   @media (min-width: 600px) {
     .wordmark { font-size: 22px; }   /* spec: keep header quiet, no upscale */
   }
@@ -696,6 +736,8 @@
   .rank-bar {
     display: flex; align-items: center; gap: 10px;
     padding: 6px 0;   /* STANDARD (2026-07-08): zero side padding */
+    position: relative;   /* offset parent for the target chevron, which sits ABOVE
+                             the capsule and therefore cannot live inside the track */
     background: transparent;
     border-radius: 999px;
     margin: 0 auto 8px;
@@ -778,19 +820,78 @@
   .rank-tick.passed { background: var(--rank-tick-done); }
   .rank-tick.under-goal { opacity: 0; }
 
+  /* Target marker, in two parts.
+     .rank-goal      — a hairline INSIDE the capsule, spanning its full inner
+                       height. Its colour adapts to what is behind it.
+     .rank-goal-chev — a downward chevron ABOVE the capsule, its point meeting the
+                       top edge. It cannot live inside .rank-track, whose
+                       overflow:hidden would clip it, so it is a sibling of the
+                       track inside .rank-bar and is placed in pixels by the same
+                       pass that places the hairline. Being absolutely positioned
+                       it takes no space in the flex row: nothing below it moves.
+     The chevron always sits on the PAGE background, so it always wears
+     --rank-goal-track. The over-fill tint is chosen for contrast against the fill
+     and would be near-invisible up here — only the hairline switches. */
+  /* The hairline is 2px — an INTEGER width, deliberately. At 1.5px it sits inside
+     the track's overflow:hidden + border-radius clip and Chromium snapped it to
+     about 1 device-independent px, while the chevron's stem — which lives outside
+     that clip — painted the full 1.5px. Same nominal width, different painted
+     width, and the join read as a step rather than one mark. Integer widths snap
+     identically on both sides of the capsule's edge. Keep the two in step. */
   .rank-goal {
-    position: absolute; top: 50%; transform: translate(-50%, -50%);
-    width: 3px; height: 76%;
-    border-radius: 2px;
-    background: var(--accent);
-    box-shadow: 0 0 0 1.5px var(--rank-goal-ring);
+    position: absolute; top: 0; bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--rank-goal-track);
     z-index: 6; opacity: 1;
+    transition: opacity 0.18s ease, background-color 0.18s ease;
+    pointer-events: none;
+  }
+  .rank-goal.over-fill { background: var(--rank-goal-fill); }
+  /* Achieved: both parts are removed. Opacity, not display — no reflow, no tick moves. */
+  .rank-goal.is-achieved { opacity: 0; }
+  .rank-goal[hidden] { display: none; }
+
+  /* The triangle lives on ::before and the stem on ::after — and the clip-path
+     MUST stay off the host element. clip-path clips an element's descendants as
+     well as the element, so putting the triangle clip on the host silently erased
+     the stem (the first version of this fix painted nothing at all). */
+  /* The chevron's width is EVEN on purpose. The stem is centred inside it with
+     left:50%, so an odd width (7px -> 3.5px) puts the stem on a half-pixel while
+     the hairline sits on an integer. Both are 2px and share an x, but they paint
+     on device columns 0.5px apart — which is exactly what made the marker read as
+     a chevron sitting beside its line instead of on it. 8px here, 10px in play. */
+  .rank-goal-chev {
+    position: absolute;
+    width: 8px; height: 4px;
+    background: transparent;
+    transform: translateX(-50%);
+    z-index: 7; opacity: 1;
     transition: opacity 0.18s ease;
     pointer-events: none;
   }
-  /* Achieved: the marker is removed. Opacity, not display — no reflow, no tick moves. */
-  .rank-goal.is-achieved { opacity: 0; }
-  .rank-goal[hidden] { display: none; }
+  .rank-goal-chev::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--rank-goal-track);
+    -webkit-clip-path: polygon(0 0, 100% 0, 50% 100%);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+  /* The apex of a triangle is a point: on its own it never actually reaches the
+     hairline, and the capsule's 1.5px border sits in the gap between them and
+     reads as a grey cut — a chevron floating above a line, which is exactly the
+     "two disconnected elements" problem. So the chevron carries a STEM that
+     drops from the apex and crosses that border.
+     The stem is the SAME WIDTH as the hairline and shares its x axis, so the
+     browser snaps both to the same device-pixel columns: the join is continuous
+     and cannot land half a pixel off. Keep the two widths in step. */
+  .rank-goal-chev::after {
+    content: ''; position: absolute; left: 50%; top: 100%;
+    width: 2px; height: 2px;
+    transform: translateX(-50%);
+    background: var(--rank-goal-track);
+  }
+  .rank-goal-chev.is-achieved { opacity: 0; }
+  .rank-goal-chev[hidden] { display: none; }
 
   .rank-chev {
     font-size: 14px;
@@ -1398,6 +1499,14 @@
   }
 
   /* ============ RANGOS PANEL ============ */
+  /* The Rangos cost list. `.only-niebla` is the one row that is not true in
+     Clásico — Niebla is the mode that also charges for a wrong placement. */
+  .rangos-costs { margin: 6px 0 10px; padding-left: 20px; }
+  .rangos-costs li { margin: 2px 0; }
+  .only-niebla { display: none; }
+  body.niebla-landing .only-niebla,
+  body.niebla-game .only-niebla { display: list-item; }
+
   .blurb {
     font-size: 14px;
     color: var(--ink);
@@ -1588,7 +1697,6 @@
     font-size: 1.1em;
     margin-right: 2px;
   }
-  .line-marker.done { color: var(--accent-2); }
 
   /* ============ SETTINGS PANEL ============ */
   .settings-row {
@@ -1763,6 +1871,9 @@
                                    enough to read clearly against the fog blue */
     --accent-2-deep: #6b4259;
     --accent-2-soft: #efe6ec;
+    /* Niebla light: #294f61 -> lighter 46% -> #8ba0aa (3.23:1, dE00 29). */
+    --rank-goal-track: var(--accent);
+    --rank-goal-fill: #8ba0aa;
   }
   body[data-theme="black"].niebla-landing,
   body[data-theme="black"].niebla-game {
@@ -1772,28 +1883,76 @@
     --accent-2:      #8a5572;   /* lifted plum on the dark surface */
     --accent-2-deep: #6b4259;
     --accent-2-soft: #271a22;
+    /* Niebla dark: #8fb1c0 -> darker 50% -> #485860 (3.25:1, dE00 40). */
+    --rank-goal-track: var(--accent);
+    --rank-goal-fill: #485860;
   }
-  /* ---- Mini · fresh green + charcoal. Main = green ("go"/quick); secondary =
-     charcoal/graphite (grounds it, white text reads on it for the feedback box +
-     Notas pad). The green is a legible forest green so it works as accent TEXT too;
-     a brighter green lives in the board tints below. ---- */
+  /* ---- Mini · frambuesa + menta (2026-08-24, aprobado por Dre).
+     Dos colores de marca y nada más: frambuesa #A83254 como primario y menta
+     #BEF4D1 como secundario. La menta se aleja de la frambuesa dE00 68 en claro
+     y 54 en oscuro — es una pareja de verdad, no un tono más oscuro del mismo
+     color, que es lo que fallaba en las versiones anteriores.
+
+     La menta es PÁLIDA por definición, y eso decide cómo se usa:
+       · texto blanco sobre menta = 1.23:1  -> NO se usa nunca.
+         El texto sobre menta es la tinta neutra #1a1614 (14.59:1), escrita
+         literal y no como var(--ink), porque --ink se invierte en oscuro.
+       · menta contra la página clara = 1.23:1 (1.03:1 sobre crema) -> un relleno
+         de menta no tiene borde perceptible por sí solo, así que en Mini todo
+         relleno de menta lleva contorno en var(--accent) (frambuesa). Sin
+         terceros colores: la propia pareja hace de límite.
+       · menta contra la página oscura = 15.85:1 -> ahí brilla sola.
+     Separación semántica de la menta: dE00 30 del verde --success en claro y 23
+     en oscuro (el verde de "reto logrado" sigue siendo inconfundible), 56 del
+     azul de Niebla en claro y 25 en oscuro, 61 de su ciruela. ---- */
   body.mini-landing,
   body.mini-active {
-    --accent:        #A83254;   /* frambuesa — identidad de Mini (2026-08-24) */
+    --accent:        #A83254;   /* frambuesa — identidad de Mini */
     --accent-deep:   #862843;
     --accent-soft:   #FBEBEF;
-    --accent-2:      #2f3640;   /* charcoal — bean, Notas pad, feedback box (white text reads) */
-    --accent-2-deep: #1f2630;
-    --accent-2-soft: #e7eaee;
+    --accent-2:      #BEF4D1;   /* menta — segundo color de marca */
+    --accent-2-deep: #8FE0AC;   /* menta un paso más honda (estado pulsado) */
+    --accent-2-soft: #EAFBF1;   /* lavado de menta */
+    /* Mini light: #A83254 -> lighter 59% -> #dbabb9 (3.24:1, dE00 49). */
+    --rank-goal-track: var(--accent);
+    --rank-goal-fill: #dbabb9;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
     --accent:        #E8829F;   /* frambuesa levantada sobre la superficie oscura */
     --accent-deep:   #CE6884;
     --accent-soft:   #2B161C;
-    --accent-2:      #4a5260;   /* lifted charcoal — distinct from the near-black page, white text reads */
-    --accent-2-deep: #353c47;
-    --accent-2-soft: #1c2027;
+    --accent-2:      #BEF4D1;   /* la menta NO se levanta: ya da 15.85:1 en oscuro */
+    --accent-2-deep: #8FE0AC;
+    --accent-2-soft: #16261C;   /* menta profunda */
+    /* Mini dark: #E8829F -> darker 52% -> #6f3e4c (3.29:1, dE00 55). */
+    --rank-goal-track: var(--accent);
+    --rank-goal-fill: #6f3e4c;
+  }
+
+  /* Superficies de menta: tinta neutra encima, contorno de frambuesa alrededor.
+     La tinta va literal (#1a1614) porque var(--ink) se vuelve casi blanco en el
+     tema oscuro y sobre menta daría 1.23:1. */
+  body.mini-active .tool-btn.active,
+  body.mini-active .num-btn.notes-mode,
+  body.mini-active .feedback.success,
+  body.mini-active .feedback.bonus,
+  body.mini-active .feedback.bonus-2,
+  body.mini-active .feedback.penalty {
+    color: #1a1614;
+    border-color: var(--accent);
+  }
+  /* .num-btn nace con border:0, así que aquí hay que crear el borde, no recolorearlo. */
+  body.mini-active .num-btn.notes-mode { border: 1.5px solid var(--accent); }
+  /* El punteado de Pista sobre el tablero claro: en menta desaparecería
+     (1.2:1 contra la celda), así que en Mini señala en frambuesa — el mismo
+     color con el que el texto de Pista ya resalta. */
+  body.mini-active .cell.hint-target { outline-color: var(--accent); }
+  body.mini-active .cell.hint-target,
+  body.mini-active .cell.hint-target * { animation-name: mini-hint-pulse; }
+  @keyframes mini-hint-pulse {
+    0%, 100% { outline-color: var(--accent); }
+    50%      { outline-color: var(--accent-deep); }
   }
   /* In-game only (Niebla): all highlights are PLUM in a tonal progression
      (line < box < same < selected), exactly like Normal's terracota board and
@@ -2202,6 +2361,8 @@
     body.game-active .rank-label, body.mini-active .rank-label { font-size: 17px; letter-spacing: 2.4px; min-width: 158px; }
     body.game-active .rank-track, body.mini-active .rank-track { height: 30px; }
     body.game-active .rank-track, body.mini-active .rank-track { --rank-cap: 16px; --rank-inset: 16px; }
+    body.game-active .rank-goal-chev,
+    body.mini-active .rank-goal-chev { width: 10px; height: 5px; }
     body.game-active .rank-score, body.mini-active .rank-score { font-size: 14px; }
     body.game-active .rank-chev,  body.mini-active .rank-chev  { font-size: 18px; }
   }
@@ -2417,7 +2578,7 @@
     <div class="landing-head">
     <div class="landing-logo-row">
       <svg class="landing-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="rotate(-28 22 22)"><ellipse cx="22" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 23.5 Q 22 18.25 33.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(14 60 22)"><ellipse cx="60" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 23.5 Q 60 18.25 71.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-18 98 22)"><ellipse cx="98" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 23.5 Q 98 18.25 109.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(22 22 60)"><ellipse cx="22" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 61.5 Q 22 56.25 33.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(0 60 60)"><ellipse cx="60" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent-2)"/><path d="M 48.75 61.5 Q 60 56.25 71.25 60.5" style="fill:none;stroke:var(--accent);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-22 98 60)"><ellipse cx="98" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 61.5 Q 98 56.25 109.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-14 22 98)"><ellipse cx="22" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 99.5 Q 22 94.25 33.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(24 60 98)"><ellipse cx="60" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 99.5 Q 60 94.25 71.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-30 98 98)"><ellipse cx="98" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 99.5 Q 98 94.25 109.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g></svg>
-      <svg class="landing-logo-mini" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="translate(60 60) scale(1.27) translate(-60 -60)"><g transform="rotate(-22 36 36)"><ellipse cx="36" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent-2)"/><path d="M 22.05 37.86 Q 36 31.35 49.95 36.62" style="fill:none;stroke:var(--accent);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(18 84 36)"><ellipse cx="84" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 70.05 37.86 Q 84 31.35 97.95 36.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(14 36 84)"><ellipse cx="36" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 22.05 85.86 Q 36 79.35 49.95 84.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(-26 84 84)"><ellipse cx="84" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent-2)"/><path d="M 70.05 85.86 Q 84 79.35 97.95 84.62" style="fill:none;stroke:var(--accent);stroke-width:3.1;stroke-linecap:round"/></g></g></svg>
+      <svg class="landing-logo-mini" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="translate(60 60) scale(1.27) translate(-60 -60)"><g transform="rotate(-22 36 36)"><ellipse class="bean-menta" cx="36" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent-2)"/><path d="M 22.05 37.86 Q 36 31.35 49.95 36.62" style="fill:none;stroke:var(--accent);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(18 84 36)"><ellipse class="bean-frambuesa" cx="84" cy="36" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 70.05 37.86 Q 84 31.35 97.95 36.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(14 36 84)"><ellipse class="bean-frambuesa" cx="36" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent)"/><path d="M 22.05 85.86 Q 36 79.35 49.95 84.62" style="fill:none;stroke:var(--accent-2);stroke-width:3.1;stroke-linecap:round"/></g><g transform="rotate(-26 84 84)"><ellipse class="bean-menta" cx="84" cy="84" rx="17.05" ry="11.625" style="fill:var(--accent-2)"/><path d="M 70.05 85.86 Q 84 79.35 97.95 84.62" style="fill:none;stroke:var(--accent);stroke-width:3.1;stroke-linecap:round"/></g></g></svg>
       <span class="landing-eyebrow" id="landing-eyebrow">Sudoku</span>
       <h1 class="landing-title" id="landing-title">Sudoku</h1>
     </div>
@@ -2862,7 +3023,14 @@
   <div class="modal" id="rangos-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">Rangos</h2>
-    <p class="blurb">Empiezas en lo más alto y bajas con cada ayuda (pista o verificación). Los umbrales son fijos y no dependen de la dificultad ni del modo.</p>
+    <p class="blurb">Empiezas con <strong style="color: var(--accent)">42 puntos</strong>, el máximo. Las ayudas te descuentan; en Niebla, también los números mal colocados. Si conservas los 42 puntos, terminas en Maestro/a. Los umbrales son fijos: no dependen de la dificultad.</p>
+    <ul class="blurb rangos-costs">
+      <li><strong>Verificar una celda</strong> — 2 puntos</li>
+      <li><strong>Verificar todo el tablero</strong> — 8 puntos</li>
+      <li><strong>Pista</strong> — 3 al señalarte la celda y 3 más al revelar el número (6 en total)</li>
+      <li class="only-niebla"><strong>Cada número mal colocado</strong> — 4 puntos</li>
+    </ul>
+    <p class="blurb">El <strong>tiempo no cuenta</strong> para el rango: se guarda como estadística, nada más.</p>
     <p class="blurb">
       <strong>Reto del día:</strong>
       <strong style="color: var(--accent)" id="rangos-reto">— pts</strong>
@@ -2908,7 +3076,7 @@
     <p>Aquí no hay puntos: tu rango lo decide <strong class="hl-accent">cuánto tardas</strong>. Cuanto más rápido resuelvas, más alto el rango (de <strong>Debutante</strong> a <strong>Maestro/a</strong>). La barra de arriba te muestra para qué rango vas y baja a medida que pasa el tiempo. Recibes tu rango al terminar.</p>
 
     <h3>Reto del día</h3>
-    <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. La <span class="line-marker">|</span> <strong class="hl-accent">línea naranja</strong> en la barra de rangos marca ese objetivo — la misma que en el modo Clásico — y se pone <strong style="color: var(--success)">verde</strong> mientras vas en camino de lograrlo.</p>
+    <p>Cada día hay un <strong class="hl-accent">tiempo objetivo</strong>. Si resuelves el Mini en ese tiempo o menos, logras el reto del día y tu racha sigue. El <strong class="hl-accent">chevrón</strong> y la <strong class="hl-accent">línea</strong> en la barra de rangos marcan el objetivo del día. Cuando completas el reto, desaparecen.</p>
   </div>
 
   <div class="modal" id="timer-info-modal" data-modal-content style="display:none">
@@ -4039,7 +4207,14 @@ function renderPad() {
    threshold does not work — the ladder is not linear.
    The track's DOM is built ONCE and updated in place.
    ========================================================================== */
-const RANK_CONTRAST_FLOOR = 3.0;                 /* WCAG 1.4.11 non-text */
+/* 3.2, not the bare WCAG 1.4.11 minimum of 3.0 — a practical margin for rounding,
+   browser colour conversion and later palette tuning. Verified to flip no tick on
+   any of the 26 live fill faces before it was adopted. */
+const RANK_CONTRAST_FLOOR = 3.2;
+/* The fill's inset, in px, on all four sides. EVERY x position on the bar is
+   RANK_PAD + fraction * usable, where usable = track.clientWidth - 2*RANK_PAD.
+   Keep in step with `left`/`top`/`bottom` on .rank-fill and .rank-goal. */
+const RANK_PAD = 2;
 function rankLum(hex) {
   hex = String(hex || '').trim().replace('#', '');
   if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
@@ -4098,7 +4273,7 @@ const RANK_TICK_GAP = 6, RANK_SCORE_GAP = 4, RANK_OUT_PAD = 12, RANK_FIRST_CLEAR
 
 /* One controller per bar: '#rank-bar' (Clásico + Niebla) and '#mini-rank-bar'. */
 function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
-  let built = false, ticks = [], tickIdx = [], goalEl = null, ro = null;
+  let built = false, ticks = [], tickIdx = [], goalEl = null, chevEl = null, ro = null;
   let st = { frac: 0, goalFrac: null, achieved: false, curIdx: 0,
              showsNumber: true, value: 0, negative: false, topIdx: 9 };
 
@@ -4117,6 +4292,10 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     goalEl = document.createElement('div');
     goalEl.className = 'rank-goal';
     track.appendChild(goalEl);
+    /* the chevron goes OUTSIDE the track — the track clips its own overflow */
+    chevEl = document.createElement('div');
+    chevEl.className = 'rank-goal-chev';
+    (track.parentNode || track).appendChild(chevEl);
     if (typeof ResizeObserver === 'function') { ro = new ResizeObserver(place); ro.observe(track); }
     else { window.addEventListener('resize', place); }
     built = true;
@@ -4133,15 +4312,14 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     if (!bar || !track || !fill || !sc) return;
 
     const accent = getComputedStyle(bar).getPropertyValue('--accent').trim() || '#000000';
-    const ink = rankInkOn(accent);
-    bar.style.setProperty('--rank-tick-done', ink);
-    bar.style.setProperty('--rank-goal-ring', ink);
+    bar.style.setProperty('--rank-tick-done', rankInkOn(accent));
 
     const pct = st.frac * 100;
     fill.classList.toggle('empty', pct <= 0.5);
     fill.classList.toggle('scoreless', !st.showsNumber);
-    /* left:2px + this width puts the fill's right edge at exactly frac x width */
-    fill.style.width = pct <= 0.5 ? '0px' : 'calc(' + pct + '% - 2px)';
+    /* The fill's WIDTH is pixel work and belongs to place(), which owns the one
+       scale and re-runs on resize. A percentage width here is what made the gap
+       asymmetric (2px left, 0px right at a full bar) — do not bring it back. */
 
     /* A mode that hides its number hides it in EVERY state, negative included. */
     sc.hidden = !st.showsNumber;
@@ -4165,8 +4343,11 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
        ACHIEVED — driven by the caller's completion flag, never by the fill
        crossing its position. */
     goalEl.hidden = (st.goalFrac === null);
-    goalEl.classList.toggle('is-achieved', st.goalFrac !== null && st.achieved);
-    if (st.goalFrac !== null) goalEl.style.left = (st.goalFrac * 100) + '%';
+    chevEl.hidden = (st.goalFrac === null);
+    const gone = (st.goalFrac !== null && st.achieved);
+    goalEl.classList.toggle('is-achieved', gone);
+    chevEl.classList.toggle('is-achieved', gone);
+    /* position and over-fill colour are pixel work — place() owns both */
 
     if (label) {
       label.textContent = RANK_NAMES[st.curIdx];
@@ -4185,20 +4366,53 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     if (!track || !sc) return;
     const w = track.clientWidth;
     if (!(w > 0)) return;
+    const usable = Math.max(0, w - 2 * RANK_PAD);
 
+    /* One scale for everything on the bar: RANK_PAD + fraction * usable. */
     for (let i = 0; i < ticks.length; i++) {
-      ticks[i].style.left = ((w * tickIdx[i]) / st.topIdx) + 'px';
+      ticks[i].style.left = (RANK_PAD + (usable * tickIdx[i]) / st.topIdx) + 'px';
     }
+
+    /* A full bar leaves RANK_PAD on the right exactly as it leaves it on the left.
+       Re-set on every place() so a resize keeps the two gaps equal. */
+    const fill = document.getElementById(fillId);
+    if (fill) fill.style.width = (st.frac <= 0.005 ? 0 : st.frac * usable) + 'px';
 
     /* no marker on screen => nothing may be hidden on its account, so any tick
        it was covering is restored automatically */
     const markerVisible = st.goalFrac !== null && !st.achieved;
-    const goalPx = markerVisible ? st.goalFrac * w : null;
-    const fillPx = st.frac * w;
+    const goalPx = markerVisible ? RANK_PAD + st.goalFrac * usable : null;
+    const fillPx = RANK_PAD + st.frac * usable;
+    if (markerVisible && goalEl) {
+      goalEl.style.left = goalPx + 'px';
+      /* chevron: same x, sitting just above the capsule so its point meets the
+         top edge. offsetLeft/offsetTop are measured against .rank-bar, which is
+         position:relative for exactly this reason. */
+      if (chevEl) {
+        const bar = document.getElementById(barId);
+        const chevH = parseFloat(getComputedStyle(chevEl).height) || 4;
+        /* goalPx is measured inside the capsule's border (clientWidth) while the
+           rect is the border box — add the border back, or the chevron lands
+           1.5px to the left of its own hairline. */
+        const bl = parseFloat(getComputedStyle(track).borderLeftWidth) || 0;
+        /* offsetLeft/offsetTop return ROUNDED INTEGERS. They threw away up to half
+           a pixel of the track's real position, which is exactly what made the
+           chevron read as offset from its own hairline: same nominal x, different
+           painted device column. getBoundingClientRect() is sub-pixel. Never put
+           offsetLeft back here. */
+        const tb = track.getBoundingClientRect(), bb = bar.getBoundingClientRect();
+        chevEl.style.left = ((tb.left - bb.left) + bl + goalPx) + 'px';
+        chevEl.style.top  = ((tb.top - bb.top) - chevH) + 'px';
+      }
+      /* Over the empty track the line is --rank-goal-track; the moment the fill
+         reaches or passes it, it switches to --rank-goal-fill. One test, because
+         the marker occupies a single x position. */
+      goalEl.classList.toggle('over-fill', st.frac >= st.goalFrac);
+    }
 
     sc.style.left = ''; sc.style.marginRight = '';
     if (!sc.hidden && sc.classList.contains('out')) {
-      sc.style.left = (Math.max(fillPx, w / st.topIdx + RANK_FIRST_CLEAR) + RANK_OUT_PAD) + 'px';
+      sc.style.left = (Math.max(fillPx, RANK_PAD + usable / st.topIdx + RANK_FIRST_CLEAR) + RANK_OUT_PAD) + 'px';
     }
     let sBox = null;
     if (!sc.hidden) {
