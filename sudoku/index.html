@@ -49,11 +49,23 @@
                             itself is under 3.2:1 on this page background.
          --rank-goal-fill   over the FILL — a tint of THIS accent's own ramp: walk
                             toward white and toward black, take whichever end clears
-                            3.2:1 against the accent with the SMALLER mix. Static;
+                            4.5:1 against the accent with the SMALLER mix. Static;
                             never computed at runtime.
-       Clásico light: #d9633b -> darker 58% -> #5b2a19 (3.24:1, dE00 47 from --success). */
+       The floor here is 4.5:1, not the 3.2 used over the empty track. Clásico and
+       Niebla count DOWN from 42, so this line crosses the FILL for the whole game
+       rather than for a moment at the end — at 3.2 it disappeared into a saturated
+       fill at actual phone size. Expect a HEAVY mix: a mid-luminance accent tops
+       out near 5:1 even against pure white or pure black, so the tint necessarily
+       lands close to one end of the ramp. That ceiling is the reason 4.5 is the
+       floor and not something higher.
+         Clásico light  #d9633b  darker  76%  -> #35180e  4.50:1  dE 48  ceiling 5.80
+         Clásico dark   #ef7d57  darker  66%  -> #512b1e  4.52:1  dE 52  ceiling 7.74
+         Niebla light   #294f61  lighter 62%  -> #adbcc2  4.51:1  dE 31  ceiling 8.80
+         Niebla dark    #8fb1c0  darker  62%  -> #364248  4.54:1  dE 45  ceiling 9.22
+         Mini light     #a83254  lighter 77%  -> #ebd1d8  4.51:1  dE 45  ceiling 6.46
+         Mini dark      #e8829f  darker  65%  -> #512e38  4.52:1  dE 56  ceiling 8.12 */
     --rank-goal-track: var(--accent);
-    --rank-goal-fill: #5b2a19;
+    --rank-goal-fill: #35180e;
     --rank-cap:       14px;
     --rank-inset:     12px;
 
@@ -126,7 +138,7 @@
     --rank-tick-idle: #4a453f;
     /* Clásico dark: #ef7d57 -> darker 52% -> #733c2a (3.21:1, dE00 49). */
     --rank-goal-track: var(--accent);
-    --rank-goal-fill: #733c2a;
+    --rank-goal-fill: #512b1e;
     /* --rank-tick-done is chosen from the live accent in
        JS, in either theme — never hard-coded here. */
     --error:        #d96565;
@@ -860,10 +872,16 @@
      left:50%, so an odd width (7px -> 3.5px) puts the stem on a half-pixel while
      the hairline sits on an integer. Both are 2px and share an x, but they paint
      on device columns 0.5px apart — which is exactly what made the marker read as
-     a chevron sitting beside its line instead of on it. 8px here, 10px in play. */
+     a chevron sitting beside its line instead of on it. 10px here, 12px in play.
+     A 22px capsule needs a triangle you can read at a glance: the old 8x4 was a
+     2:1 sliver that read as a notch, not a pointer. 10x7 is close to equilateral.
+     The chevron is absolutely positioned, so its height costs no layout: it
+     overhangs .rank-bar's 6px top padding into the 16px of clear space below the
+     fixed header, and placeRank() reads its computed height to set `top`, so the
+     point still lands exactly on the capsule's edge. */
   .rank-goal-chev {
     position: absolute;
-    width: 8px; height: 4px;
+    width: 10px; height: 7px;
     background: transparent;
     transform: translateX(-50%);
     z-index: 7; opacity: 1;
@@ -1873,7 +1891,7 @@
     --accent-2-soft: #efe6ec;
     /* Niebla light: #294f61 -> lighter 46% -> #8ba0aa (3.23:1, dE00 29). */
     --rank-goal-track: var(--accent);
-    --rank-goal-fill: #8ba0aa;
+    --rank-goal-fill: #adbcc2;
   }
   body[data-theme="black"].niebla-landing,
   body[data-theme="black"].niebla-game {
@@ -1885,7 +1903,7 @@
     --accent-2-soft: #271a22;
     /* Niebla dark: #8fb1c0 -> darker 50% -> #485860 (3.25:1, dE00 40). */
     --rank-goal-track: var(--accent);
-    --rank-goal-fill: #485860;
+    --rank-goal-fill: #364248;
   }
   /* ---- Mini · frambuesa + menta (2026-08-24, aprobado por Dre).
      Dos colores de marca y nada más: frambuesa #A83254 como primario y menta
@@ -1915,7 +1933,7 @@
     --accent-2-soft: #EAFBF1;   /* lavado de menta */
     /* Mini light: #A83254 -> lighter 59% -> #dbabb9 (3.24:1, dE00 49). */
     --rank-goal-track: var(--accent);
-    --rank-goal-fill: #dbabb9;
+    --rank-goal-fill: #ebd1d8;
   }
   body[data-theme="black"].mini-landing,
   body[data-theme="black"].mini-active {
@@ -1927,7 +1945,7 @@
     --accent-2-soft: #16261C;   /* menta profunda */
     /* Mini dark: #E8829F -> darker 52% -> #6f3e4c (3.29:1, dE00 55). */
     --rank-goal-track: var(--accent);
-    --rank-goal-fill: #6f3e4c;
+    --rank-goal-fill: #512e38;
   }
 
   /* Superficies de menta: tinta neutra encima, contorno de frambuesa alrededor.
@@ -2362,7 +2380,7 @@
     body.game-active .rank-track, body.mini-active .rank-track { height: 30px; }
     body.game-active .rank-track, body.mini-active .rank-track { --rank-cap: 16px; --rank-inset: 16px; }
     body.game-active .rank-goal-chev,
-    body.mini-active .rank-goal-chev { width: 10px; height: 5px; }
+    body.mini-active .rank-goal-chev { width: 12px; height: 9px; }
     body.game-active .rank-score, body.mini-active .rank-score { font-size: 14px; }
     body.game-active .rank-chev,  body.mini-active .rank-chev  { font-size: 18px; }
   }
@@ -4288,7 +4306,14 @@ const RANK_TICK_GAP = 6, RANK_SCORE_GAP = 4, RANK_OUT_PAD = 12, RANK_FIRST_CLEAR
 /* One controller per bar: '#rank-bar' (Clásico + Niebla) and '#mini-rank-bar'. */
 function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
   let built = false, ticks = [], tickIdx = [], goalEl = null, chevEl = null, ro = null;
-  let st = { frac: 0, goalFrac: null, achieved: false, curIdx: 0,
+  /* retoState is the DAY'S CHALLENGE, in three values, not two:
+       'pending'  — still unresolved and still reachable  -> marker SHOWN
+       'achieved' — finished, and the target was met      -> marker hidden
+       'failed'   — the target can no longer be reached   -> marker hidden
+     'achieved' and 'failed' both hide the marker, but they are NOT the same
+     thing and must not be collapsed: the accessible name and the Rangos panel
+     have to tell them apart, and a checkmark belongs to exactly one of them. */
+  let st = { frac: 0, goalFrac: null, retoState: 'pending', curIdx: 0,
              showsNumber: true, value: 0, negative: false, topIdx: 9 };
 
   function build() {
@@ -4353,12 +4378,16 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
       ticks[i].classList.toggle('passed', tickIdx[i] <= st.curIdx);
     }
 
-    /* The marker shows while the reto is PENDING and is removed entirely once
-       ACHIEVED — driven by the caller's completion flag, never by the fill
-       crossing its position. */
+    /* The marker points at a target you can still reach. It shows while the reto
+       is PENDING and goes the moment the outcome is settled either way — driven
+       by the caller's own state, never by the fill crossing its position. In a
+       mode that COUNTS DOWN from the maximum (Clásico, Niebla) the fill starts
+       past the marker and the two never coincide, which is why the old
+       score >= reto test hid the marker for the whole game and then showed it
+       once the challenge was already lost. */
     goalEl.hidden = (st.goalFrac === null);
     chevEl.hidden = (st.goalFrac === null);
-    const gone = (st.goalFrac !== null && st.achieved);
+    const gone = (st.goalFrac !== null && st.retoState !== 'pending');
     goalEl.classList.toggle('is-achieved', gone);
     chevEl.classList.toggle('is-achieved', gone);
     /* position and over-fill colour are pixel work — place() owns both */
@@ -4394,7 +4423,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
 
     /* no marker on screen => nothing may be hidden on its account, so any tick
        it was covering is restored automatically */
-    const markerVisible = st.goalFrac !== null && !st.achieved;
+    const markerVisible = st.goalFrac !== null && st.retoState === 'pending';
     const goalPx = markerVisible ? RANK_PAD + st.goalFrac * usable : null;
     const fillPx = RANK_PAD + st.frac * usable;
     if (markerVisible && goalEl) {
@@ -4451,19 +4480,42 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
 
 const _mainBar = makeRankBar('rank-bar', 'rank-track', 'rank-fill', 'rank-score', 'rank-label');
 
+/* THIS MODE's daily-challenge state, in three values. Owned by the game; the bar
+   never derives it.
+
+   Clásico and Niebla COUNT DOWN: you open at MAX_SCORE and only ever spend, so
+   the reto is the FLOOR you must not go under, and the bar starts past it. That
+   is why `sc >= state.reto` was the wrong test — it is true from the first frame
+   of an untouched board, so the marker was hidden for exactly the stretch where
+   it is useful and appeared once the challenge was already lost.
+
+   score() is MAX_SCORE - hints - checks [- 4 x wrong] and all three counters
+   only ever increment (verified: none is decremented anywhere), so falling below
+   the reto is PERMANENT. 'failed' is therefore a settled outcome, not a dip.
+
+   The award itself is granted in finalizeWin(), gated on state.completed — this
+   reads the same two facts, so the bar and the award can never disagree. */
+function retoStateFor() {
+  if (score() < state.reto) return 'failed';        /* unreachable from here on */
+  return state.completed ? 'achieved' : 'pending';  /* still in play, still on target */
+}
+const RETO_WORD = { pending: 'pendiente', achieved: 'logrado', failed: 'no alcanzado' };
+/* A tick belongs to 'achieved' alone. 'failed' gets its own mark; 'pending' gets
+   neither, because nothing has happened yet. */
+const RETO_MARK = { pending: '', achieved: ' ✓', failed: ' ✕' };
+
 /* Clásico and Niebla: points remaining (42 - aids [- 4 x errors]).
    Niebla hides its number — including when it is negative. */
 function renderRankBar() {
   const sc = score();
   const ladder = RANK_THRESHOLDS;
   const niebla = (state.mode === 'niebla');
+  const retoState = retoStateFor();
   _mainBar.render({
     topIdx: ladder.length - 1,
     frac: rankFractionIn(sc, ladder),
     goalFrac: rankFractionIn(state.reto, ladder),
-    /* THIS MODE's completion rule — a points comparison, owned by the game.
-       The bar never derives it. */
-    achieved: sc >= state.reto,
+    retoState: retoState,
     curIdx: currentRankIndex(),
     showsNumber: !niebla,
     value: sc,
@@ -4474,7 +4526,7 @@ function renderRankBar() {
     bar.setAttribute('aria-label',
       'Rango ' + RANK_NAMES[currentRankIndex()] +
       (niebla ? '' : ', ' + sc + ' puntos') + '.' +
-      ' Reto del día ' + (sc >= state.reto ? 'logrado' : 'pendiente') + '. Ver rangos.');
+      ' Reto del día ' + RETO_WORD[retoState] + '. Ver rangos.');
   }
 }
 
@@ -5294,7 +5346,9 @@ function refreshRangos() {
     }
     list.appendChild(row);
   }
-  document.getElementById('rangos-reto').textContent = state.reto + ' pts' + (sc >= state.reto ? ' ✓' : '');
+  /* The tick means the challenge was WON, which needs a finished puzzle — not
+     merely that the score is still above the floor, which it is from move one. */
+  document.getElementById('rangos-reto').textContent = state.reto + ' pts' + RETO_MARK[retoStateFor()];
 }
 
 // ---------- DROPDOWNS ----------
@@ -6286,7 +6340,9 @@ function refreshMiniRangos() {
     }
   }
   const retoEl = document.getElementById('mini-rangos-reto');
-  if (retoEl && miniState) retoEl.textContent = '≤ ' + miniFmt(miniRetoForDate(miniState.iso));
+  /* Same rule as the 9x9 panel: the tick means WON, and a missed target says so
+     rather than reading as merely pending. */
+  if (retoEl && miniState) retoEl.textContent = '≤ ' + miniFmt(miniRetoForDate(miniState.iso)) + RETO_MARK[miniRetoState()];
 }
 /* (the old rank-index memo is gone: the bar is built once and updated in
    place, so there is nothing to gate a rebuild on) */
@@ -6305,6 +6361,25 @@ const MINI_CUTOFF_SECS = (function () {
   return a;
 })();
 
+/* Mini's daily-challenge state, in the same three values as the 9x9 modes.
+
+   Mini COUNTS UP: the clock only ever grows, so the target is a CEILING and
+   passing it is permanent — 'failed' is a settled outcome, not a dip.
+
+   The won test is the round being FINISHED with its final time under the
+   target, compared in EXACT SECONDS: the same test the finish modal uses
+   (miniState.done + elapsed <= target). The coarse rank-bucket comparison
+   curIdx >= goalIdx disagreed with the modal at the boundary — on a 105 s
+   target a 105 s run is a met reto that the bucket called not-done. */
+function miniRetoState() {
+  const elapsed = miniState ? (miniState.elapsed || 0) : 0;
+  const iso     = (miniState && miniState.iso) ? miniState.iso : state.iso;
+  const target  = miniRetoForDate(iso);
+  if (elapsed > target) return 'failed';                   /* the clock never goes back */
+  if (miniState && miniState.done && elapsed > 0) return 'achieved';
+  return 'pending';
+}
+
 function miniRenderRankBar(force) {
   const topIdx = RANK_NAMES.length - 1;
   /* Before a round exists (the landing), Mini's honest state is the one it
@@ -6313,18 +6388,12 @@ function miniRenderRankBar(force) {
   const iso     = (miniState && miniState.iso) ? miniState.iso : state.iso;
   const curIdx = miniRankIndexForTime(elapsed);
   const target = miniRetoForDate(iso);
-  /* THIS MODE's completion rule: the round must be FINISHED and the final time
-     under the target, compared in EXACT SECONDS — the same test the finish
-     modal uses (miniState.done + elapsed <= target). The old bar used the
-     coarse rank-bucket comparison curIdx >= goalIdx, which disagreed with the
-     modal at the boundary: on a 105 s target a 105 s run is a met reto that the
-     bucket called not-done. */
-  const achieved = !!(miniState && miniState.done) && elapsed > 0 && elapsed <= target;
+  const retoState = miniRetoState();
   _miniBar.render({
     topIdx: topIdx,
     frac: rankFractionForTime(elapsed, MINI_CUTOFF_SECS),
     goalFrac: rankFractionForTime(target, MINI_CUTOFF_SECS),
-    achieved: achieved,
+    retoState: retoState,
     curIdx: curIdx,
     showsNumber: false,      /* the time lives in the timer, never in the bar */
     value: '',
@@ -6334,7 +6403,7 @@ function miniRenderRankBar(force) {
   if (bar) {
     bar.setAttribute('aria-label',
       'Rango ' + RANK_NAMES[curIdx] + '. Reto del día ' +
-      (achieved ? 'logrado' : 'pendiente') + '. Ver rangos del Mini.');
+      RETO_WORD[retoState] + '. Ver rangos del Mini.');
   }
 }
 function miniRenderStart() {
