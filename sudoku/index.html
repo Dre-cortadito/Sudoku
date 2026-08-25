@@ -4212,9 +4212,23 @@ function renderPad() {
    any of the 26 live fill faces before it was adopted. */
 const RANK_CONTRAST_FLOOR = 3.2;
 /* The fill's inset, in px, on all four sides. EVERY x position on the bar is
-   RANK_PAD + fraction * usable, where usable = track.clientWidth - 2*RANK_PAD.
+   RANK_PAD + fraction * usable, where usable = rankContentWidth(track) - 2*RANK_PAD.
    Keep in step with `left`/`top`/`bottom` on .rank-fill and .rank-goal. */
 const RANK_PAD = 2;
+/* The capsule's REAL content width, fractional.
+   Do NOT use clientWidth here: it is an INTEGER, so it rounds the content width by
+   up to half a pixel. Scaling the bar by that rounded width draws it as if the
+   capsule were wider (or narrower) than it is, and because the left end is pinned
+   at RANK_PAD the entire error lands on the RIGHT end — a full bar showed 2.00px
+   of clearance on the left and as little as 1.56px on the right. The border-box
+   rect is sub-pixel, so subtracting the two borders gives the content width
+   exactly, and fill, ticks, hairline and chevron all stay on ONE scale. */
+function rankContentWidth(track) {
+  const cs = getComputedStyle(track);
+  return track.getBoundingClientRect().width
+       - (parseFloat(cs.borderLeftWidth)  || 0)
+       - (parseFloat(cs.borderRightWidth) || 0);
+}
 function rankLum(hex) {
   hex = String(hex || '').trim().replace('#', '');
   if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
@@ -4364,7 +4378,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     const track = document.getElementById(trackId);
     const sc = document.getElementById(scoreId);
     if (!track || !sc) return;
-    const w = track.clientWidth;
+    const w = rankContentWidth(track);
     if (!(w > 0)) return;
     const usable = Math.max(0, w - 2 * RANK_PAD);
 
@@ -4391,7 +4405,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
       if (chevEl) {
         const bar = document.getElementById(barId);
         const chevH = parseFloat(getComputedStyle(chevEl).height) || 4;
-        /* goalPx is measured inside the capsule's border (clientWidth) while the
+        /* goalPx is measured inside the capsule's border (its content box) while the
            rect is the border box — add the border back, or the chevron lands
            1.5px to the left of its own hairline. */
         const bl = parseFloat(getComputedStyle(track).borderLeftWidth) || 0;
