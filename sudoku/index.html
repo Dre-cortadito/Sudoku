@@ -4457,20 +4457,31 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     if (!sc.hidden && sc.classList.contains('out')) {
       sc.style.left = (Math.max(fillPx, RANK_PAD + usable / st.topIdx + RANK_FIRST_CLEAR) + RANK_OUT_PAD) + 'px';
     }
-    let sBox = null;
-    if (!sc.hidden) {
+    /* Collisions, in PIXELS (_kit §3.2). Both bounds must be CONTENT-BOX, like the
+       ticks and the marker: a bounding rect is the BORDER box, so a rect-derived
+       box was out by the 1.5px border. And the plate is re-measured AFTER the
+       nudge, because the nudge is exactly what slides it over a tick. */
+    const _bl = parseFloat(getComputedStyle(track).borderLeftWidth) || 0;
+    function scoreBox() {
+      if (sc.hidden) return null;
       const tb = track.getBoundingClientRect(), sb = sc.getBoundingClientRect();
-      if (sb.width > 0) sBox = { left: sb.left - tb.left, right: sb.right - tb.left };
+      return sb.width > 0 ? { left: sb.left - tb.left - _bl, right: sb.right - tb.left - _bl } : null;
     }
+    let sBox = scoreBox();
     if (sBox && goalPx !== null && !sc.classList.contains('out') &&
         goalPx > sBox.left - RANK_SCORE_GAP && goalPx < sBox.right + RANK_SCORE_GAP) {
       sc.style.marginRight = (sBox.right - goalPx + RANK_SCORE_GAP) + 'px';
+      sBox = scoreBox();
     }
     for (let i = 0; i < ticks.length; i++) {
       const c = parseFloat(ticks[i].style.left) || 0;
       let hide = goalPx !== null && Math.abs(c - goalPx) < RANK_TICK_GAP;
-      if (sBox && sc.classList.contains('out') &&
-          c > sBox.left - 4 && c < sBox.right + 4) hide = true;
+      /* A tick the SCORE covers is hidden on the same principle as one the marker
+         covers, and this holds whether the score renders inside the fill or
+         outside it. Inside, the plate's background hides a tick fully behind it —
+         but a tick STRADDLING the plate's edge keeps a 2px sliver of tick ink on
+         the fill, and beside a number that reads as a stray apostrophe. */
+      if (sBox && c > sBox.left - RANK_SCORE_GAP && c < sBox.right + RANK_SCORE_GAP) hide = true;
       ticks[i].classList.toggle('under-goal', hide);
     }
   }
