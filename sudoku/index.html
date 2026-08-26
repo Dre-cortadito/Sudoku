@@ -803,22 +803,29 @@
      reads as a position (Niebla, Mini) */
   .rank-fill.scoreless { padding-right: 0; box-shadow: inset -3px 0 0 rgba(255,255,255,.55); }
 
+  /* The score is a COLUMN between the rank label and the capsule, not a plate
+     riding inside the fill (_kit §3.2). Each element then has one job: the label
+     says the level, this says the score, the capsule says progress, the marker
+     says the target, the ▾ opens Rangos. Nothing moves with the fill, so the
+     plate, the reparenting, the outside-fill state, the negative plate, the
+     marker nudge and the score-vs-tick pass are all gone with it.
+     Fixed 4ch and tabular-nums: 42, 0 and -12 sit on the same right edge and the
+     capsule never changes width as the score does. Negative needs no styling at
+     all now — it is a number with a minus sign on the page, not white text on a
+     coloured plate that had to invert to stay legible.
+     A mode that hides its number renders NO column: hidden by [hidden], so the
+     capsule reclaims the width rather than sitting behind an empty gap. */
   .rank-score {
-    position: relative; z-index: 5;
-    font-size: 11px; font-weight: 700; color: #fff;
+    flex: 0 0 auto;
+    min-width: 4ch;
+    text-align: right;
     font-family: var(--font-ui);
+    font-size: 11px; font-weight: 700;
     font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    color: var(--ink);
     line-height: 1; white-space: nowrap;
-    background: var(--accent); padding: 1px 3px; border-radius: 4px;
   }
-  .rank-score.out {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    color: var(--ink); background: transparent; padding: 0;
-  }
-  /* negative: a NEUTRAL plate — never --accent-2, which is the success green in
-     other games, and never a green cue on a negative number */
-  .rank-score.neg { background: var(--ink); color: var(--bg); padding: 1px 3px; }
-  .rank-score[hidden] { display: none; }
 
   .rank-tick {
     position: absolute; top: 50%; transform: translate(-50%, -50%);
@@ -2693,7 +2700,11 @@
   <div class="rank-bar" id="rank-bar" role="button" tabindex="0"
        aria-expanded="false" aria-controls="rangos-modal" aria-label="Ver rangos">
     <span class="rank-label" id="rank-label">Debutante</span>
-    <div class="rank-track" id="rank-track"><div class="rank-fill empty" id="rank-fill"><span class="rank-score" id="rank-score"></span></div></div>
+    <!-- No .rank-score here on purpose. The column is CREATED by the bar only for a
+         mode that shows a number, and REMOVED for one that does not — Clásico and
+         Niebla share this bar, so a static span would sit in Niebla's DOM holding
+         Clásico's last value. See syncScore(). -->
+    <div class="rank-track" id="rank-track"><div class="rank-fill empty" id="rank-fill"></div></div>
     <span class="rank-chev">▾</span>
   </div>
 
@@ -2784,7 +2795,9 @@
   <div class="rank-bar mini-rank-bar" id="mini-rank-bar" role="button" tabindex="0"
        aria-expanded="false" aria-controls="mini-rangos-modal" aria-label="Ver rangos del Mini">
     <span class="rank-label" id="mini-rank-label">Maestro/a</span>
-    <div class="rank-track" id="mini-rank-track"><div class="rank-fill empty" id="mini-rank-fill"><span class="rank-score" id="mini-rank-score"></span></div></div>
+    <!-- No .rank-score here: Mini is ranked on TIME and shows no number, so the bar
+         creates no column at all. Its clock lives in the timer, not in this row. -->
+    <div class="rank-track" id="mini-rank-track"><div class="rank-fill empty" id="mini-rank-fill"></div></div>
     <span class="rank-chev">▾</span>
   </div>
   <div class="mini-meta">
@@ -4301,10 +4314,32 @@ function rankFractionForTime(seconds, cutoffs) {
   return 0;
 }
 
-const RANK_TICK_GAP = 6, RANK_SCORE_GAP = 4, RANK_OUT_PAD = 12, RANK_FIRST_CLEAR = 8;
+const RANK_TICK_GAP = 6;
 
 /* One controller per bar: '#rank-bar' (Clásico + Niebla) and '#mini-rank-bar'. */
 function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
+  /* The score column EXISTS ONLY for a mode that shows a number (_kit §3.2). It is
+     created on demand and removed outright otherwise — not left in the DOM under
+     [hidden]. Two reasons that matters here. Clásico and Niebla share this bar, so
+     a permanently-present span would sit in Niebla's DOM still holding Clásico's
+     last value: a number that mode deliberately suppresses, one attribute away
+     from being shown. And an element that does not exist cannot be announced,
+     cannot be styled back on by mistake, and leaves nothing for a future change to
+     get wrong. aria-hidden on the created element is then belt-and-braces: the
+     bar's accessible name already announces the value, so it must be spoken once. */
+  function syncScore(show) {
+    const existing = document.getElementById(scoreId);
+    if (!show) { if (existing) existing.remove(); return null; }
+    if (existing) return existing;
+    const bar = document.getElementById(barId), track = document.getElementById(trackId);
+    if (!bar || !track) return null;
+    const el = document.createElement('span');
+    el.className = 'rank-score';
+    el.id = scoreId;
+    el.setAttribute('aria-hidden', 'true');
+    bar.insertBefore(el, track);
+    return el;
+  }
   let built = false, ticks = [], tickIdx = [], goalEl = null, chevEl = null, ro = null;
   /* retoState is the DAY'S CHALLENGE, in three values, not two:
        'pending'  — still unresolved and still reachable  -> marker SHOWN
@@ -4346,9 +4381,9 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     const bar   = document.getElementById(barId);
     const track = document.getElementById(trackId);
     const fill  = document.getElementById(fillId);
-    const sc    = document.getElementById(scoreId);
     const label = document.getElementById(labelId);
-    if (!bar || !track || !fill || !sc) return;
+    if (!bar || !track || !fill) return;
+    const sc = syncScore(st.showsNumber);
 
     const accent = getComputedStyle(bar).getPropertyValue('--accent').trim() || '#000000';
     bar.style.setProperty('--rank-tick-done', rankInkOn(accent));
@@ -4360,19 +4395,10 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
        scale and re-runs on resize. A percentage width here is what made the gap
        asymmetric (2px left, 0px right at a full bar) — do not bring it back. */
 
-    /* A mode that hides its number hides it in EVERY state, negative included. */
-    sc.hidden = !st.showsNumber;
-    const outside = st.showsNumber && pct <= 0.5;
-    if (st.showsNumber) {
-      sc.textContent = st.value;
-      sc.classList.toggle('out', outside);
-      sc.classList.toggle('neg', st.negative);
-      if (outside  && sc.parentNode !== track) track.appendChild(sc);
-      if (!outside && sc.parentNode !== fill)  fill.appendChild(sc);
-    } else {
-      sc.classList.remove('out', 'neg');
-      if (sc.parentNode !== fill) fill.appendChild(sc);
-    }
+    /* A mode that hides its number has no column at all — syncScore() removed it —
+       so the capsule reclaims the space. Niebla and Mini take that branch in every
+       state, negative included. */
+    if (sc) sc.textContent = st.value;
 
     for (let i = 0; i < ticks.length; i++) {
       ticks[i].classList.toggle('passed', tickIdx[i] <= st.curIdx);
@@ -4405,8 +4431,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
   function place() {
     if (!built) return;
     const track = document.getElementById(trackId);
-    const sc = document.getElementById(scoreId);
-    if (!track || !sc) return;
+    if (!track) return;
     const w = rankContentWidth(track);
     if (!(w > 0)) return;
     const usable = Math.max(0, w - 2 * RANK_PAD);
@@ -4425,7 +4450,6 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
        it was covering is restored automatically */
     const markerVisible = st.goalFrac !== null && st.retoState === 'pending';
     const goalPx = markerVisible ? RANK_PAD + st.goalFrac * usable : null;
-    const fillPx = RANK_PAD + st.frac * usable;
     if (markerVisible && goalEl) {
       goalEl.style.left = goalPx + 'px';
       /* chevron: same x, sitting just above the capsule so its point meets the
@@ -4453,35 +4477,14 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
       goalEl.classList.toggle('over-fill', st.frac >= st.goalFrac);
     }
 
-    sc.style.left = ''; sc.style.marginRight = '';
-    if (!sc.hidden && sc.classList.contains('out')) {
-      sc.style.left = (Math.max(fillPx, RANK_PAD + usable / st.topIdx + RANK_FIRST_CLEAR) + RANK_OUT_PAD) + 'px';
-    }
-    /* Collisions, in PIXELS (_kit §3.2). Both bounds must be CONTENT-BOX, like the
-       ticks and the marker: a bounding rect is the BORDER box, so a rect-derived
-       box was out by the 1.5px border. And the plate is re-measured AFTER the
-       nudge, because the nudge is exactly what slides it over a tick. */
-    const _bl = parseFloat(getComputedStyle(track).borderLeftWidth) || 0;
-    function scoreBox() {
-      if (sc.hidden) return null;
-      const tb = track.getBoundingClientRect(), sb = sc.getBoundingClientRect();
-      return sb.width > 0 ? { left: sb.left - tb.left - _bl, right: sb.right - tb.left - _bl } : null;
-    }
-    let sBox = scoreBox();
-    if (sBox && goalPx !== null && !sc.classList.contains('out') &&
-        goalPx > sBox.left - RANK_SCORE_GAP && goalPx < sBox.right + RANK_SCORE_GAP) {
-      sc.style.marginRight = (sBox.right - goalPx + RANK_SCORE_GAP) + 'px';
-      sBox = scoreBox();
-    }
+    /* The only collision left on the bar is the marker over a milestone tick. The
+       score used to be the other one — riding inside the fill it could be struck
+       through by the marker or clip a tick at its plate's edge, and it needed a
+       nudge, a re-measure and a hide pass to stay legible. Out in its own column,
+       none of that geometry exists. */
     for (let i = 0; i < ticks.length; i++) {
       const c = parseFloat(ticks[i].style.left) || 0;
-      let hide = goalPx !== null && Math.abs(c - goalPx) < RANK_TICK_GAP;
-      /* A tick the SCORE covers is hidden on the same principle as one the marker
-         covers, and this holds whether the score renders inside the fill or
-         outside it. Inside, the plate's background hides a tick fully behind it —
-         but a tick STRADDLING the plate's edge keeps a 2px sliver of tick ink on
-         the fill, and beside a number that reads as a stray apostrophe. */
-      if (sBox && c > sBox.left - RANK_SCORE_GAP && c < sBox.right + RANK_SCORE_GAP) hide = true;
+      const hide = goalPx !== null && Math.abs(c - goalPx) < RANK_TICK_GAP;
       ticks[i].classList.toggle('under-goal', hide);
     }
   }
