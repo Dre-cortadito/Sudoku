@@ -196,6 +196,9 @@
      stops the board collapsing in landscape. */
   @media (max-width: 879.98px) {
     .page { --game-w: min(92vw, 520px, max(240px, calc(100dvh - 360px))); }
+    /* With the bar's 10px gap this makes the 6px label-to-score gutter
+       (_kit §3.2). Wider layouts keep their own spacing. */
+    .rank-label { margin-right: -4px; }
   }
 
   /* ============ DESKTOP (≥1024px) ============
@@ -820,11 +823,21 @@
     min-width: 4ch;
     text-align: right;
     font-family: var(--font-ui);
-    font-size: 11px; font-weight: 700;
+    font-size: 14px; font-weight: 700;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0;
     color: var(--ink);
     line-height: 1; white-space: nowrap;
+    position: relative; /* Anchors the decorative score divider. */
+  }
+  /* Decorative divider; consumes no layout width (_kit §3.2). */
+  .rank-score::before {
+    content: '';
+    position: absolute;
+    left: -4px; top: 50%;
+    transform: translateY(-50%);
+    width: 1px; height: 14px;
+    background: var(--ink-line-strong);
   }
 
   .rank-tick {
@@ -2388,7 +2401,6 @@
     body.game-active .rank-track, body.mini-active .rank-track { --rank-cap: 16px; --rank-inset: 16px; }
     body.game-active .rank-goal-chev,
     body.mini-active .rank-goal-chev { width: 12px; height: 9px; }
-    body.game-active .rank-score, body.mini-active .rank-score { font-size: 14px; }
     body.game-active .rank-chev,  body.mini-active .rank-chev  { font-size: 18px; }
   }
 
