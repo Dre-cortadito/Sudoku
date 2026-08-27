@@ -815,6 +815,10 @@
     pointer-events: none;
   }
   .rank-fill-excess.empty { display: none; }
+  /* When the excess continues past the seam the accent fill must END SQUARE —
+     one capsule, orange meeting green under the chevron, not an orange pill
+     sitting beside a green one. */
+  .rank-fill.meets-excess { border-radius: 999px 0 0 999px; padding-right: 0; }
   /* While revealResult()'s rAF loop owns the width, the 0.3s transition must not
      trail it — the loop IS the animation. */
   .rank-fill.revealing { transition: none; }
@@ -4428,6 +4432,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     const pct = st.frac * 100;
     fill.classList.toggle('empty', pct <= 0.5);
     if (exEl) exEl.classList.toggle('empty', !(st.excessFrac > 0.001));
+    fill.classList.toggle('meets-excess', st.excessFrac > 0.001);
     fill.classList.toggle('scoreless', !st.showsNumber);
     /* The fill's WIDTH is pixel work and belongs to place(), which owns the one
        scale and re-runs on resize. A percentage width here is what made the gap
@@ -4452,8 +4457,14 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     goalEl.hidden = (st.goalFrac === null);
     chevEl.hidden = (st.goalFrac === null);
     const gone = (st.goalFrac !== null && st.retoState !== 'pending');
-    goalEl.classList.toggle('is-achieved', gone);
-    chevEl.classList.toggle('is-achieved', gone);
+    /* Achieved WITH excess keeps the WHOLE marker — chevron, stem and the
+       interior hairline — as one continuous orange line from the chevron's tip
+       through the full height of the capsule, sitting exactly on the seam where
+       orange (points up to the target) meets green (points beyond it). Failed
+       keeps the old behaviour: everything hides, the ✕ semantics live elsewhere. */
+    const keepChev = st.retoState === 'achieved' && st.excessFrac > 0.001;
+    goalEl.classList.toggle('is-achieved', gone && !keepChev);
+    chevEl.classList.toggle('is-achieved', gone && !keepChev);
     /* position and over-fill colour are pixel work — place() owns both */
 
     if (label) {
@@ -4495,7 +4506,8 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
 
     /* no marker on screen => nothing may be hidden on its account, so any tick
        it was covering is restored automatically */
-    const markerVisible = st.goalFrac !== null && st.retoState === 'pending';
+    const markerVisible = st.goalFrac !== null &&
+      (st.retoState === 'pending' || (st.retoState === 'achieved' && st.excessFrac > 0.001));
     const goalPx = markerVisible ? RANK_PAD + st.goalFrac * usable : null;
     if (markerVisible && goalEl) {
       goalEl.style.left = goalPx + 'px';
@@ -4520,8 +4532,11 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
       }
       /* Over the empty track the line is --rank-goal-track; the moment the fill
          reaches or passes it, it switches to --rank-goal-fill. One test, because
-         the marker occupies a single x position. */
-      goalEl.classList.toggle('over-fill', st.frac >= st.goalFrac);
+         the marker occupies a single x position. EXCEPTION: on the achieved seam
+         the line is the marker itself and wears the track orange — it sits on the
+         orange/green boundary, not over a covering fill. */
+      const onSeam = st.retoState === 'achieved' && st.excessFrac > 0.001;
+      goalEl.classList.toggle('over-fill', st.frac >= st.goalFrac && !onSeam);
     }
 
     /* The only collision left on the bar is the marker over a milestone tick. The
