@@ -4593,33 +4593,33 @@ function renderRankBar() {
   const niebla = (state.mode === 'niebla');
   const retoState = retoStateFor();
   const bar = document.getElementById('rank-bar');
-  /* Clásico is RESULT-BASED: during play the capsule stays empty and the bar
-     reveals nothing provisional — "Sin rango", 0 points, in the visible label,
-     the column and the accessible name alike. The chevron keeps marking the
+  /* Clásico AND Niebla are RESULT-BASED: during play the capsule stays empty
+     and the bar reveals nothing provisional — "Sin rango" in the visible label
+     and the accessible name alike; Clásico also shows 0 in its column, Niebla
+     is numberless so there is no column at all. The chevron keeps marking the
      day's target, and a settled 'failed' still reads "no alcanzado" here — that
      is gameplay feedback, not the result. The reveal itself is presented by
      revealResult(); a completed puzzle re-rendered later (reload, resize,
-     theme change) shows the final state with no replay. Niebla keeps its live
-     rendering until its own pass. */
-  if (!niebla && !state.completed) {
+     theme change) shows the final state with no replay. */
+  if (!state.completed) {
     _mainBar.render({
       topIdx: ladder.length - 1,
       frac: 0, excessFrac: 0,
       goalFrac: rankFractionIn(state.reto, ladder),
       retoState: retoState,
       curIdx: 0, labelText: 'Sin rango',
-      showsNumber: true, value: 0, negative: false
+      showsNumber: !niebla, value: 0, negative: false
     });
     if (bar) {
       bar.setAttribute('aria-label',
-        'Sin rango, 0 puntos. Reto del día ' + RETO_WORD[retoState] + '. Ver rangos.');
+        'Sin rango' + (niebla ? '' : ', 0 puntos') + '. Reto del día ' + RETO_WORD[retoState] + '. Ver rangos.');
     }
     return;
   }
-  if (!niebla && _reveal.active) return;   /* the rAF loop owns the bar mid-reveal */
+  if (_reveal.active) return;   /* the rAF loop owns the bar mid-reveal */
   const frac = rankFractionIn(sc, ladder);
   const goalFrac = rankFractionIn(state.reto, ladder);
-  const excess = (!niebla && sc >= state.reto) ? Math.max(0, frac - goalFrac) : 0;
+  const excess = (sc >= state.reto) ? Math.max(0, frac - goalFrac) : 0;
   _mainBar.render({
     topIdx: ladder.length - 1,
     frac: frac, excessFrac: excess,
@@ -4639,7 +4639,7 @@ function renderRankBar() {
   }
 }
 
-/* ===== Result reveal (Clásico) =====
+/* ===== Result reveal (Clásico & Niebla) =====
    One interpolated score s(t) drives EVERYTHING for ~700ms: the number is
    round(s), the fill edge is rankFractionIn(s), each tick lights exactly when s
    crosses its threshold, and the rank label is the name for s — so digit, edge,
@@ -4681,7 +4681,8 @@ function revealResult(finalSc, done) {
       retoState: 'pending',                   /* marker visible while the fill approaches it */
       curIdx: rankIndexFor(s),
       labelText: null,
-      showsNumber: true, value: Math.round(s), negative: s < 0
+      showsNumber: state.mode !== 'niebla',   /* Niebla is numberless — no count-up */
+      value: Math.round(s), negative: s < 0
     });
   }
   (function step(now) {
@@ -4710,10 +4711,12 @@ function renderDesktopPanels() {
   const reto = document.getElementById('aside-reto');
   if (!reto) return;                         // not the Normal/Niebla page
   const niebla = state.mode === 'niebla';
-  /* Clásico is RESULT-BASED: while the puzzle is unfinished (or mid-reveal) the
-     desktop panels reveal nothing either — Puntos shows 0 and no rank row is
-     highlighted, matching the bar's "Sin rango · 0". Niebla keeps live panels. */
-  const revealed = niebla || (state.completed && !_reveal.active);
+  /* Clásico and Niebla are RESULT-BASED: while the puzzle is unfinished (or
+     mid-reveal) the panels reveal no verdict — Clásico's Puntos shows 0 and the
+     rank ladder highlights nothing in either mode. Niebla's Errores stays LIVE:
+     it tallies events the player already saw on the board (red mark, fog that
+     refused to open), like Casillas and Verificaciones. */
+  const revealed = state.completed && !_reveal.active;
   const errFor = (s) => Math.floor((MAX_SCORE - s) / NIEBLA_WRONG_PENALTY);   // score → max wrong
   const errLong = (n) => n + (n === 1 ? ' error' : ' errores');
   let retoIdx = 0;
@@ -5171,8 +5174,7 @@ function finalizeWin() {
       showCompleteModal();
     }
   };
-  if (state.mode !== 'niebla') revealResult(sc, celebrate);
-  else celebrate();
+  revealResult(sc, celebrate);   /* both modes: the result presents itself, then the toast */
 }
 function showVerifyPrompt() {
   const body = document.getElementById('verify-prompt-body');
