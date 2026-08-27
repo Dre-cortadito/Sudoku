@@ -2420,6 +2420,8 @@
   .tut-ov{ position:fixed; inset:0; z-index:9600; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(20,18,14,.62); }
   .tut-ov.open{ display:flex; }
   .tut-card{ position:relative; background:var(--paper, #fff); border-radius:20px; width:100%; max-width:360px; padding:16px 0 16px; box-shadow:0 20px 60px rgba(0,0,0,.3); overflow:hidden; }
+  .tut-title{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden;
+    clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
   .tut-x{ position:absolute; top:9px; right:13px; z-index:3; border:none; background:transparent; font-size:20px; color:var(--ink-soft); cursor:pointer; }
   .tut-track{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
   .tut-track::-webkit-scrollbar{ display:none; }
@@ -6599,6 +6601,7 @@ function syncInertPages() {
   if (page) page.toggleAttribute('inert', !dailyOn);
   if (mini) mini.toggleAttribute('inert', !miniOn);
 }
+window.syncInertPages = syncInertPages;   // the tutorial block is a separate scope
 
 // Home — return to the landing from any game. Stops/saves both games' state.
 function goHome() {
@@ -6805,8 +6808,9 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 
 <!-- ===== Tutorial (family standard) ===== -->
-<div class="tut-ov" id="tut-ov">
+<div class="tut-ov" id="tut-ov" role="dialog" aria-modal="true" aria-labelledby="tut-title">
   <div class="tut-card">
+    <h2 class="tut-title" id="tut-title">Tutorial</h2>
     <button class="tut-x" id="tut-x" aria-label="Cerrar">&#10005;</button>
     <div class="tut-track" id="tut-track"></div>
     <div class="tut-dots" id="tut-dots"></div>
@@ -6835,16 +6839,61 @@ document.addEventListener('DOMContentLoaded', function(){
     try{ if(typeof state!=='undefined' && state.mode==='niebla') return 'niebla'; }catch(e){}
     if(document.body.classList.contains('niebla-landing')||document.body.classList.contains('niebla-game')) return 'niebla';
     return 'clasico'; }
-  function open(){ curMode=modeNow(); track.innerHTML=SETS[curMode]; buildDots();
-    chk.checked=!!lsGet(KEY()); ov.classList.add('open'); cur=0; track.scrollLeft=0; upd(); }
-  function close(){ ov.classList.remove('open'); try{ if(chk.checked) localStorage.setItem(KEY(),'1'); else localStorage.removeItem(KEY()); }catch(e){} }
+  /* ---- Dialog semantics (family standard). The overlay is a modal: while it is
+     open the rest of the page leaves the tab order and the accessibility tree,
+     focus lives inside it, and Escape closes it. Restoring the background does NOT
+     clear inert blindly - each sibling's prior state is recorded and put back, then
+     syncInertPages() has the final word on the two game containers. ---- */
+  var lastFocus=null, prevInert=null;
+  function bgSiblings(){ return [].slice.call(document.body.children).filter(function(el){
+    return el!==ov && el.tagName!=='SCRIPT' && el.tagName!=='STYLE'; }); }
+  function bgInert(on){
+    if(on){ if(prevInert) return;
+      prevInert=bgSiblings().map(function(el){ return { el:el, was:el.hasAttribute('inert') }; });
+      prevInert.forEach(function(r){ r.el.setAttribute('inert',''); });
+    } else if(prevInert){
+      prevInert.forEach(function(r){ if(!r.was) r.el.removeAttribute('inert'); });
+      prevInert=null;
+      if(typeof window.syncInertPages==='function') window.syncInertPages();   // game mode stays authoritative
+    }
+  }
+  function tutFocusables(){ return [].slice.call(ov.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])'))
+    .filter(function(el){ return el.offsetParent!==null && !el.disabled; }); }
+  function restoreFocus(){
+    var el=lastFocus; lastFocus=null;
+    if(el && document.contains(el) && el.offsetParent!==null && !(el.closest && el.closest('[inert]'))){ el.focus(); return; }
+    // auto-open case: the opener was the landing button, now inert. Fall back to the
+    // control that owns the mode the player is actually in.
+    var bar=document.getElementById(document.body.classList.contains('mini-active') ? 'mini-rank-bar' : 'rank-bar');
+    if(bar && !(bar.closest && bar.closest('[inert]')) && bar.offsetParent!==null) bar.focus();
+  }
+  ov.addEventListener('keydown', function(e){
+    if(!ov.classList.contains('open')) return;
+    if(e.key==='Escape'||e.key==='Esc'){ e.preventDefault(); close(); return; }
+    if(e.key!=='Tab') return;
+    var f=tutFocusables(); if(!f.length) return;
+    var first=f[0], last=f[f.length-1], a=document.activeElement;
+    if(e.shiftKey){ if(a===first||!ov.contains(a)){ e.preventDefault(); last.focus(); } }
+    else { if(a===last||!ov.contains(a)){ e.preventDefault(); first.focus(); } }
+  });
+  /* Idempotent: the auto-open timer and a manual open can overlap. A second open()
+     would re-render the slides, reset the position and overwrite lastFocus with an
+     element that is inert by then; a second close() would re-run focus restoration. */
+  function open(){ if(ov.classList.contains('open')) return;
+    lastFocus=document.activeElement;
+    curMode=modeNow(); track.innerHTML=SETS[curMode]; buildDots();
+    chk.checked=!!lsGet(KEY()); ov.classList.add('open'); cur=0; track.scrollLeft=0; upd();
+    bgInert(true);
+    var f=tutFocusables(); if(f.length) (document.getElementById('tut-next')||f[0]).focus(); }
+  function close(){ if(!ov.classList.contains('open')) return;
+    ov.classList.remove('open'); bgInert(false); try{ if(chk.checked) localStorage.setItem(KEY(),'1'); else localStorage.removeItem(KEY()); }catch(e){} restoreFocus(); }
   window.openTutorial=open;
   var mt=document.getElementById('more-tut');
   if(mt) mt.addEventListener('click', function(e){ e.preventDefault(); var mm=document.getElementById('more-menu'); if(mm) mm.classList.remove('open'); open(); });
   var pb=document.getElementById('landing-play');
   function inGame(){ return document.body.classList.contains('game-active')||document.body.classList.contains('mini-active'); }
   if(pb) pb.addEventListener('click', function(){ var m=modeNow();
-    try{ if(!lsGet('sudoku-tut-'+m+'-v1')) setTimeout(function(){ if(inGame()){ curMode=m; track.innerHTML=SETS[m]; buildDots(); chk.checked=false; ov.classList.add('open'); cur=0; track.scrollLeft=0; upd(); } }, 700); }catch(e){} });
+    try{ if(!lsGet('sudoku-tut-'+m+'-v1')) setTimeout(function(){ if(inGame()) open(); }, 700); }catch(e){} });
 })();
 </script>
 
