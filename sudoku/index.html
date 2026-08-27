@@ -805,6 +805,12 @@
   /* modes that hide their number keep an inset light end-cap so the fill still
      reads as a position (Niebla, Mini) */
   .rank-fill.scoreless { padding-right: 0; box-shadow: inset -3px 0 0 rgba(255,255,255,.55); }
+  /* Achieved-with-excess moves this fill's right edge onto the Reto seam
+     (.meets-excess, below) — the numberless end-cap highlight above would
+     then paint right where the chevron/hairline sit, reading as a second,
+     paler line beside the real marker. Scoped off only for that combined
+     state; the live-play end-cap (scoreless without meets-excess) is untouched. */
+  .rank-fill.scoreless.meets-excess { box-shadow: none; }
   /* Result reveal (Clásico): the portion of the final score BEYOND the day's target
      fills in --success. Flat left edge — it continues the accent fill from the
      target seam — rounded right end like the fill's own cap. */
