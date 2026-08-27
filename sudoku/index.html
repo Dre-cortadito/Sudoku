@@ -805,6 +805,23 @@
   /* modes that hide their number keep an inset light end-cap so the fill still
      reads as a position (Niebla, Mini) */
   .rank-fill.scoreless { padding-right: 0; box-shadow: inset -3px 0 0 rgba(255,255,255,.55); }
+  /* Result reveal (Clásico): the portion of the final score BEYOND the day's target
+     fills in --success. Flat left edge — it continues the accent fill from the
+     target seam — rounded right end like the fill's own cap. */
+  .rank-fill-excess {
+    position: absolute; top: 2px; bottom: 2px;
+    border-radius: 0 999px 999px 0;
+    background: var(--success);
+    pointer-events: none;
+  }
+  .rank-fill-excess.empty { display: none; }
+  /* While revealResult()'s rAF loop owns the width, the 0.3s transition must not
+     trail it — the loop IS the animation. */
+  .rank-fill.revealing { transition: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rank-fill { transition: none; }
+    .rank-tick { transition: none; }
+  }
 
   /* The score is a COLUMN between the rank label and the capsule, not a plate
      riding inside the fill (_kit §3.2). Each element then has one job: the label
@@ -4354,7 +4371,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     bar.insertBefore(el, track);
     return el;
   }
-  let built = false, ticks = [], tickIdx = [], goalEl = null, chevEl = null, ro = null;
+  let built = false, ticks = [], tickIdx = [], goalEl = null, chevEl = null, exEl = null, ro = null;
   /* retoState is the DAY'S CHALLENGE, in three values, not two:
        'pending'  — still unresolved and still reachable  -> marker SHOWN
        'achieved' — finished, and the target was met      -> marker hidden
@@ -4362,8 +4379,8 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
      'achieved' and 'failed' both hide the marker, but they are NOT the same
      thing and must not be collapsed: the accessible name and the Rangos panel
      have to tell them apart, and a checkmark belongs to exactly one of them. */
-  let st = { frac: 0, goalFrac: null, retoState: 'pending', curIdx: 0,
-             showsNumber: true, value: 0, negative: false, topIdx: 9 };
+  let st = { frac: 0, excessFrac: 0, goalFrac: null, retoState: 'pending', curIdx: 0,
+             showsNumber: true, value: 0, negative: false, topIdx: 9, labelText: null };
 
   function build() {
     if (built) return;
@@ -4377,6 +4394,12 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
       track.appendChild(t);
       ticks.push(t); tickIdx.push(i);
     }
+    /* the excess segment sits between the fill and the ticks: painted over the
+       fill's right end, under every milestone mark */
+    exEl = document.createElement('div');
+    exEl.className = 'rank-fill-excess empty';
+    const fillEl = document.getElementById(fillId);
+    track.insertBefore(exEl, fillEl ? fillEl.nextSibling : track.firstChild);
     goalEl = document.createElement('div');
     goalEl.className = 'rank-goal';
     track.appendChild(goalEl);
@@ -4404,6 +4427,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
 
     const pct = st.frac * 100;
     fill.classList.toggle('empty', pct <= 0.5);
+    if (exEl) exEl.classList.toggle('empty', !(st.excessFrac > 0.001));
     fill.classList.toggle('scoreless', !st.showsNumber);
     /* The fill's WIDTH is pixel work and belongs to place(), which owns the one
        scale and re-runs on resize. A percentage width here is what made the gap
@@ -4433,8 +4457,10 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     /* position and over-fill colour are pixel work — place() owns both */
 
     if (label) {
-      label.textContent = RANK_NAMES[st.curIdx];
-      label.classList.toggle('at-maestro', st.curIdx === st.topIdx);
+      /* labelText overrides the ladder name — Clásico shows "Sin rango" while the
+         result is unrevealed. at-maestro colours only a real Maestro/a. */
+      label.textContent = st.labelText || RANK_NAMES[st.curIdx];
+      label.classList.toggle('at-maestro', !st.labelText && st.curIdx === st.topIdx);
     }
     place();
   }
@@ -4458,7 +4484,14 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     /* A full bar leaves RANK_PAD on the right exactly as it leaves it on the left.
        Re-set on every place() so a resize keeps the two gaps equal. */
     const fill = document.getElementById(fillId);
-    if (fill) fill.style.width = (st.frac <= 0.005 ? 0 : st.frac * usable) + 'px';
+    /* st.frac is the TOTAL fraction; the accent fill stops where the excess
+       begins, and the excess (over-target portion) continues from that seam. */
+    const orangeFrac = Math.max(0, st.frac - (st.excessFrac || 0));
+    if (fill) fill.style.width = (st.frac <= 0.005 ? 0 : orangeFrac * usable) + 'px';
+    if (exEl) {
+      exEl.style.left  = (2 + orangeFrac * usable) + 'px';
+      exEl.style.width = Math.max(0, (st.excessFrac || 0) * usable) + 'px';
+    }
 
     /* no marker on screen => nothing may be hidden on its account, so any tick
        it was covering is restored automatically */
@@ -4539,23 +4572,103 @@ function renderRankBar() {
   const ladder = RANK_THRESHOLDS;
   const niebla = (state.mode === 'niebla');
   const retoState = retoStateFor();
+  const bar = document.getElementById('rank-bar');
+  /* Clásico is RESULT-BASED: during play the capsule stays empty and the bar
+     reveals nothing provisional — "Sin rango", 0 points, in the visible label,
+     the column and the accessible name alike. The chevron keeps marking the
+     day's target, and a settled 'failed' still reads "no alcanzado" here — that
+     is gameplay feedback, not the result. The reveal itself is presented by
+     revealResult(); a completed puzzle re-rendered later (reload, resize,
+     theme change) shows the final state with no replay. Niebla keeps its live
+     rendering until its own pass. */
+  if (!niebla && !state.completed) {
+    _mainBar.render({
+      topIdx: ladder.length - 1,
+      frac: 0, excessFrac: 0,
+      goalFrac: rankFractionIn(state.reto, ladder),
+      retoState: retoState,
+      curIdx: 0, labelText: 'Sin rango',
+      showsNumber: true, value: 0, negative: false
+    });
+    if (bar) {
+      bar.setAttribute('aria-label',
+        'Sin rango, 0 puntos. Reto del día ' + RETO_WORD[retoState] + '. Ver rangos.');
+    }
+    return;
+  }
+  if (!niebla && _reveal.active) return;   /* the rAF loop owns the bar mid-reveal */
+  const frac = rankFractionIn(sc, ladder);
+  const goalFrac = rankFractionIn(state.reto, ladder);
+  const excess = (!niebla && sc >= state.reto) ? Math.max(0, frac - goalFrac) : 0;
   _mainBar.render({
     topIdx: ladder.length - 1,
-    frac: rankFractionIn(sc, ladder),
-    goalFrac: rankFractionIn(state.reto, ladder),
+    frac: frac, excessFrac: excess,
+    goalFrac: goalFrac,
     retoState: retoState,
     curIdx: currentRankIndex(),
+    labelText: null,   /* explicit: st keeps the last value, and play leaves "Sin rango" behind */
     showsNumber: !niebla,
     value: sc,
     negative: sc < 0
   });
-  const bar = document.getElementById('rank-bar');
   if (bar) {
     bar.setAttribute('aria-label',
       'Rango ' + RANK_NAMES[currentRankIndex()] +
       (niebla ? '' : ', ' + sc + ' puntos') + '.' +
       ' Reto del día ' + RETO_WORD[retoState] + '. Ver rangos.');
   }
+}
+
+/* ===== Result reveal (Clásico) =====
+   One interpolated score s(t) drives EVERYTHING for ~700ms: the number is
+   round(s), the fill edge is rankFractionIn(s), each tick lights exactly when s
+   crosses its threshold, and the rank label is the name for s — so digit, edge,
+   ticks and label can never disagree. The accent fill runs to the target; the
+   portion beyond it is --success green. The marker stays visible through the
+   reveal ('pending') and settles on the final frame. Reduced motion renders the
+   final state immediately — no fill, tick or count animation at all. */
+const _reveal = { active: false, raf: 0 };
+function rankIndexFor(s) {
+  let r = 0;
+  for (let i = 0; i < RANK_THRESHOLDS.length; i++) if (s >= RANK_THRESHOLDS[i]) r = i;
+  return r;
+}
+function revealResult(finalSc, done) {
+  const ladder = RANK_THRESHOLDS;
+  const goalFrac = rankFractionIn(state.reto, ladder);
+  const achieved = finalSc >= state.reto;
+  const fillEl = document.getElementById('rank-fill');
+  function finish() {
+    _reveal.active = false;
+    if (fillEl) fillEl.classList.remove('revealing');
+    renderRankBar();   /* the full completed render: final label, aria, settled marker */
+    if (done) done();
+  }
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+  _reveal.active = true;
+  if (fillEl) fillEl.classList.add('revealing');
+  const D = 700, t0 = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3);   /* ease-out cubic */
+  function frame(p) {
+    const s = finalSc * p;                    /* continuous — ticks sync exactly */
+    const frac = rankFractionIn(s, ladder);
+    const excess = achieved ? Math.max(0, frac - goalFrac) : 0;
+    _mainBar.render({
+      topIdx: ladder.length - 1,
+      frac: frac, excessFrac: excess,
+      goalFrac: goalFrac,
+      retoState: 'pending',                   /* marker visible while the fill approaches it */
+      curIdx: rankIndexFor(s),
+      labelText: null,
+      showsNumber: true, value: Math.round(s), negative: s < 0
+    });
+  }
+  (function step(now) {
+    const p = Math.min(1, (now - t0) / D);
+    frame(ease(p));
+    if (p < 1) _reveal.raf = requestAnimationFrame(step);
+    else finish();
+  })(t0);
 }
 
 function renderAll() {
@@ -5012,21 +5125,29 @@ function finalizeWin() {
   updateVerifyCue();   // drop the orange cue now that you've won
 
   // One celebration, highest tier first: Maestro > Reto del día met > Complete.
-  if (curIdx === RANK_NAMES.length - 1 && !localStorage.getItem(maestroKey())) {
-    maestroShown = true;
-    localStorage.setItem(maestroKey(), '1');
-    localStorage.setItem(completeKey(), '1');
-    showMaestroModal();
-  } else if (sc >= state.reto && !localStorage.getItem(goalKey())) {
-    goalShown = true;
-    localStorage.setItem(goalKey(), '1');
-    localStorage.setItem(completeKey(), '1');
-    showGoalModal();
-  } else if (!localStorage.getItem(completeKey())) {
-    completeShown = true;
-    localStorage.setItem(completeKey(), '1');
-    showCompleteModal();
-  }
+  // It fires from the reveal's completion callback — the result presents itself
+  // first, the toast comes after. Reduced motion collapses the reveal, so the
+  // celebration is immediate there; the localStorage keys keep a reloaded
+  // puzzle from ever celebrating twice.
+  const celebrate = () => {
+    if (curIdx === RANK_NAMES.length - 1 && !localStorage.getItem(maestroKey())) {
+      maestroShown = true;
+      localStorage.setItem(maestroKey(), '1');
+      localStorage.setItem(completeKey(), '1');
+      showMaestroModal();
+    } else if (sc >= state.reto && !localStorage.getItem(goalKey())) {
+      goalShown = true;
+      localStorage.setItem(goalKey(), '1');
+      localStorage.setItem(completeKey(), '1');
+      showGoalModal();
+    } else if (!localStorage.getItem(completeKey())) {
+      completeShown = true;
+      localStorage.setItem(completeKey(), '1');
+      showCompleteModal();
+    }
+  };
+  if (state.mode !== 'niebla') revealResult(sc, celebrate);
+  else celebrate();
 }
 function showVerifyPrompt() {
   const body = document.getElementById('verify-prompt-body');
