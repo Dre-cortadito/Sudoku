@@ -5714,6 +5714,7 @@ document.getElementById('landing-play').addEventListener('click', () => {
   if (document.body.classList.contains('mini-landing')) { launchMini(); return; }
   document.body.classList.add('game-active');
   document.body.classList.toggle('niebla-game', state.mode === 'niebla');  // fog identity in-game
+  syncInertPages();
   // Commit the difficulty floor for this (date, mode) on FIRST play.
   // Subsequent Jugar taps don't re-set it; the player has committed.
   if (!state.startingDifficulty) {
@@ -5998,6 +5999,7 @@ window.addEventListener('load', function () {
     // Always show the landing for the chosen mode — never jump straight into the game.
     document.body.classList.remove('game-active');
     document.body.classList.remove('mini-active');
+    syncInertPages();
     setLandingTab(tab);
     var tabs = document.querySelector('.landing-tabs');
     if (tabs) tabs.style.display = 'none';
@@ -6571,6 +6573,7 @@ function launchMini() {
   if (!miniState || miniState.iso !== state.iso) initMini();
   dailyTimerStop();   // Normal's clock runs continuously while game-active — pause it in Mini
   document.body.classList.add('mini-active');
+  syncInertPages();
   renderMiniStain();
   miniRenderBoard(); miniRenderPad(); miniRenderStart(); miniRenderRankBar(true);
   // Timer only runs once the player presses Empezar (or when resuming a
@@ -6582,7 +6585,21 @@ function launchMini() {
 function exitMini() {
   miniStopTimer(); miniSave();
   document.body.classList.remove('mini-active');
+  syncInertPages();
 }
+// Only the container that is actually in play is exposed. `inert` removes the
+// subtree from the accessibility tree AND from the tab order; aria-hidden alone
+// would leave 19 (or 6) controls tabbable behind the landing. Called after every
+// game-active / mini-active change, including boot and Back/Forward.
+function syncInertPages() {
+  const miniOn  = document.body.classList.contains('mini-active');
+  const dailyOn = document.body.classList.contains('game-active');
+  const page = document.querySelector('.page');
+  const mini = document.getElementById('mini-page');
+  if (page) page.toggleAttribute('inert', !dailyOn);
+  if (mini) mini.toggleAttribute('inert', !miniOn);
+}
+
 // Home — return to the landing from any game. Stops/saves both games' state.
 function goHome() {
   closeModal();        // close any open modal (Reglas, Rangos, Ajustes…) and
@@ -6590,6 +6607,7 @@ function goHome() {
   dailyTimerStop(); saveProgress();
   miniStopTimer(); miniSave();
   document.body.classList.remove('game-active', 'mini-active', 'niebla-game');
+  syncInertPages();
   saveSession();   // remember we're on the landing now
 }
 function buildMiniShareText() {
@@ -6709,11 +6727,13 @@ function boot() {
   } else if (sess && sess.screen === 'normal') {
     document.body.classList.add('game-active');
     document.body.classList.toggle('niebla-game', state.mode === 'niebla');
+    syncInertPages();
     dailyTimerStart();
   }
   _booted = true;
  } catch (e) { /* never strand the user on a blank screen */ }
   document.body.classList.add('ready');   // always reveal the page
+  syncInertPages();   // once per load, outside the try: a landing must never expose a game container
 }
 boot();
 
