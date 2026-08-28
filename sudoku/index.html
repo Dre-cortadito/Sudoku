@@ -1410,6 +1410,20 @@
      same defect at 4.48:1.) */
   body[data-theme="black"] #mini-done-modal { --accent: #E8829F; --accent-deep: #CE6884; }
 
+  /* Niebla's finish prompt wears Niebla's fog blue, the way Mini's wears
+     frambuesa above. .celebration hard-codes the terracota --accent so the
+     card resolves light tokens even in dark mode, and that also overrides the
+     MODE's own accent — the Maestro/a title and the Compartir button both
+     read it. Unlike #mini-done-modal, #maestro-modal is SHARED by Clásico and
+     Niebla, so this is scoped by body class instead of by id.
+     Deliberately THEME-BLIND, unlike the Mini pair above: .celebration forces
+     this card white in BOTH themes, so the light-theme blue is the correct one
+     throughout — #294f61 reads 8.80:1 on white, while Niebla's dark accent
+     #8fb1c0 would read 2.28:1. Values mirror body.niebla-game. --accent-deep
+     is not consumed by the card today; it is set to keep the token pair in
+     step with the mode (and with Mini's rule) if a hover ever wants it. */
+  body.niebla-game #maestro-modal { --accent: #294f61; --accent-deep: #1c3a48; }
+
   /* ============ Rotate-to-portrait lock (phones held sideways) ============
      The board + number pad need one tall portrait screen; turned landscape on
      a phone, nothing fits — so cover the game with a friendly "turn it back"
@@ -5319,6 +5333,44 @@ function showGoalModal() {
 
   openModal('goal-modal'); launchConfetti(90);
 }
+/* The Cortadito cup art is a flat single-colour silhouette baked in terracota
+   (CUP_ART_INK). A mode whose finish prompt wears a different accent needs it
+   repainted: a `source-in` fill keeps the monogram knockout and the soft edges
+   intact, the same technique setMiniCup uses (Mini keeps its own path).
+   Three properties this has to hold, all tested:
+     · NO TERRACOTA FLASH — it draws from the source <img>, which is already
+       decoded (its data URI is inline in the initial HTML), so the tinted src
+       is set ONCE. The old line set the terracota src first and would have
+       shown orange before any repaint landed.
+     · REPEAT-SAFE — cached BY COLOUR, and always redrawn from the ORIGINAL
+       art, never from an already-tinted image, so reopening is a cache hit and
+       repeated opens cannot compound the fill.
+     · NEVER BLANK — any failure falls back to the original art. */
+const CUP_ART_INK = '#d9633b';
+const _cupTints = Object.create(null);
+function tintCup(imgEl, srcImg, colour) {
+  const orig = srcImg && srcImg.getAttribute('src');
+  if (!imgEl || !orig) return;
+  const want = String(colour || '').trim().toLowerCase();
+  /* tinting to the colour it is already baked in is a no-op: Clásico keeps
+     the original bytes and its render path is untouched */
+  if (!want || want === CUP_ART_INK) { imgEl.setAttribute('src', orig); return; }
+  if (_cupTints[want]) { imgEl.setAttribute('src', _cupTints[want]); return; }
+  try {
+    if (!(srcImg.complete && srcImg.naturalWidth)) { imgEl.setAttribute('src', orig); return; }
+    const w = srcImg.naturalWidth, h = srcImg.naturalHeight;
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(srcImg, 0, 0, w, h);
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = want;
+    ctx.fillRect(0, 0, w, h);
+    const out = cv.toDataURL('image/png');
+    _cupTints[want] = out;
+    imgEl.setAttribute('src', out);
+  } catch (e) { imgEl.setAttribute('src', orig); }
+}
 function showMaestroModal() {
   const t = document.getElementById('maestro-time');
   if (t) t.textContent = finishTimeLine();
@@ -5326,7 +5378,12 @@ function showMaestroModal() {
   // .goal-brand-mark sizing) instead of a literal 👑 emoji.
   const gm = document.querySelector('#goal-modal .goal-brand-mark');
   const mm = document.getElementById('maestro-mark');
-  if (gm && mm && !mm.getAttribute('src')) mm.setAttribute('src', gm.getAttribute('src'));
+  /* Tint to the modal's OWN resolved --accent, so the CSS rule beside
+     #mini-done-modal is the single place the hue is decided. Called on every
+     open (not just the first): it is a cache hit after the first, and the
+     accent can differ between the modes that share this modal. */
+  if (gm && mm) tintCup(mm, gm, getComputedStyle(
+        document.getElementById('maestro-modal')).getPropertyValue('--accent'));
   openModal('maestro-modal'); launchConfetti(120);
 }
 function showCompleteModal() {
