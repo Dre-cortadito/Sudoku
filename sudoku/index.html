@@ -964,6 +964,33 @@
   .rank-goal-chev.is-achieved { opacity: 0; }
   .rank-goal-chev[hidden] { display: none; }
 
+  /* The capsule's perimeter, painted by a sibling rather than by .rank-track
+     itself. Observed on iPhone Safari, and not reproducible in Chromium: the
+     target marker replaced pixels of the capsule's border where it crossed —
+     the top band in every state, the bottom band too once achieved-with-excess
+     brings the hairline back. An element's own border always paints UNDER its
+     own descendants whatever z-index they carry, so the perimeter has to leave
+     the track to sit above them (outline was tried: same paint tier, and
+     overflow:hidden suppresses it).
+     .rank-track keeps its 1.5px border for LAYOUT — box-sizing, the padding box
+     .rank-fill and .rank-goal resolve against, and the overflow clip all depend
+     on it — and only stops PAINTING it, via .rank-framed, which place() sets
+     once this element has real dimensions so the capsule is never outlineless.
+     The grey is therefore painted exactly once: with no second border beneath
+     it this one needs no extra width to cover anything, and the ring's weight is
+     unchanged everywhere. Above .rank-goal-chev (z:7), so the order reads
+     triangle outside -> unbroken grey -> hairline resuming at the inner edge;
+     the stem stays underneath, still closing the gap the apex would leave. */
+  .rank-track-frame {
+    position: absolute;
+    border-radius: 999px;
+    border: 1.5px solid var(--rank-outline);
+    box-sizing: border-box;
+    z-index: 8;
+    pointer-events: none;
+  }
+  .rank-track.rank-framed { border-color: transparent; }
+
   .rank-chev {
     font-size: 14px;
     font-weight: 500;
@@ -4409,7 +4436,8 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     bar.insertBefore(el, track);
     return el;
   }
-  let built = false, ticks = [], tickIdx = [], goalEl = null, chevEl = null, exEl = null, ro = null;
+  let built = false, ticks = [], tickIdx = [], goalEl = null, chevEl = null, exEl = null,
+      frameEl = null, ro = null;
   /* retoState is the DAY'S CHALLENGE, in three values, not two:
        'pending'  — still unresolved and still reachable  -> marker SHOWN
        'achieved' — finished, and the target was met      -> marker hidden
@@ -4445,6 +4473,11 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     chevEl = document.createElement('div');
     chevEl.className = 'rank-goal-chev';
     (track.parentNode || track).appendChild(chevEl);
+    /* the perimeter is outside the track for the same reason, and created LAST
+       so tree order agrees with its z-index — see .rank-track-frame */
+    frameEl = document.createElement('div');
+    frameEl.className = 'rank-track-frame';
+    (track.parentNode || track).appendChild(frameEl);
     if (typeof ResizeObserver === 'function') { ro = new ResizeObserver(place); ro.observe(track); }
     else { window.addEventListener('resize', place); }
     built = true;
@@ -4520,6 +4553,26 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     const w = rankContentWidth(track);
     if (!(w > 0)) return;
     const usable = Math.max(0, w - 2 * RANK_PAD);
+
+    /* Matched to the track's BORDER BOX, so the capsule's size, shape, clip and
+       every interior position are untouched — only the layer the grey lands in
+       changes. Measured against .rank-bar, the offset parent, exactly as the
+       chevron is, and re-run on every pass so a resize or a rotation moves it
+       with the track. Not gated on the marker: the outline is there in every
+       state. See .rank-track-frame. */
+    if (frameEl) {
+      const fbar = document.getElementById(barId);
+      if (fbar) {
+        const ftb = track.getBoundingClientRect(), fbb = fbar.getBoundingClientRect();
+        frameEl.style.left   = (ftb.left - fbb.left) + 'px';
+        frameEl.style.top    = (ftb.top  - fbb.top)  + 'px';
+        frameEl.style.width  = ftb.width  + 'px';
+        frameEl.style.height = ftb.height + 'px';
+        /* only now may the track stop painting its own border — if this is
+           never reached the capsule keeps its original outline */
+        track.classList.add('rank-framed');
+      }
+    }
 
     /* One scale for everything on the bar: RANK_PAD + fraction * usable. */
     for (let i = 0; i < ticks.length; i++) {
