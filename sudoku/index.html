@@ -2114,11 +2114,10 @@
     --cell-bg-sel:  #B03D5C;
     --cell-bg-peer: #2B161C;
   }
-  /* Niebla is precision-scored, so the rank-bar bubble holds a DERIVED score that
-     means nothing to the player. Hide the number (like the Mini bar) — the label
-     beside it carries the rank name; the bubble just marks your position. */
-  /* Niebla hides its number via the bar's own showsNumber flag (§3.2) — no CSS
-     override needed, and none that could leak a number back in. */
+  /* (2026-08-28) Niebla used to hide its number. It now shows points exactly as
+     Clásico does; errors remain its EXPLANATION of that score, not a second
+     scale — see the Rangos ladder. Only Mini is still numberless, through the
+     bar's own showsNumber flag (§3.2). No CSS override either way. */
 
   /* Disabled mode pill (Diagonales — deferred) + Próximamente tag. */
   .landing-mode-row { align-items: center; }
@@ -3050,7 +3049,7 @@
     <p class="muted">Adivinar al azar sale caro —cada intento fallido cuenta—, así que mejor deducir.</p>
 
     <h3>La barra de rangos</h3>
-    <p>Mientras juegas, la barra permanece <strong>vacía</strong> y marca <strong class="hl-accent">Sin rango</strong>. En Niebla no hay número que mirar: tu resultado se mantiene en secreto hasta el final.</p>
+    <p>Mientras juegas, la barra permanece <strong>vacía</strong> y marca <strong class="hl-accent">Sin rango · 0</strong>: tu puntaje real y tu rango se mantienen en secreto hasta el final. Al terminar, la barra se llena y el número sube hasta tu resultado.</p>
     <p>Al terminar, comienza la revelación: la barra se llena, las marcas se encienden y el nombre del rango avanza hasta tu resultado final.</p>
     <p>El <strong class="hl-accent">azul</strong> representa tu resultado hasta la meta del reto del día; el <strong style="color:var(--success)">verde</strong>, todo lo que la supera. El <strong>chevrón</strong> y su <strong>línea continua</strong> marcan exactamente dónde está la meta.</p>
 
@@ -4520,8 +4519,8 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
        asymmetric (2px left, 0px right at a full bar) — do not bring it back. */
 
     /* A mode that hides its number has no column at all — syncScore() removed it —
-       so the capsule reclaims the space. Niebla and Mini take that branch in every
-       state, negative included. */
+       so the capsule reclaims the space. Only MINI takes that branch now; Niebla
+       shows its points like Clásico, negative included. */
     if (sc) sc.textContent = st.value;
 
     for (let i = 0; i < ticks.length; i++) {
@@ -4682,7 +4681,9 @@ const RETO_WORD = { pending: 'pendiente', achieved: 'logrado', failed: 'no alcan
 const RETO_MARK = { pending: '', achieved: ' ✓', failed: ' ✕' };
 
 /* Clásico and Niebla: points remaining (42 - aids [- 4 x errors]).
-   Niebla hides its number — including when it is negative. */
+   Both SHOW that number, negative included. Niebla hid it until 2026-08-28;
+   the empty column read as an unfinished bar, and the score is the same
+   quantity in both modes. Errors stay Niebla's explanation of it. */
 function renderRankBar() {
   const sc = score();
   const ladder = RANK_THRESHOLDS;
@@ -4691,8 +4692,8 @@ function renderRankBar() {
   const bar = document.getElementById('rank-bar');
   /* Clásico AND Niebla are RESULT-BASED: during play the capsule stays empty
      and the bar reveals nothing provisional — "Sin rango" in the visible label
-     and the accessible name alike; Clásico also shows 0 in its column, Niebla
-     is numberless so there is no column at all. The chevron keeps marking the
+     and the accessible name alike; BOTH show 0 in the column, which is the
+     honest reading of an unfinished game. The chevron keeps marking the
      day's target, and a settled 'failed' still reads "no alcanzado" here — that
      is gameplay feedback, not the result. The reveal itself is presented by
      revealResult(); a completed puzzle re-rendered later (reload, resize,
@@ -4704,11 +4705,11 @@ function renderRankBar() {
       goalFrac: rankFractionIn(state.reto, ladder),
       retoState: retoState,
       curIdx: 0, labelText: 'Sin rango',
-      showsNumber: !niebla, value: 0, negative: false
+      showsNumber: true, value: 0, negative: false
     });
     if (bar) {
       bar.setAttribute('aria-label',
-        'Sin rango' + (niebla ? '' : ', 0 puntos') + '. Reto del día ' + RETO_WORD[retoState] + '. Ver rangos.');
+        'Sin rango, 0 puntos. Reto del día ' + RETO_WORD[retoState] + '. Ver rangos.');
     }
     return;
   }
@@ -4723,14 +4724,14 @@ function renderRankBar() {
     retoState: retoState,
     curIdx: currentRankIndex(),
     labelText: null,   /* explicit: st keeps the last value, and play leaves "Sin rango" behind */
-    showsNumber: !niebla,
+    showsNumber: true,
     value: sc,
     negative: sc < 0
   });
   if (bar) {
     bar.setAttribute('aria-label',
       'Rango ' + RANK_NAMES[currentRankIndex()] +
-      (niebla ? '' : ', ' + sc + ' puntos') + '.' +
+      ', ' + sc + ' puntos.' +
       ' Reto del día ' + RETO_WORD[retoState] + '. Ver rangos.');
   }
 }
@@ -4777,7 +4778,7 @@ function revealResult(finalSc, done) {
       retoState: 'pending',                   /* marker visible while the fill approaches it */
       curIdx: rankIndexFor(s),
       labelText: null,
-      showsNumber: state.mode !== 'niebla',   /* Niebla is numberless — no count-up */
+      showsNumber: true,                      /* Niebla counts up too — see renderRankBar */
       value: Math.round(s), negative: s < 0
     });
   }
@@ -4849,7 +4850,11 @@ function renderDesktopPanels() {
       row.className = 'aside-rank-row' + (i <= cur ? ' reached' : '') + (i === cur ? ' current' : '');
       const name = document.createElement('span'); name.className = 'aside-rank-name'; name.textContent = RANK_NAMES[i];
       const pts = document.createElement('span'); pts.className = 'aside-rank-pts';
-      pts.textContent = niebla ? ('≤ ' + errFor(RANK_THRESHOLDS[i]) + ' errores · sin ayudas') : (RANK_THRESHOLDS[i] + ' pts');
+      const _n = errFor(RANK_THRESHOLDS[i]);
+      pts.textContent = niebla
+        ? (RANK_THRESHOLDS[i] + ' pts · ' + (_n === 0 ? 'sin errores'
+            : '≤ ' + _n + (_n === 1 ? ' error' : ' errores')) + ' · sin ayudas')
+        : (RANK_THRESHOLDS[i] + ' pts');
       row.appendChild(name); row.appendChild(pts);
       ranks.appendChild(row);
     }
@@ -5459,7 +5464,9 @@ function buildShareText() {
     lines.push('👑 ¡Maestro/a del sudoku!');
     lines.push(niebla ? '   Lo resolví sin un solo error.' : '   Lo resolví sin ninguna ayuda.');
   } else if (niebla) {
-    lines.push(`🏆 Rango: ${rank}  ·  ${state.wrongCount || 0} ${(state.wrongCount || 0) === 1 ? 'error' : 'errores'}`);
+    /* points first, then Niebla's own reading of them — same order as the
+       Rangos ladder, and the same number the bar now shows */
+    lines.push(`🏆 Rango: ${rank}  ·  ${sc} pts  ·  ${state.wrongCount || 0} ${(state.wrongCount || 0) === 1 ? 'error' : 'errores'}`);
   } else {
     lines.push(`🏆 Rango: ${rank}  ·  ${sc} pts`);
   }
@@ -5652,10 +5659,10 @@ function refreshRangos() {
     if (isCurrent) {
       /* This branch only renders POST-completion (see `revealed` above), so it
          speaks in results — the old "margen antes de bajar" was a live-play
-         concept. Clásico keeps its numeric score (points are native there);
-         Niebla shows rank and result line only — numberless to the end. */
+         concept. Both modes keep the numeric score here: points are the same
+         quantity in each, and since 2026-08-28 Niebla shows it too. */
       const progText = (i === topIdx) ? '¡En la cima!' : 'Tu resultado de hoy';
-      const scoreSpan = state.mode === 'niebla' ? '' : `<span class="score">${sc}</span>`;
+      const scoreSpan = `<span class="score">${sc}</span>`;
       row.innerHTML = `
         <div style="display:flex;flex-direction:column;flex:1">
           <div style="display:flex;justify-content:space-between;align-items:center">
@@ -5665,8 +5672,14 @@ function refreshRangos() {
           <span class="progress">${progText}</span>
         </div>`;
     } else {
+      /* Points are the rule; the error count is the same rule in Niebla's own
+         terms, which is what the mode is played in. Both, so neither has to be
+         inferred — and 'sin ayudas' stays, because the error figure is only
+         true when no aid was spent (aids lower the score too). */
+      const _n = Math.floor((MAX_SCORE - RANK_THRESHOLDS[i]) / NIEBLA_WRONG_PENALTY);
       const thr = state.mode === 'niebla'
-        ? '≤ ' + Math.floor((MAX_SCORE - RANK_THRESHOLDS[i]) / NIEBLA_WRONG_PENALTY) + ' errores · sin ayudas'
+        ? RANK_THRESHOLDS[i] + ' pts · ' + (_n === 0 ? 'sin errores'
+            : '≤ ' + _n + (_n === 1 ? ' error' : ' errores')) + ' · sin ayudas'
         : String(RANK_THRESHOLDS[i]);
       row.innerHTML = `<span class="name">${RANK_NAMES[i]}</span><span class="score">${thr}</span>`;
     }
@@ -5674,14 +5687,16 @@ function refreshRangos() {
   }
   /* The tick means the challenge was WON, which needs a finished puzzle — not
      merely that the score is still above the floor, which it is from move one.
-     Niebla is numberless: its challenge is presented as the target RANK, never
-     as points, and its thresholds as error equivalents (see the rows above). */
+     Niebla's reto stays RANK-framed even though its bar now shows points: the
+     challenge is "reach Brillante or better", which survives a change to the
+     scoring costs, while a points target would not. The ladder rows above
+     carry both figures. */
   let retoIdx = 0;
   for (let i = 0; i < RANK_THRESHOLDS.length; i++) if (state.reto >= RANK_THRESHOLDS[i]) retoIdx = i;
   document.getElementById('rangos-reto').textContent =
     (state.mode === 'niebla' ? RANK_NAMES[retoIdx] : state.reto + ' pts') + RETO_MARK[retoStateFor()];
   const colHead = document.querySelector('#rangos-modal .ranks-cols span:last-child');
-  if (colHead) colHead.textContent = state.mode === 'niebla' ? 'Errores máximos' : 'Puntaje mínimo';
+  if (colHead) colHead.textContent = 'Puntaje mínimo';
 }
 
 // ---------- DROPDOWNS ----------
