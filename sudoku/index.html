@@ -172,7 +172,15 @@
     touch-action: manipulation;
   }
   body {
-    min-height: 100vh;
+    min-height: 100vh;   /* fallback for engines without dvh */
+    /* iOS Safari: 100vh is the LARGE viewport (toolbar collapsed), so with the
+       toolbar visible the landing gets a phantom scroll range of exactly the
+       toolbar delta - measured on device: scrollH 815 vs clientH 775 = 40px.
+       Entering a game can carry that offset into the locked layout and WebKit
+       can keep painting it after the DOM reads 0, hiding the rank row under
+       the fixed header until a reload. dvh tracks the VISIBLE viewport, so the
+       landing has nothing to scroll and no offset can exist to be carried. */
+    min-height: 100dvh;
     padding: 16px 16px 28px;
     position: relative;
     overflow-x: hidden;
