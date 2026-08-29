@@ -1401,14 +1401,17 @@
 
   /* Mini's finish prompt wears Mini's own identity colour (forest green) —
      the shared .celebration palette forces terracota (that's Normal's hue),
-     so restore Mini's green here. It flows to the Compartir button, the cup
+     so restore Mini's frambuesa here. It flows to the Compartir button, the cup
      mark (recoloured in JS) and any accent text, the same way Normal's prompt
      reads terracota and Niebla's reads fog-blue. */
+  /* Deliberately THEME-BLIND, exactly like Niebla's rule below: .celebration
+     forces this card WHITE in both themes (measured rgb(255,255,255) at
+     data-theme="black"), so the light-card frambuesa is the correct one
+     throughout - #A83254 reads 6.46:1 on white, while the lifted #E8829F reads
+     only 2.58:1 there. The lift belongs to the dark GAMEPLAY surface
+     (body[data-theme="black"].mini-active), which is unchanged; it does not
+     belong on this white card. */
   #mini-done-modal { --accent: #A83254; --accent-deep: #862843; }
-  /* The rule above is theme-blind, so dark needs its own: the light frambuesa on
-     the dark card measures 2.78:1, the lifted one 6.95:1. (The old green had the
-     same defect at 4.48:1.) */
-  body[data-theme="black"] #mini-done-modal { --accent: #E8829F; --accent-deep: #CE6884; }
 
   /* Niebla's finish prompt wears Niebla's fog blue, the way Mini's wears
      frambuesa above. .celebration hard-codes the terracota --accent so the
@@ -6812,15 +6815,22 @@ function miniCheckDone() {
   if (_gm && _mm) setMiniCup(_mm, _gm.getAttribute('src'));
   openModal('mini-done-modal'); launchConfetti(miniRankIndexForTime(miniState.elapsed||0) === 9 ? 120 : 85);
 }
-// Recolour the terracota Cortadito cup to Mini's green for the finish prompt.
+// Recolour the terracota Cortadito cup to Mini's accent for the finish prompt.
 // The art is a flat single-colour silhouette, so a `source-in` fill keeps the
-// monogram knockout and the soft edges intact. Cached after the first build;
-// falls back to the original terracota art if a canvas error ever throws, so
-// the cup is never left blank.
-let _miniCupTint = null, _miniCupTintTheme = null;
+// monogram knockout and the soft edges intact. The colour is RESOLVED from
+// #mini-done-modal's own --accent, the way tintCup does for the Maestro/a cup,
+// so the CSS rule stays the single source of truth and a token change cannot
+// leave the cup disagreeing with the Compartir button. Cached BY COLOUR and
+// always redrawn from the ORIGINAL art, so repeated opens are cache hits and
+// cannot compound the fill; any failure falls back to the original terracota
+// art, so the cup is never left blank.
+const _miniCupTints = Object.create(null);
 function setMiniCup(imgEl, srcDataUri) {
-  const _theme = document.body.dataset.theme || 'white';
-  if (_miniCupTint && _miniCupTintTheme === _theme) { imgEl.src = _miniCupTint; return; }
+  if (!imgEl) return;
+  const _host = document.getElementById('mini-done-modal') || imgEl;
+  const want = String(getComputedStyle(_host).getPropertyValue('--accent') || '').trim().toLowerCase();
+  if (!want) { if (srcDataUri) imgEl.src = srcDataUri; return; }   // never blank
+  if (_miniCupTints[want]) { imgEl.src = _miniCupTints[want]; return; }
   if (!srcDataUri) return;
   try {
     const probe = new Image();
@@ -6832,13 +6842,10 @@ function setMiniCup(imgEl, srcDataUri) {
         const ctx = cv.getContext('2d');
         ctx.drawImage(probe, 0, 0, w, h);
         ctx.globalCompositeOperation = 'source-in';
-        /* Mini's frambuesa — theme-aware, because the cup sits on the done modal
-           and the light hex reads 2.78:1 on the dark card. */
-        ctx.fillStyle = (document.body.dataset.theme === 'black') ? '#E8829F' : '#A83254';
+        ctx.fillStyle = want;
         ctx.fillRect(0, 0, w, h);
-        _miniCupTint = cv.toDataURL('image/png');
-        _miniCupTintTheme = _theme;
-        imgEl.src = _miniCupTint;
+        _miniCupTints[want] = cv.toDataURL('image/png');
+        imgEl.src = _miniCupTints[want];
       } catch (e) { imgEl.src = srcDataUri; }    // fallback: terracota cup
     };
     probe.onerror = function () { imgEl.src = srcDataUri; };
