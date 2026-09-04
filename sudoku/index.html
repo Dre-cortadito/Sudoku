@@ -825,6 +825,13 @@
      paler line beside the real marker. Scoped off only for that combined
      state; the live-play end-cap (scoreless without meets-excess) is untouched. */
   .rank-fill.scoreless.meets-excess { box-shadow: none; }
+  /* A FULL bar is the other state this end-cap misreads. At frac 1 the fill's
+     right cap sits RANK_PAD from the capsule's inner edge, so a pale band there
+     reads as the fill bleeding through the perimeter rather than as a position.
+     Mini is full from 0 s through its Maestro/a cutoff (75 s) and again on a
+     Maestro/a completion, so this is the common state, not an edge. Below full
+     the cap is mid-track and the cue does its job — untouched. */
+  .rank-fill.scoreless.brimming { box-shadow: none; }
   /* Result reveal (Clásico): the portion of the final score BEYOND the day's target
      fills in --success. Flat left edge — it continues the accent fill from the
      target seam — rounded right end like the fill's own cap. */
@@ -4524,6 +4531,11 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     fill.classList.toggle('empty', pct <= 0.5);
     if (exEl) exEl.classList.toggle('empty', !(st.excessFrac > 0.001));
     fill.classList.toggle('meets-excess', st.excessFrac > 0.001);
+    /* Exact, not epsilon: rankFractionForTime() returns a literal 1 for a full
+       bar through two early returns, and its interpolating branch cannot reach
+       1. Paired with .rank-fill.scoreless.brimming — a class with no rule of
+       its own, so the bars that show a number are visually unaffected. */
+    fill.classList.toggle('brimming', st.frac >= 1);
     fill.classList.toggle('scoreless', !st.showsNumber);
     /* The fill's WIDTH is pixel work and belongs to place(), which owns the one
        scale and re-runs on resize. A percentage width here is what made the gap
