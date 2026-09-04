@@ -5992,6 +5992,23 @@ function refreshMoreThemeName() {
   if (!el) return;
   el.textContent = document.body.getAttribute('data-theme') === 'black' ? 'Oscuro' : 'Claro';
 }
+/* The passed-tick ink is chosen from the LIVE accent by rankInkOn() and written
+   as an inline style by each bar's render(). A theme change swaps the accent
+   underneath that inline value, so without this the previous theme's decision
+   is stranded: Niebla leaves white on the dark fill at 2.28:1 and black on the
+   light fill at 2.14:1; Mini leaves 2.58:1 and 2.92:1. Both are under the
+   3.2:1 floor. Clasico picks black in BOTH themes, so it never changes.
+   Recomputed here rather than by calling render(): this touches ONE custom
+   property on up to two elements and nothing else - no place(), no fill width,
+   so it cannot contend with revealResult()'s rAF loop. */
+function refreshTickInk() {
+  ['rank-bar', 'mini-rank-bar'].forEach(id => {
+    const bar = document.getElementById(id);
+    if (!bar) return;
+    const accent = getComputedStyle(bar).getPropertyValue('--accent').trim();
+    if (accent) bar.style.setProperty('--rank-tick-done', rankInkOn(accent));
+  });
+}
 function applyTheme(theme) {
   document.body.setAttribute('data-theme', theme);
   const tweaks = loadTweaks();
@@ -5999,6 +6016,7 @@ function applyTheme(theme) {
   saveTweaks(tweaks);
   refreshThemeIcon();
   refreshMoreThemeName();
+  refreshTickInk();
 }
 function toggleTheme() {
   const cur = document.body.getAttribute('data-theme') || 'white';
