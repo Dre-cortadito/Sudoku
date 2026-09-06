@@ -832,6 +832,14 @@
      Maestro/a completion, so this is the common state, not an edge. Below full
      the cap is mid-track and the cue does its job — untouched. */
   .rank-fill.scoreless.brimming { box-shadow: none; }
+  /* Mini is RESULT-BASED (ruling 2026-09-05): its bar appears only at completion,
+     beside a modal that already states the rank, the time and the reto, so the
+     numberless end-cap has no live position left to describe — and its pale band
+     read as inner-fill bleed against the capsule perimeter (PA-2). Scoped to
+     Mini's own fill by id, so the shared .rank-fill.scoreless rule and any future
+     numberless mode are untouched. The .brimming exception above stays in place,
+     inert, pending a separate cleanup ruling. */
+  #mini-rank-fill.scoreless { box-shadow: none; }
   /* Result reveal (Clásico): the portion of the final score BEYOND the day's target
      fills in --success. Flat left edge — it continues the accent fill from the
      target seam — rounded right end like the fill's own cap. */
@@ -2303,9 +2311,10 @@
   .mini-tools .tool-btn { height: 52px; font-size: 11px; }
   .mini-tools .tool-icon { width: 18px; height: 18px; }
 
-  /* Live rank bar — identical to Diario's .rank-bar (same position, size and
-     styling), just aligned to the Mini board width. Shows the rank you're on
-     pace for by elapsed time, draining from Maestro/a down as the clock runs. */
+  /* Result rank bar — identical to Diario's .rank-bar (same position, size and
+     styling), just aligned to the Mini board width. Mini is RESULT-BASED
+     (ruling 2026-09-05): the capsule stays EMPTY for the whole round and shows
+     the achieved rank only once the round is finished. */
   /* Same size as Normal's rank bar (same width + the shared 24px bubble / 22px
      track). Margin reset to 0 so the Mini flex-column gap controls spacing. */
   .mini-rank-bar { max-width: var(--game-w); margin: 0 auto; position: relative; z-index: 1; }
@@ -6548,7 +6557,7 @@ function miniStartTimer() {
   miniState.timer = setInterval(() => {
     miniState.elapsed = Math.floor((Date.now() - miniState.startedAt) / 1000);
     miniUpdateTimer();
-    miniRenderRankBar();      // drains the live rank as time passes
+    miniRenderRankBar();      // keeps label/aria in sync; the capsule stays empty
     if (miniState.elapsed % 5 === 0) miniSave();
   }, 1000);
   miniUpdateTimer();
@@ -6740,10 +6749,11 @@ function refreshMiniRangos() {
 const _miniBar = makeRankBar('mini-rank-bar', 'mini-rank-track', 'mini-rank-fill',
                              'mini-rank-score', 'mini-rank-label');
 
-/* Mini ranks on ELAPSED TIME, so its bar drains as the clock runs and an
-   unstarted clock (0 s) is a FULL bar, not an empty one. It shows no number.
-   The track is built once and updated in place — the fill now moves every
-   second, so the old innerHTML rebuild would violate §3.2's timer rule. */
+/* Mini ranks on ELAPSED TIME, and it is RESULT-BASED (ruling 2026-09-05): the
+   capsule stays EMPTY before and throughout play — an unstarted clock is an
+   EMPTY bar, not a full one — and the achieved rank is rendered once the round
+   is finished. It shows no number. The track is built once and updated in
+   place, so there is no innerHTML rebuild to violate §3.2's timer rule. */
 /* MINI_RANK_CUTOFFS is a list of {idx, max} ordered fastest-first. The bar needs
    max-seconds indexed BY RANK, ascending, so flatten it once. */
 const MINI_CUTOFF_SECS = (function () {
@@ -6772,25 +6782,51 @@ function miniRetoState() {
 }
 
 function miniRenderRankBar(force) {
+  /* RESULT-BASED, exactly as renderRankBar() is for Clasico and Niebla: during
+     play the capsule stays empty and the bar reveals nothing provisional —
+     "Sin rango" in the visible label and in the accessible name alike. Two
+     details are deliberate and must not be collapsed:
+       - The target marker stays on screen for the WHOLE round, including after
+         the target time has passed, so 'pending' is what the BAR is told. That
+         argument reaches nothing but marker visibility inside render().
+       - The accessible name still speaks the TRUTHFUL reto state from
+         miniRetoState(), so a lost reto still reads "no alcanzado".
+     The final result is rendered once, from Mini's own time ladder. */
+  if (_reveal.active) return;   /* a reveal owns the bar while it runs */
   const topIdx = RANK_NAMES.length - 1;
-  /* Before a round exists (the landing), Mini's honest state is the one it
-     starts in: clock at zero, Maestro/a, reto pending — a FULL bar. */
   const elapsed = miniState ? (miniState.elapsed || 0) : 0;
   const iso     = (miniState && miniState.iso) ? miniState.iso : state.iso;
-  const curIdx = miniRankIndexForTime(elapsed);
-  const target = miniRetoForDate(iso);
+  const target  = miniRetoForDate(iso);
+  const goalFrac = rankFractionForTime(target, MINI_CUTOFF_SECS);
   const retoState = miniRetoState();
+  const revealed = !!(miniState && miniState.done);
+  const bar = document.getElementById('mini-rank-bar');
+  if (!revealed) {
+    _miniBar.render({
+      topIdx: topIdx,
+      frac: 0, excessFrac: 0,
+      goalFrac: goalFrac,
+      retoState: 'pending',    /* marker visibility only — see above */
+      curIdx: 0, labelText: 'Sin rango',
+      showsNumber: false,      /* the time lives in the timer, never in the bar */
+      value: '', negative: false
+    });
+    if (bar) {
+      bar.setAttribute('aria-label',
+        'Sin rango. Reto del día ' + RETO_WORD[retoState] + '. Ver rangos del Mini.');
+    }
+    return;
+  }
+  const curIdx = miniRankIndexForTime(elapsed);
   _miniBar.render({
     topIdx: topIdx,
-    frac: rankFractionForTime(elapsed, MINI_CUTOFF_SECS),
-    goalFrac: rankFractionForTime(target, MINI_CUTOFF_SECS),
+    frac: rankFractionForTime(elapsed, MINI_CUTOFF_SECS), excessFrac: 0,
+    goalFrac: goalFrac,
     retoState: retoState,
-    curIdx: curIdx,
-    showsNumber: false,      /* the time lives in the timer, never in the bar */
-    value: '',
-    negative: false
+    curIdx: curIdx, labelText: null,
+    showsNumber: false,
+    value: '', negative: false
   });
-  const bar = document.getElementById('mini-rank-bar');
   if (bar) {
     bar.setAttribute('aria-label',
       'Rango ' + RANK_NAMES[curIdx] + '. Reto del día ' +
@@ -6917,11 +6953,17 @@ function renderMiniDesktopPanels() {
   const sub = document.getElementById('mini-aside-reto-sub');
   if (sub) sub.innerHTML = 'Llega a <strong style="color:var(--ink)">' + miniRankName(target) + '</strong> o mejor para completar la racha de hoy.';
   const t = miniState.elapsed || 0;
+  /* Result-based, like the Normal panels: no provisional PLAYER rank before the
+     round is finished. The day's TARGET rank above is not the player's rank and
+     stays visible in every state. */
+  const revealed = !!miniState.done && !_reveal.active;
   const rankLine = document.getElementById('mini-aside-rank-line');
-  if (rankLine) rankLine.innerHTML = 'Vas por <strong style="color:var(--accent)">' + miniRankName(t) + '</strong>';
+  if (rankLine) rankLine.innerHTML = revealed
+    ? 'Vas por <strong style="color:var(--accent)">' + miniRankName(t) + '</strong>'
+    : 'Sin rango';
   const ranks = document.getElementById('mini-aside-ranks');
   if (ranks) {
-    const curIdx = miniRankIndexForTime(t);
+    const curIdx = revealed ? miniRankIndexForTime(t) : -1;   /* -1 → no row reached/current */
     const maxByIdx = {};
     for (const c of MINI_RANK_CUTOFFS) maxByIdx[c.idx] = c.max;
     ranks.innerHTML = '';
