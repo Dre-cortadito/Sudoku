@@ -2335,6 +2335,16 @@
       color-mix(in oklab, var(--fog) 82%, var(--ink) 18%) 12px);
     transition: opacity 0.3s ease;
   }
+  /* PA-3A: dark-theme lift for the Mini start gate only. Global --fog is
+     untouched (Niebla overrides --fog in both themes and is unaffected). */
+  body[data-theme="black"] .mini-start {
+    background: #2f2822;
+    background-image: repeating-linear-gradient(
+      45deg, #2f2822, #2f2822 6px,
+      #4f443a 6px,
+      #4f443a 12px);
+    border: 1.5px solid #5a4d42;
+  }
   .mini-start[hidden] { display: none; }
   .mini-start-target {
     font-family: var(--font-ui); font-size: 12px; font-weight: 700;
