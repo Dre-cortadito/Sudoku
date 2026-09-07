@@ -2352,6 +2352,8 @@
     background: var(--paper); padding: 6px 12px; border-radius: 999px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
+  /* The reto time inside the pill wears Mini's accent; the label stays ink. */
+  .mini-start-target-time { color: var(--accent); }
   .mini-start-btn {
     background: var(--accent); color: #fff; border: none;
     font-family: var(--font-ui); font-size: 17px; font-weight: 700;
@@ -2604,7 +2606,7 @@
         t.id = 'cg-toast';
         t.setAttribute('role', 'status');
         t.style.cssText =
-          'position:fixed;left:50%;top:calc(env(safe-area-inset-top, 0px) + 18px);' +
+          'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 24px);' +
           'transform:translateX(-50%);z-index:99999;pointer-events:none;' +
           'max-width:calc(100vw - 32px);text-align:center;' +
           'background:rgba(28,17,8,.94);color:#FAF5EC;' +
@@ -6847,7 +6849,13 @@ function miniRenderStart() {
   if (!miniState) return;
   const ov = document.getElementById('mini-start');
   const tgt = document.getElementById('mini-start-target');
-  if (tgt) tgt.textContent = 'Objetivo de hoy · ≤ ' + miniFmt(miniRetoForDate(miniState.iso));
+  if (tgt) {
+    tgt.textContent = 'Objetivo de hoy · ';
+    const tm = document.createElement('span');
+    tm.className = 'mini-start-target-time';
+    tm.textContent = '≤ ' + miniFmt(miniRetoForDate(miniState.iso));
+    tgt.appendChild(tm);
+  }
   if (ov) ov.hidden = miniState.started || miniState.done;
 }
 function miniBegin() {
