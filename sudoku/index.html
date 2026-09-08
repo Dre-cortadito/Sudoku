@@ -984,6 +984,11 @@
     transform: translateX(-50%);
     background: var(--rank-goal-track);
   }
+  /* Ruling C (2026-09-07) split the two parts: on a settled reto the chevron can
+     stay while the hairline goes. The stem exists only to bridge the apex to that
+     hairline across the capsule border — with no hairline to reach it is a stub
+     pointing at nothing, so it goes whenever the hairline does. */
+  .rank-goal-chev.no-stem::after { display: none; }
   .rank-goal-chev.is-achieved { opacity: 0; }
   .rank-goal-chev[hidden] { display: none; }
 
@@ -4610,6 +4615,8 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
        both go: there is nothing left to point at. */
     goalEl.classList.toggle('is-achieved', gone);
     chevEl.classList.toggle('is-achieved', !chevronOn());
+    /* the stem tracks the HAIRLINE, not the chevron: it is the bridge between them */
+    chevEl.classList.toggle('no-stem', gone);
     /* position and over-fill colour are pixel work — place() owns both */
 
     if (label) {
