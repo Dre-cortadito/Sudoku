@@ -1309,6 +1309,43 @@
   }
   body[data-theme="black"] .modal-overlay { background: rgba(0, 0, 0, 0.78); }
   .modal-overlay.open { display: flex; }
+
+  /* ===== Result spotlight — the settled bar gets a lit moment =====
+     Same geometry, colour and theme handling as .modal-overlay, one layer
+     below it, so the handoff to the modal is a CONTENT change, not a layer
+     flash. The two scrims are NEVER stacked (0.55 over 0.55 computes to ~0.80):
+     hideSpotlight() always runs before openModal(), in the same task, so the
+     browser never paints between them. */
+  #result-spotlight {
+    display: none;
+    position: fixed;
+    top: 56px; left: 0; right: 0; bottom: 0;
+    background: rgba(20, 18, 14, 0.55);
+    z-index: 1450;
+    pointer-events: none;   /* never intercepts a tap; the board is already input-locked */
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  @media (min-width: 880px) { #result-spotlight { top: 0; } }
+  body[data-theme="black"] #result-spotlight { background: rgba(0, 0, 0, 0.78); }
+  #result-spotlight.on { display: block; opacity: 1; }
+  /* The lit subject. .rank-bar is ALREADY position:relative and no ancestor
+     opens a stacking context (.page/.mini-page are position:relative with
+     z-index:auto), so this is a z-index bump and nothing else — no DOM change.
+     .rank-bar's own background is transparent, so it needs an opaque plate or
+     the scrim shows through between label, capsule and chevron; the box-shadow
+     spread paints that plate OUTSIDE the box, leaving layout untouched.
+     Desktop asides stay dimmed (ruled 2026-09-08). */
+  body.spotlight .rank-bar,
+  body.spotlight .mini-rank-bar {
+    z-index: 1460;
+    background: var(--bg);
+    box-shadow: 0 0 0 10px var(--bg);
+    border-radius: 12px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #result-spotlight { transition: none; }
+  }
   /* Short modals (e.g. the "fill the board" prompt) sit vertically centered
      instead of top-aligned. */
   .modal-overlay.center-modal { align-items: center; }
@@ -3009,6 +3046,7 @@
 <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
 
 <!-- ============ MODALS ============ -->
+<div id="result-spotlight" aria-hidden="true"></div>
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="archive-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
@@ -4816,6 +4854,22 @@ function renderRankBar() {
    reveal ('pending') and settles on the final frame. Reduced motion renders the
    final state immediately — no fill, tick or count animation at all. */
 const _reveal = { active: false, raf: 0 };
+/* Settle dwell: once the bar reaches its final state the marker settles
+   (chevron hides, green over-target segment appears — Rulings C'/D). Hold
+   that on screen before any result modal covers it. Same value all modes. */
+const SETTLE_MS = 900;
+/* The spotlight is raised for the dwell and always lowered before anything
+   covers it. Idempotent class toggles, so a duplicate call is harmless. */
+function showSpotlight() {
+  const el = document.getElementById('result-spotlight');
+  document.body.classList.add('spotlight');
+  if (el) el.classList.add('on');
+}
+function hideSpotlight() {
+  const el = document.getElementById('result-spotlight');
+  if (el) el.classList.remove('on');
+  document.body.classList.remove('spotlight');
+}
 function rankIndexFor(s) {
   let r = 0;
   for (let i = 0; i < RANK_THRESHOLDS.length; i++) if (s >= RANK_THRESHOLDS[i]) r = i;
@@ -4831,7 +4885,18 @@ function revealResult(finalSc, done) {
     if (fillEl) fillEl.classList.remove('revealing');
     renderRankBar();   /* the full completed render: final label, aria, settled marker */
     renderDesktopPanels();   /* desktop score + ladder reveal with the bar */
-    if (done) done();
+    /* the settled bar gets its dwell, lit above the spotlight scrim, before
+       the celebration covers it. Show is gated on `done` so no path can raise
+       the scrim without a scheduled lowering; hide runs FIRST inside the
+       callback so the early return clears it too. */
+    if (done) {
+      showSpotlight();
+      setTimeout(() => {
+        hideSpotlight();
+        if (!document.body.classList.contains('game-active')) return;
+        done();
+      }, SETTLE_MS);
+    }
   }
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
   _reveal.active = true;
@@ -5630,6 +5695,7 @@ function syncTriggers() {
   });
 }
 function closeModal() {
+  hideSpotlight();   /* safety net: no dismissal path may leave the scrim up */
   overlay.classList.remove('open');
   openModalId = null;
   syncTriggers();
@@ -6940,7 +7006,16 @@ function miniCheckDone() {
   const _gm = document.querySelector('#goal-modal .goal-brand-mark');
   const _mm = document.getElementById('mini-done-mark');
   if (_gm && _mm) setMiniCup(_mm, _gm.getAttribute('src'));
-  openModal('mini-done-modal'); launchConfetti(miniRankIndexForTime(miniState.elapsed||0) === 9 ? 120 : 85);
+  /* Same dwell the 9x9 reveal uses. Re-check state on the way out: the player
+     can reach the landing via goHome() while the pause is running. */
+  showSpotlight();
+  setTimeout(() => {
+    hideSpotlight();   /* first, so both early returns below clear it too */
+    if (!miniState || !miniState.done) return;
+    if (!document.body.classList.contains('mini-active')) return;
+    openModal('mini-done-modal');
+    launchConfetti(miniRankIndexForTime(miniState.elapsed||0) === 9 ? 120 : 85);
+  }, SETTLE_MS);
 }
 // Recolour the terracota Cortadito cup to Mini's accent for the finish prompt.
 // The art is a flat single-colour silhouette, so a `source-in` fill keeps the
@@ -7067,6 +7142,7 @@ window.syncInertPages = syncInertPages;   // the tutorial block is a separate sc
 function goHome() {
   closeModal();        // close any open modal (Reglas, Rangos, Ajustes…) and
   closeDropdowns();    // dropdowns, so they don't linger over the landing/game
+  hideSpotlight();     // and never carry a result scrim onto the landing
   dailyTimerStop(); saveProgress();
   miniStopTimer(); miniSave();
   document.body.classList.remove('game-active', 'mini-active', 'niebla-game');
