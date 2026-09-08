@@ -4512,6 +4512,13 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
      have to tell them apart, and a checkmark belongs to exactly one of them. */
   let st = { frac: 0, excessFrac: 0, goalFrac: null, retoState: 'pending', curIdx: 0,
              showsNumber: true, value: 0, negative: false, topIdx: 9, labelText: null };
+  /* The chevron persists after an ACHIEVED reto only while there is a green
+     over-target segment for it to point at. Same 0.001 test that decides
+     whether .rank-fill-excess is painted at all (see render), so the chevron
+     and the green can never disagree. Ruling C′, 2026-09-07. */
+  const chevronOn = () => st.goalFrac !== null &&
+    (st.retoState === 'pending' ||
+     (st.retoState === 'achieved' && st.excessFrac > 0.001));
 
   function build() {
     if (built) return;
@@ -4594,14 +4601,15 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     goalEl.hidden = (st.goalFrac === null);
     chevEl.hidden = (st.goalFrac === null);
     const gone = (st.goalFrac !== null && st.retoState !== 'pending');
-    /* Achieved WITH excess keeps the WHOLE marker — chevron, stem and the
-       interior hairline — as one continuous orange line from the chevron's tip
-       through the full height of the capsule, sitting exactly on the seam where
-       orange (points up to the target) meets green (points beyond it). Failed
-       keeps the old behaviour: everything hides, the ✕ semantics live elsewhere. */
-    const keepChev = st.retoState === 'achieved' && st.excessFrac > 0.001;
-    goalEl.classList.toggle('is-achieved', gone && !keepChev);
-    chevEl.classList.toggle('is-achieved', gone && !keepChev);
+    /* Ruling C (2026-09-07). The marker has two parts and they settle
+       differently. The HAIRLINE goes once the outcome is settled either way:
+       inside the capsule the accent/green boundary is already the record of
+       where the target was, and a line drawn on it says the same thing twice.
+       The CHEVRON stays after an ACHIEVED reto — above the capsule, on the page,
+       it is the only thing still pointing at where the target sat. On FAILED
+       both go: there is nothing left to point at. */
+    goalEl.classList.toggle('is-achieved', gone);
+    chevEl.classList.toggle('is-achieved', !chevronOn());
     /* position and over-fill colour are pixel work — place() owns both */
 
     if (label) {
@@ -4663,10 +4671,12 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
 
     /* no marker on screen => nothing may be hidden on its account, so any tick
        it was covering is restored automatically */
-    const markerVisible = st.goalFrac !== null &&
-      (st.retoState === 'pending' || (st.retoState === 'achieved' && st.excessFrac > 0.001));
-    const goalPx = markerVisible ? RANK_PAD + st.goalFrac * usable : null;
-    if (markerVisible && goalEl) {
+    /* The chevron must still be PLACED when it is still shown, so this gate
+       follows the chevron, not the hairline. */
+    const markerPlaced = chevronOn();
+    const hairlineOn   = markerPlaced && st.retoState === 'pending';
+    const goalPx = markerPlaced ? RANK_PAD + st.goalFrac * usable : null;
+    if (markerPlaced && goalEl) {
       goalEl.style.left = goalPx + 'px';
       /* chevron: same x, sitting just above the capsule so its point meets the
          top edge. offsetLeft/offsetTop are measured against .rank-bar, which is
@@ -4689,11 +4699,8 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
       }
       /* Over the empty track the line is --rank-goal-track; the moment the fill
          reaches or passes it, it switches to --rank-goal-fill. One test, because
-         the marker occupies a single x position. EXCEPTION: on the achieved seam
-         the line is the marker itself and wears the track orange — it sits on the
-         orange/green boundary, not over a covering fill. */
-      const onSeam = st.retoState === 'achieved' && st.excessFrac > 0.001;
-      goalEl.classList.toggle('over-fill', st.frac >= st.goalFrac && !onSeam);
+         the marker occupies a single x position. */
+      goalEl.classList.toggle('over-fill', st.frac >= st.goalFrac);
     }
 
     /* The only collision left on the bar is the marker over a milestone tick. The
@@ -4703,7 +4710,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
        none of that geometry exists. */
     for (let i = 0; i < ticks.length; i++) {
       const c = parseFloat(ticks[i].style.left) || 0;
-      const hide = goalPx !== null && Math.abs(c - goalPx) < RANK_TICK_GAP;
+      const hide = hairlineOn && Math.abs(c - goalPx) < RANK_TICK_GAP;
       ticks[i].classList.toggle('under-goal', hide);
     }
   }
@@ -6843,9 +6850,17 @@ function miniRenderRankBar(force) {
     return;
   }
   const curIdx = miniRankIndexForTime(elapsed);
+  /* Mini uses the estate rule: the portion of the bar beyond the day's target
+     is green, exactly as in Clásico and Niebla. rankFractionForTime() falls as
+     the clock rises, so a time under the target always maps above goalFrac —
+     the same directional guarantee `sc >= state.reto` gives the 9×9 modes. Both
+     sides come from miniRetoForDate(), so this follows the daily target
+     wherever it moves. Ruling D, 2026-09-07. */
+  const frac   = rankFractionForTime(elapsed, MINI_CUTOFF_SECS);
+  const excess = (retoState === 'achieved') ? Math.max(0, frac - goalFrac) : 0;
   _miniBar.render({
     topIdx: topIdx,
-    frac: rankFractionForTime(elapsed, MINI_CUTOFF_SECS), excessFrac: 0,
+    frac: frac, excessFrac: excess,
     goalFrac: goalFrac,
     retoState: retoState,
     curIdx: curIdx, labelText: null,
