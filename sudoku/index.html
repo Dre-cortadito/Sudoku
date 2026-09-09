@@ -333,17 +333,22 @@
      is dismissed, not when the scrim hands over, or the header would flash
      bright at exactly the moment the modal lands. */
   @media (max-width: 879px) {
-    .page-header::after {
-      content: ''; position: absolute; inset: 0;
+    /* ::before, NOT ::after: .page-header::after is already the desktop
+       full-bleed divider (min-width:1024px). They do not overlap today, but that
+       is an accident of the breakpoints — this keeps the two off each other.
+       bottom:-1px reaches past the padding box to cover the header's own
+       border-bottom, which an inset:0 scrim leaves bright. */
+    .page-header::before {
+      content: ''; position: absolute; left: 0; right: 0; top: 0; bottom: -1px;
       background: rgba(20, 18, 14, 0.55);
       opacity: 0; pointer-events: none;
       transition: opacity 0.35s ease;
     }
-    body[data-theme="black"] .page-header::after { background: rgba(0, 0, 0, 0.78); }
-    body.result-stage .page-header::after { opacity: 1; }
+    body[data-theme="black"] .page-header::before { background: rgba(0, 0, 0, 0.78); }
+    body.result-stage .page-header::before { opacity: 1; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .page-header::after { transition: none; }
+    .page-header::before { transition: none; }
   }
   .title-block { display: flex; align-items: center; gap: 10px; }
   /* Date shown in the header only on desktop (unified top bar); hidden on mobile. */
@@ -888,24 +893,29 @@
   #mini-rank-bar.mini-approach .rank-goal.is-achieved { opacity: 1; }
   #mini-rank-bar.mini-approach .rank-goal.over-fill { background: var(--rank-goal-track); }
   #mini-rank-bar.mini-approach .rank-goal-chev.no-stem::after { display: block; }
-  /* Mini: the fill's right edge follows the CAPSULE, not the animation state.
-     place() stops a full fill RANK_PAD short of the track's inner edge, so the
-     track's overflow clip never reaches it and the rounding has to be explicit.
-     Vertical by default; rounded only on the element that actually reaches the
-     far cap, which .brimming (st.frac >= 1) already identifies. A mid-track fill
-     therefore RESTS flat and nothing changes shape when the animation ends —
-     that jump was the clunk. :not(.meets-excess) keeps the accent fill square
-     where it MEETS the green: without it this id selector would outrank
-     .rank-fill.meets-excess and round the seam. */
-  #mini-rank-fill { border-radius: 999px 0 0 999px; }
-  #mini-rank-fill.brimming:not(.meets-excess) { border-radius: 999px; }
+  /* Mini: the SHAPE is geometry, not animation state. The visible capsule
+     outline is .rank-track-frame — a SIBLING of the track, appended to the bar —
+     and the track's own border is transparent under .rank-framed, so clipping
+     the track removes nothing visible. 3.5px = the 1.5px border + RANK_PAD,
+     landing the clip exactly on the fill's inset region (a 15px capsule, r=7.5).
+     The fill and the excess therefore carry NO radius of their own at any width
+     and are rounded by the capsule only where they actually meet it: a mid-track
+     front stays vertical, green begins vertical at the seam, and a full bar fills
+     smoothly INTO the cap instead of snapping into a radius. This retires the
+     .brimming / .meets-excess / .is-travelling radius rules entirely — there is
+     nothing left to time. The hairline is a track child and is trimmed to the
+     fill band by the same clip, which is the intent (ruled 2026-09-09): it should
+     match the fill area, not overhang it. */
+  #mini-rank-track {
+    -webkit-clip-path: inset(3.5px round 999px);
+            clip-path: inset(3.5px round 999px);
+  }
+  #mini-rank-fill,
   #mini-rank-track .rank-fill-excess { border-radius: 0; }
-  #mini-rank-fill.brimming + .rank-fill-excess { border-radius: 0 999px 999px 0; }
-  /* While an edge is still in flight it is mid-track BY DEFINITION, whatever the
-     final fraction says. Removed on arrival, when the geometry rules take over. */
-  #mini-rank-fill.is-travelling,
-  #mini-rank-fill.is-travelling.brimming,
-  #mini-rank-track .rank-fill-excess.is-travelling { border-radius: 999px 0 0 999px; }
+  /* A tick flips when the FRONT passes it, not when the result is computed.
+     .rank-tick carries only an opacity transition, so the colour had nothing to
+     animate; miniRevealBar() supplies the per-tick delay. */
+  #mini-rank-track .rank-tick { transition: opacity 0.18s ease, background-color 0.12s linear; }
   /* When the excess continues past the seam the accent fill must END SQUARE —
      one capsule, orange meeting green under the chevron, not an orange pill
      sitting beside a green one. */
@@ -4920,6 +4930,7 @@ const _reveal = { active: false, raf: 0 };
 const SPOT_FADE_MS = 350;   /* must match #result-spotlight's opacity duration */
 const SETTLE_MS = 900;      /* hold AFTER the bar has finished settling */
 const MINI_FILL_MS = 1000;  /* Mini's completion fill, split by distance in miniRevealBar() */
+const MARKER_HOLD_MS = 120; /* the front REACHES the line, then the marker resolves */
 /* The spotlight is raised for the dwell and always lowered before anything
    covers it. Idempotent class toggles, so a duplicate call is harmless. */
 function showSpotlight() {
@@ -7070,35 +7081,62 @@ function miniRevealBar() {
   const tB = MINI_FILL_MS - tA;
 
   bar.classList.add('mini-approach');
-  fill.classList.add('is-travelling');
 
   /* leg A linear: constant speed up to the threshold. leg B ease-out: the fill
      eases to rest at the far end, so the pair reads as one motion, not two. */
   fill.style.transition = 'width ' + tA + 'ms linear';
   if (ex) ex.style.transition = 'width ' + tB + 'ms ease-out ' + tA + 'ms';
 
+  /* Each milestone flips when the FRONT passes it. render() set .passed from the
+     FINAL rank, so every tick the run will reach is already white before anything
+     moves; rewind those to grey and give each one the delay at which the front
+     arrives. A tick at L is reached when the fill's width is L - RANK_PAD, which
+     falls in leg A or leg B by the same distance split the legs use. Ticks the run
+     never reaches are not .passed at all and are left exactly as they are. */
+  const revealTicks = [];
+  track.querySelectorAll('.rank-tick').forEach(t => {
+    if (!t.classList.contains('passed')) return;
+    const d  = (parseFloat(t.style.left) || 0) - RANK_PAD;
+    const ms = (d <= wFill)
+      ? (wFill > 0 ? tA * (d / wFill) : 0)
+      : (wEx > 0 ? tA + tB * ((d - wFill) / wEx) : tA);
+    /* The rewind to grey must LAND, not animate: with the transition live it
+       would start fading toward grey and the re-add below would find the tick
+       still white, so nothing would ever visibly flip. Suppress the transition
+       for the rewind; the shared reflow commits grey as the start value. */
+    t.style.transition = 'none';
+    t.classList.remove('passed');
+    t.dataset.revealMs = String(Math.max(0, Math.round(ms)));
+    revealTicks.push(t);
+  });
+
   fill.style.width = '0px';
   if (ex) ex.style.width = '0px';   /* LEFT deliberately untouched: already the seam */
-  void fill.offsetWidth;            /* commit the zero as the transition's start */
+  void fill.offsetWidth;            /* one reflow commits the widths AND the grey ticks */
   fill.style.width = wFill + 'px';
   if (ex) ex.style.width = wEx + 'px';
+  revealTicks.forEach(t => {
+    t.style.transition = '';        /* back to the sheet's opacity + background rule */
+    t.style.transitionDelay = '0s, ' + t.dataset.revealMs + 'ms';
+    t.classList.add('passed');
+  });
 
-  /* The crossing: the marker settles — the 0.18s opacity transitions on
-     .rank-goal / .rank-goal-chev carry it — and the travelling front hands over
-     to the green. */
-  setTimeout(() => {
-    bar.classList.remove('mini-approach');
-    fill.classList.remove('is-travelling');
-    if (ex && wEx > 0) ex.classList.add('is-travelling');
-  }, tA);
+  /* The crossing, plus a beat: the front reaches the line, THEN the marker
+     resolves — the 0.18s opacity transitions on .rank-goal / .rank-goal-chev
+     carry it. Green still begins at tA; only the settle waits. */
+  setTimeout(() => { bar.classList.remove('mini-approach'); }, tA + MARKER_HOLD_MS);
 
   /* Arrival: drop every reveal-only style, so later renders and resizes behave
-     exactly as they did before the reveal. Unconditional and idempotent. */
+     exactly as they did before the reveal. Every tick delay has already fired by
+     now (the last reachable one lands at MINI_FILL_MS). Unconditional and
+     idempotent. */
   setTimeout(() => {
-    fill.classList.remove('is-travelling');
-    if (ex) ex.classList.remove('is-travelling');
     fill.style.transition = '';
     if (ex) ex.style.transition = '';
+    revealTicks.forEach(t => {
+      t.style.transition = ''; t.style.transitionDelay = '';
+      delete t.dataset.revealMs; t.classList.add('passed');
+    });
   }, MINI_FILL_MS + 60);
 }
 function miniCheckDone() {
