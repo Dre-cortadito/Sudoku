@@ -4617,21 +4617,22 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
   let built = false, ticks = [], tickIdx = [], goalEl = null, chevEl = null, exEl = null,
       frameEl = null, ro = null;
   /* retoState is the DAY'S CHALLENGE, in three values, not two:
-       'pending'  — still unresolved and still reachable  -> marker SHOWN
-       'achieved' — finished, and the target was met      -> marker hidden
-       'failed'   — the target can no longer be reached   -> marker hidden
-     'achieved' and 'failed' both hide the marker, but they are NOT the same
-     thing and must not be collapsed: the accessible name and the Rangos panel
-     have to tell them apart, and a checkmark belongs to exactly one of them. */
+       'pending'  — still unresolved and still reachable  -> chevron + hairline
+       'achieved' — finished, and the target was met      -> chevron only
+       'failed'   — the target can no longer be reached   -> chevron + hairline
+     Only 'achieved' settles the hairline. 'achieved' and 'failed' are still NOT
+     the same thing and must not be collapsed: the accessible name and the Rangos
+     panel have to tell them apart, and a checkmark belongs to exactly one. */
   let st = { frac: 0, excessFrac: 0, goalFrac: null, retoState: 'pending', curIdx: 0,
              showsNumber: true, value: 0, negative: false, topIdx: 9, labelText: null };
-  /* The chevron persists after an ACHIEVED reto only while there is a green
-     over-target segment for it to point at. Same 0.001 test that decides
-     whether .rank-fill-excess is painted at all (see render), so the chevron
-     and the green can never disagree. Ruling C′, 2026-09-07. */
-  const chevronOn = () => st.goalFrac !== null &&
-    (st.retoState === 'pending' ||
-     (st.retoState === 'achieved' && st.excessFrac > 0.001));
+  /* THE CHEVRON IS THE PERSISTENT RETO MARKER. If the day has a target, the
+     chevron points at it — in play, missed, hit exactly, or passed with green.
+     It is never removed because a result settled. Ruling 2026-09-09, which
+     supersedes Ruling C (both parts go on failed), Ruling C′ (chevron only
+     while green is visible) and Ruling D's boundary case (a) (no chevron on an
+     achieved run with no green). The hairline, not the chevron, is the stateful
+     half — see `gone` in render(). */
+  const chevronOn = () => st.goalFrac !== null;
 
   function build() {
     if (built) return;
@@ -4704,23 +4705,24 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
       ticks[i].classList.toggle('passed', tickIdx[i] <= st.curIdx);
     }
 
-    /* The marker points at a target you can still reach. It shows while the reto
-       is PENDING and goes the moment the outcome is settled either way — driven
-       by the caller's own state, never by the fill crossing its position. In a
-       mode that COUNTS DOWN from the maximum (Clásico, Niebla) the fill starts
-       past the marker and the two never coincide, which is why the old
-       score >= reto test hid the marker for the whole game and then showed it
-       once the challenge was already lost. */
+    /* Marker visibility is driven by the caller's own state, never by the fill
+       crossing its position. In a mode that COUNTS DOWN from the maximum
+       (Clásico, Niebla) the fill starts past the marker and the two never
+       coincide, which is why the old score >= reto test hid the marker for the
+       whole game and then showed it once the challenge was already lost. */
     goalEl.hidden = (st.goalFrac === null);
     chevEl.hidden = (st.goalFrac === null);
-    const gone = (st.goalFrac !== null && st.retoState !== 'pending');
-    /* Ruling C (2026-09-07). The marker has two parts and they settle
-       differently. The HAIRLINE goes once the outcome is settled either way:
-       inside the capsule the accent/green boundary is already the record of
-       where the target was, and a line drawn on it says the same thing twice.
-       The CHEVRON stays after an ACHIEVED reto — above the capsule, on the page,
-       it is the only thing still pointing at where the target sat. On FAILED
-       both go: there is nothing left to point at. */
+    const gone = (st.goalFrac !== null && st.retoState === 'achieved');
+    /* Ruling 2026-09-09. Each half of the marker now answers ONE question.
+       The CHEVRON: does a target exist? Always yes when goalFrac is set, so it
+       never leaves — see chevronOn().
+       The HAIRLINE (and its stem): is the target still unmet? It stays through
+       play and through a MISSED reto, where the gap between where the fill
+       stopped and where the line sits IS the result. It goes only once the reto
+       is MET, green or exact: inside the capsule the fill's own edge already
+       records where the target was, and at an exact hit that edge lands on the
+       line — drawing both puts a 2px hairline on a boundary, the same half-pixel
+       geometry that produced the Safari stem stub. */
     goalEl.classList.toggle('is-achieved', gone);
     chevEl.classList.toggle('is-achieved', !chevronOn());
     /* the stem tracks the HAIRLINE, not the chevron: it is the bridge between them */
@@ -4789,7 +4791,9 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     /* The chevron must still be PLACED when it is still shown, so this gate
        follows the chevron, not the hairline. */
     const markerPlaced = chevronOn();
-    const hairlineOn   = markerPlaced && st.retoState === 'pending';
+    /* a hairline that is on screen still clears the ticks underneath it, and it
+       is now on screen for a MISSED reto too — not only while pending */
+    const hairlineOn   = markerPlaced && st.retoState !== 'achieved';
     const goalPx = markerPlaced ? RANK_PAD + st.goalFrac * usable : null;
     if (markerPlaced && goalEl) {
       goalEl.style.left = goalPx + 'px';
