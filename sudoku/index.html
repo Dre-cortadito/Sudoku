@@ -850,6 +850,11 @@
     pointer-events: none;
   }
   .rank-fill-excess.empty { display: none; }
+  /* MINI ONLY. The excess has no transition of its own, so on Mini's result
+     reveal it would snap into place while the accent fill grew beside it.
+     Scoped to Mini's track: Clasico/Niebla drive this element from
+     revealResult()'s rAF at 60fps, and a 300ms transition would trail it. */
+  #mini-rank-track .rank-fill-excess { transition: width 0.3s ease, left 0.3s ease; }
   /* When the excess continues past the seam the accent fill must END SQUARE —
      one capsule, orange meeting green under the chevron, not an orange pill
      sitting beside a green one. */
@@ -1316,19 +1321,23 @@
      flash. The two scrims are NEVER stacked (0.55 over 0.55 computes to ~0.80):
      hideSpotlight() always runs before openModal(), in the same task, so the
      browser never paints between them. */
+  /* NO `display` on this element, ever. A transition cannot run when an element
+     leaves display:none in the same style recalculation — there is no start
+     value — which is why the 0.25s fade never played. It stays in the DOM at
+     opacity 0, pointer-events:none and aria-hidden, so it is inert until .on
+     raises it. This duration must match SPOT_FADE_MS. */
   #result-spotlight {
-    display: none;
     position: fixed;
     top: 56px; left: 0; right: 0; bottom: 0;
     background: rgba(20, 18, 14, 0.55);
     z-index: 1450;
     pointer-events: none;   /* never intercepts a tap; the board is already input-locked */
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.35s ease;
   }
   @media (min-width: 880px) { #result-spotlight { top: 0; } }
   body[data-theme="black"] #result-spotlight { background: rgba(0, 0, 0, 0.78); }
-  #result-spotlight.on { display: block; opacity: 1; }
+  #result-spotlight.on { opacity: 1; }
   /* The lit subject. .rank-bar is ALREADY position:relative and no ancestor
      opens a stacking context (.page/.mini-page are position:relative with
      z-index:auto), so this is a z-index bump and nothing else — no DOM change.
@@ -4857,7 +4866,8 @@ const _reveal = { active: false, raf: 0 };
 /* Settle dwell: once the bar reaches its final state the marker settles
    (chevron hides, green over-target segment appears — Rulings C'/D). Hold
    that on screen before any result modal covers it. Same value all modes. */
-const SETTLE_MS = 900;
+const SPOT_FADE_MS = 350;   /* must match #result-spotlight's opacity duration */
+const SETTLE_MS = 900;      /* hold AFTER the bar has finished settling */
 /* The spotlight is raised for the dwell and always lowered before anything
    covers it. Idempotent class toggles, so a duplicate call is harmless. */
 function showSpotlight() {
@@ -4880,17 +4890,19 @@ function revealResult(finalSc, done) {
   const goalFrac = rankFractionIn(state.reto, ladder);
   const achieved = finalSc >= state.reto;
   const fillEl = document.getElementById('rank-fill');
+  /* The dim rises WITH the fill, not after it, so the bar is the lit subject for
+     the whole reveal. Gated on `done` so a raise always has a matching lowering
+     scheduled in finish(). */
+  if (done) showSpotlight();
   function finish() {
     _reveal.active = false;
     if (fillEl) fillEl.classList.remove('revealing');
     renderRankBar();   /* the full completed render: final label, aria, settled marker */
     renderDesktopPanels();   /* desktop score + ladder reveal with the bar */
-    /* the settled bar gets its dwell, lit above the spotlight scrim, before
-       the celebration covers it. Show is gated on `done` so no path can raise
-       the scrim without a scheduled lowering; hide runs FIRST inside the
-       callback so the early return clears it too. */
+    /* The scrim went up at the top of revealResult(); this is the hold that
+       follows the settle. Gated on `done` there, so every raise has this
+       lowering scheduled; hide runs FIRST below so the early return clears it. */
     if (done) {
-      showSpotlight();
       setTimeout(() => {
         hideSpotlight();
         if (!document.body.classList.contains('game-active')) return;
@@ -6966,6 +6978,26 @@ function miniBegin() {
   miniSave();
   miniStartTimer();
 }
+/* Mini has no reveal loop: miniRenderRankBar() paints the final width in one
+   pass, and .rank-fill.empty (display:none) leaves the CSS width transition with
+   no start value to run from. Rewind to a VISIBLE zero, force a reflow so that
+   becomes the start, then restore exactly what place() computed — the existing
+   .rank-fill 0.3s ease does the rest. Called ONLY from miniCheckDone(): the
+   live and pre-start renders keep frac 0 and never reach it. */
+function miniPrimeFillAnimation() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const fill  = document.getElementById('mini-rank-fill');
+  const track = document.getElementById('mini-rank-track');
+  if (!fill || !track || fill.classList.contains('empty')) return;
+  const ex = track.querySelector('.rank-fill-excess');
+  const wFill = fill.style.width;
+  const wEx = ex ? ex.style.width : null, lEx = ex ? ex.style.left : null;
+  fill.style.width = '0px';
+  if (ex) { ex.style.left = '2px'; ex.style.width = '0px'; }
+  void fill.offsetWidth;            /* commit the zero as the transition's start */
+  fill.style.width = wFill;
+  if (ex) { ex.style.left = lEx; ex.style.width = wEx; }
+}
 function miniCheckDone() {
   if (!miniState) return;
   for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++)
@@ -7009,13 +7041,14 @@ function miniCheckDone() {
   /* Same dwell the 9x9 reveal uses. Re-check state on the way out: the player
      can reach the landing via goHome() while the pause is running. */
   showSpotlight();
+  miniPrimeFillAnimation();   /* fade and fill start on the same paint */
   setTimeout(() => {
     hideSpotlight();   /* first, so both early returns below clear it too */
     if (!miniState || !miniState.done) return;
     if (!document.body.classList.contains('mini-active')) return;
     openModal('mini-done-modal');
     launchConfetti(miniRankIndexForTime(miniState.elapsed||0) === 9 ? 120 : 85);
-  }, SETTLE_MS);
+  }, SPOT_FADE_MS + SETTLE_MS);
 }
 // Recolour the terracota Cortadito cup to Mini's accent for the finish prompt.
 // The art is a flat single-colour silhouette, so a `source-in` fill keeps the
