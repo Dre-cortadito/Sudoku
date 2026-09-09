@@ -855,14 +855,22 @@
      Scoped to Mini's track: Clasico/Niebla drive this element from
      revealResult()'s rAF at 60fps, and a 300ms transition would trail it. */
   #mini-rank-track .rank-fill-excess { transition: width 0.3s ease, left 0.3s ease; }
-  /* Mini's RESULT reveal only. miniPrimeFillAnimation() adds this class for the
-     length of the fill and removes it after, so nothing outside the reveal — a
-     resize, a rotation — inherits a one-second width animation. The shared
-     .rank-fill rule and Clasico/Niebla are untouched. Must match MINI_FILL_MS.
-     ease-out, not ease: over a full second the bar should read as ARRIVING and
-     settling, the same shape revealResult()'s ease-out cubic gives the 9x9. */
-  #mini-rank-fill.mini-revealing { transition: width 1s ease-out; }
-  #mini-rank-track .rank-fill-excess.mini-revealing { transition: width 1s ease-out, left 1s ease-out; }
+  /* ===== Mini result reveal: ONE fill crossing a threshold =====
+     Durations are set INLINE by miniRevealBar(), so MINI_FILL_MS is the only
+     source of truth and no number here can drift out of step with it.
+     While the fill is still approaching its target the marker keeps its PENDING
+     presentation — hairline and stem visible, hairline in its not-yet-reached
+     colour. These rules SUSPEND the settled classes for the approach only;
+     dropping .mini-approach hands the marker straight back to whatever render()
+     decided under Rulings C'/D. Nothing here restates that ruling. */
+  #mini-rank-bar.mini-approach .rank-goal.is-achieved { opacity: 1; }
+  #mini-rank-bar.mini-approach .rank-goal.over-fill { background: var(--rank-goal-track); }
+  #mini-rank-bar.mini-approach .rank-goal-chev.no-stem::after { display: block; }
+  /* A MOVING front is vertical; it takes its resting radius only on arrival.
+     On an achieved run .meets-excess already squares the accent fill, so this
+     is what fixes the FAILED run, where the nose would otherwise travel round. */
+  #mini-rank-fill.is-travelling { border-radius: 999px 0 0 999px; }
+  #mini-rank-track .rank-fill-excess.is-travelling { border-radius: 0; }
   /* When the excess continues past the seam the accent fill must END SQUARE —
      one capsule, orange meeting green under the chevron, not an orange pill
      sitting beside a green one. */
@@ -4876,7 +4884,7 @@ const _reveal = { active: false, raf: 0 };
    that on screen before any result modal covers it. Same value all modes. */
 const SPOT_FADE_MS = 350;   /* must match #result-spotlight's opacity duration */
 const SETTLE_MS = 900;      /* hold AFTER the bar has finished settling */
-const MINI_FILL_MS = 1000;  /* Mini's completion fill; must match .mini-revealing */
+const MINI_FILL_MS = 1000;  /* Mini's completion fill, split by distance in miniRevealBar() */
 /* The spotlight is raised for the dwell and always lowered before anything
    covers it. Idempotent class toggles, so a duplicate call is harmless. */
 function showSpotlight() {
@@ -6987,31 +6995,68 @@ function miniBegin() {
   miniSave();
   miniStartTimer();
 }
-/* Mini has no reveal loop: miniRenderRankBar() paints the final width in one
-   pass, and .rank-fill.empty (display:none) leaves the CSS width transition with
-   no start value to run from. Rewind to a VISIBLE zero, force a reflow so that
-   becomes the start, then restore exactly what place() computed — the existing
-   .rank-fill 0.3s ease does the rest. Called ONLY from miniCheckDone(): the
-   live and pre-start renders keep frac 0 and never reach it. */
-function miniPrimeFillAnimation() {
+/* ONE fill crossing a threshold, not two bars moving at once.
+   miniRenderRankBar() paints the FINAL geometry in a single pass, and
+   .rank-fill.empty (display:none) leaves the width transition with no start
+   value; so rewind to a visible zero, commit it, and restore exactly what
+   place() computed. Two things make it read as one liquid front:
+     - the green segment's LEFT is never touched. place() sets it to the seam,
+       and orangeFrac === frac - excessFrac === goalFrac for Mini, so the seam
+       IS the reto boundary. Green starts there by construction, not by timing.
+     - the one second is split by DISTANCE, so the front holds a constant speed
+       across the threshold instead of restarting at it. Green's growth carries
+       a transition-delay of the first leg, so it cannot appear early.
+   Called ONLY from miniCheckDone(): the live and pre-start renders keep frac 0
+   and never reach it. */
+function miniRevealBar() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const bar   = document.getElementById('mini-rank-bar');
   const fill  = document.getElementById('mini-rank-fill');
   const track = document.getElementById('mini-rank-track');
-  if (!fill || !track || fill.classList.contains('empty')) return;
+  if (!bar || !fill || !track || fill.classList.contains('empty')) return;
   const ex = track.querySelector('.rank-fill-excess');
-  const wFill = fill.style.width;
-  const wEx = ex ? ex.style.width : null, lEx = ex ? ex.style.left : null;
-  fill.classList.add('mini-revealing');
-  if (ex) ex.classList.add('mini-revealing');
+  const wFill = parseFloat(fill.style.width) || 0;
+  const wEx   = ex ? (parseFloat(ex.style.width) || 0) : 0;
+  const total = wFill + wEx;
+  if (!(total > 0)) return;
+
+  /* wFill IS the distance to the reto (see above), so this lands the crossing
+     exactly when the front reaches the marker. A failed run has wEx 0: tA is
+     the whole second, no green ever grows, and the marker settles at arrival —
+     same code path, no branch. */
+  const tA = Math.round(MINI_FILL_MS * (wFill / total));
+  const tB = MINI_FILL_MS - tA;
+
+  bar.classList.add('mini-approach');
+  fill.classList.add('is-travelling');
+
+  /* leg A linear: constant speed up to the threshold. leg B ease-out: the fill
+     eases to rest at the far end, so the pair reads as one motion, not two. */
+  fill.style.transition = 'width ' + tA + 'ms linear';
+  if (ex) ex.style.transition = 'width ' + tB + 'ms ease-out ' + tA + 'ms';
+
   fill.style.width = '0px';
-  if (ex) { ex.style.left = '2px'; ex.style.width = '0px'; }
+  if (ex) ex.style.width = '0px';   /* LEFT deliberately untouched: already the seam */
   void fill.offsetWidth;            /* commit the zero as the transition's start */
-  fill.style.width = wFill;
-  if (ex) { ex.style.left = lEx; ex.style.width = wEx; }
-  /* drop the reveal transition once it has run, so a later resize snaps as usual */
+  fill.style.width = wFill + 'px';
+  if (ex) ex.style.width = wEx + 'px';
+
+  /* The crossing: the marker settles — the 0.18s opacity transitions on
+     .rank-goal / .rank-goal-chev carry it — and the travelling front hands over
+     to the green. */
   setTimeout(() => {
-    fill.classList.remove('mini-revealing');
-    if (ex) ex.classList.remove('mini-revealing');
+    bar.classList.remove('mini-approach');
+    fill.classList.remove('is-travelling');
+    if (ex && wEx > 0) ex.classList.add('is-travelling');
+  }, tA);
+
+  /* Arrival: drop every reveal-only style, so later renders and resizes behave
+     exactly as they did before the reveal. Unconditional and idempotent. */
+  setTimeout(() => {
+    fill.classList.remove('is-travelling');
+    if (ex) ex.classList.remove('is-travelling');
+    fill.style.transition = '';
+    if (ex) ex.style.transition = '';
   }, MINI_FILL_MS + 60);
 }
 function miniCheckDone() {
@@ -7057,7 +7102,7 @@ function miniCheckDone() {
   /* Same dwell the 9x9 reveal uses. Re-check state on the way out: the player
      can reach the landing via goHome() while the pause is running. */
   showSpotlight();
-  miniPrimeFillAnimation();   /* fade and fill start on the same paint */
+  miniRevealBar();   /* fade and fill start on the same paint */
   setTimeout(() => {
     hideSpotlight();   /* first, so both early returns below clear it too */
     if (!miniState || !miniState.done) return;
