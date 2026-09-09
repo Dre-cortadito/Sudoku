@@ -855,6 +855,14 @@
      Scoped to Mini's track: Clasico/Niebla drive this element from
      revealResult()'s rAF at 60fps, and a 300ms transition would trail it. */
   #mini-rank-track .rank-fill-excess { transition: width 0.3s ease, left 0.3s ease; }
+  /* Mini's RESULT reveal only. miniPrimeFillAnimation() adds this class for the
+     length of the fill and removes it after, so nothing outside the reveal — a
+     resize, a rotation — inherits a one-second width animation. The shared
+     .rank-fill rule and Clasico/Niebla are untouched. Must match MINI_FILL_MS.
+     ease-out, not ease: over a full second the bar should read as ARRIVING and
+     settling, the same shape revealResult()'s ease-out cubic gives the 9x9. */
+  #mini-rank-fill.mini-revealing { transition: width 1s ease-out; }
+  #mini-rank-track .rank-fill-excess.mini-revealing { transition: width 1s ease-out, left 1s ease-out; }
   /* When the excess continues past the seam the accent fill must END SQUARE —
      one capsule, orange meeting green under the chevron, not an orange pill
      sitting beside a green one. */
@@ -4868,6 +4876,7 @@ const _reveal = { active: false, raf: 0 };
    that on screen before any result modal covers it. Same value all modes. */
 const SPOT_FADE_MS = 350;   /* must match #result-spotlight's opacity duration */
 const SETTLE_MS = 900;      /* hold AFTER the bar has finished settling */
+const MINI_FILL_MS = 1000;  /* Mini's completion fill; must match .mini-revealing */
 /* The spotlight is raised for the dwell and always lowered before anything
    covers it. Idempotent class toggles, so a duplicate call is harmless. */
 function showSpotlight() {
@@ -6992,11 +7001,18 @@ function miniPrimeFillAnimation() {
   const ex = track.querySelector('.rank-fill-excess');
   const wFill = fill.style.width;
   const wEx = ex ? ex.style.width : null, lEx = ex ? ex.style.left : null;
+  fill.classList.add('mini-revealing');
+  if (ex) ex.classList.add('mini-revealing');
   fill.style.width = '0px';
   if (ex) { ex.style.left = '2px'; ex.style.width = '0px'; }
   void fill.offsetWidth;            /* commit the zero as the transition's start */
   fill.style.width = wFill;
   if (ex) { ex.style.left = lEx; ex.style.width = wEx; }
+  /* drop the reveal transition once it has run, so a later resize snaps as usual */
+  setTimeout(() => {
+    fill.classList.remove('mini-revealing');
+    if (ex) ex.classList.remove('mini-revealing');
+  }, MINI_FILL_MS + 60);
 }
 function miniCheckDone() {
   if (!miniState) return;
@@ -7048,7 +7064,9 @@ function miniCheckDone() {
     if (!document.body.classList.contains('mini-active')) return;
     openModal('mini-done-modal');
     launchConfetti(miniRankIndexForTime(miniState.elapsed||0) === 9 ? 120 : 85);
-  }, SPOT_FADE_MS + SETTLE_MS);
+  /* Wait out the fill, then hold. Reduced motion runs no fill, so it waits the
+     hold alone — dwell kept, animation time skipped (ruled 2026-09-09). */
+  }, (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : MINI_FILL_MS) + SETTLE_MS);
 }
 // Recolour the terracota Cortadito cup to Mini's accent for the finish prompt.
 // The art is a flat single-colour silhouette, so a `source-in` fill keeps the
