@@ -323,33 +323,6 @@
   @media (min-width: 880px) {
     .page-header { position: static; padding: 8px 0 16px; height: auto; }
   }
-  /* Result stage: the header is the one thing the spotlight cannot reach. Below
-     880px it is FIXED at z-index 1700, above both the spotlight (1450) and the
-     modal scrim (1500); at 880px and up it is position:static, its z-index is
-     inert, and the spotlight already covers it — so no rule is needed there.
-     Rather than re-layer it (which would change every modal in the game) it
-     carries its own scrim in the same colour, so the two read as one dim.
-     .result-stage outlives .spotlight on purpose: it is lowered when the RESULT
-     is dismissed, not when the scrim hands over, or the header would flash
-     bright at exactly the moment the modal lands. */
-  @media (max-width: 879px) {
-    /* ::before, NOT ::after: .page-header::after is already the desktop
-       full-bleed divider (min-width:1024px). They do not overlap today, but that
-       is an accident of the breakpoints — this keeps the two off each other.
-       bottom:-1px reaches past the padding box to cover the header's own
-       border-bottom, which an inset:0 scrim leaves bright. */
-    .page-header::before {
-      content: ''; position: absolute; left: 0; right: 0; top: 0; bottom: -1px;
-      background: rgba(20, 18, 14, 0.55);
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.35s ease;
-    }
-    body[data-theme="black"] .page-header::before { background: rgba(0, 0, 0, 0.78); }
-    body.result-stage .page-header::before { opacity: 1; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .page-header::before { transition: none; }
-  }
   .title-block { display: flex; align-items: center; gap: 10px; }
   /* Date shown in the header only on desktop (unified top bar); hidden on mobile. */
   .header-date { display: none; }
@@ -1376,46 +1349,6 @@
   body[data-theme="black"] .modal-overlay { background: rgba(0, 0, 0, 0.78); }
   .modal-overlay.open { display: flex; }
 
-  /* ===== Result spotlight — the settled bar gets a lit moment =====
-     Same geometry, colour and theme handling as .modal-overlay, one layer
-     below it, so the handoff to the modal is a CONTENT change, not a layer
-     flash. The two scrims are NEVER stacked (0.55 over 0.55 computes to ~0.80):
-     hideSpotlight() always runs before openModal(), in the same task, so the
-     browser never paints between them. */
-  /* NO `display` on this element, ever. A transition cannot run when an element
-     leaves display:none in the same style recalculation — there is no start
-     value — which is why the 0.25s fade never played. It stays in the DOM at
-     opacity 0, pointer-events:none and aria-hidden, so it is inert until .on
-     raises it. This duration must match SPOT_FADE_MS. */
-  #result-spotlight {
-    position: fixed;
-    top: 56px; left: 0; right: 0; bottom: 0;
-    background: rgba(20, 18, 14, 0.55);
-    z-index: 1450;
-    pointer-events: none;   /* never intercepts a tap; the board is already input-locked */
-    opacity: 0;
-    transition: opacity 0.35s ease;
-  }
-  @media (min-width: 880px) { #result-spotlight { top: 0; } }
-  body[data-theme="black"] #result-spotlight { background: rgba(0, 0, 0, 0.78); }
-  #result-spotlight.on { opacity: 1; }
-  /* The lit subject. .rank-bar is ALREADY position:relative and no ancestor
-     opens a stacking context (.page/.mini-page are position:relative with
-     z-index:auto), so this is a z-index bump and nothing else — no DOM change.
-     .rank-bar's own background is transparent, so it needs an opaque plate or
-     the scrim shows through between label, capsule and chevron; the box-shadow
-     spread paints that plate OUTSIDE the box, leaving layout untouched.
-     Desktop asides stay dimmed (ruled 2026-09-08). */
-  body.spotlight .rank-bar,
-  body.spotlight .mini-rank-bar {
-    z-index: 1460;
-    background: var(--bg);
-    box-shadow: 0 0 0 10px var(--bg);
-    border-radius: 12px;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #result-spotlight { transition: none; }
-  }
   /* Short modals (e.g. the "fill the board" prompt) sit vertically centered
      instead of top-aligned. */
   .modal-overlay.center-modal { align-items: center; }
@@ -3116,7 +3049,6 @@
 <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
 
 <!-- ============ MODALS ============ -->
-<div id="result-spotlight" aria-hidden="true"></div>
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="archive-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
@@ -4928,28 +4860,13 @@ function renderRankBar() {
    reveal ('pending') and settles on the final frame. Reduced motion renders the
    final state immediately — no fill, tick or count animation at all. */
 const _reveal = { active: false, raf: 0 };
-/* Settle dwell: once the bar reaches its final state the marker settles
-   (chevron hides, green over-target segment appears — Rulings C'/D). Hold
-   that on screen before any result modal covers it. Same value all modes. */
-const SPOT_FADE_MS = 350;   /* must match #result-spotlight's opacity duration */
+/* Settle dwell: once the bar reaches its final state, hold it on screen before
+   any result modal covers it. The page is NEVER dimmed for this — emphasis comes
+   from the reveal itself: the fill, the tick sweep and the marker. Ruled
+   2026-09-10, matching Racimo, Palabreo and Flechas, none of which dim. */
 const SETTLE_MS = 900;      /* hold AFTER the bar has finished settling */
 const MINI_FILL_MS = 1000;  /* Mini's completion fill, split by distance in miniRevealBar() */
 const MARKER_HOLD_MS = 120; /* the front REACHES the line, then the marker resolves */
-/* The spotlight is raised for the dwell and always lowered before anything
-   covers it. Idempotent class toggles, so a duplicate call is harmless. */
-function showSpotlight() {
-  const el = document.getElementById('result-spotlight');
-  /* .spotlight ends at the handoff; .result-stage runs until the result is
-     DISMISSED, so the header's own scrim does not blink off under the modal. */
-  document.body.classList.add('spotlight', 'result-stage');
-  if (el) el.classList.add('on');
-}
-function endResultStage() { document.body.classList.remove('result-stage'); }
-function hideSpotlight() {
-  const el = document.getElementById('result-spotlight');
-  if (el) el.classList.remove('on');
-  document.body.classList.remove('spotlight');
-}
 function rankIndexFor(s) {
   let r = 0;
   for (let i = 0; i < RANK_THRESHOLDS.length; i++) if (s >= RANK_THRESHOLDS[i]) r = i;
@@ -4960,26 +4877,17 @@ function revealResult(finalSc, done) {
   const goalFrac = rankFractionIn(state.reto, ladder);
   const achieved = finalSc >= state.reto;
   const fillEl = document.getElementById('rank-fill');
-  /* The dim rises WITH the fill, not after it, so the bar is the lit subject for
-     the whole reveal. Gated on `done` so a raise always has a matching lowering
-     scheduled in finish(). */
-  if (done) showSpotlight();
   function finish() {
     _reveal.active = false;
     if (fillEl) fillEl.classList.remove('revealing');
     renderRankBar();   /* the full completed render: final label, aria, settled marker */
     renderDesktopPanels();   /* desktop score + ladder reveal with the bar */
-    /* The scrim went up at the top of revealResult(); this is the hold that
-       follows the settle. Gated on `done` there, so every raise has this
-       lowering scheduled; hide runs FIRST below so the early return clears it. */
+    /* The bar has settled: hold it on a fully lit page before the celebration
+       covers it. */
     if (done) {
       setTimeout(() => {
-        hideSpotlight();
         if (!document.body.classList.contains('game-active')) return;
         done();
-        /* celebrate() opens NOTHING when every celebration key is already set.
-           Without this the header would stay dimmed with no result on screen. */
-        if (!overlay.classList.contains('open')) endResultStage();
       }, SETTLE_MS);
     }
   }
@@ -5780,8 +5688,6 @@ function syncTriggers() {
   });
 }
 function closeModal() {
-  hideSpotlight();   /* safety net: no dismissal path may leave the scrim up */
-  endResultStage();  /* the result is dismissed: the header comes back up */
   overlay.classList.remove('open');
   openModalId = null;
   syncTriggers();
@@ -7185,10 +7091,8 @@ function miniCheckDone() {
   if (_gm && _mm) setMiniCup(_mm, _gm.getAttribute('src'));
   /* Same dwell the 9x9 reveal uses. Re-check state on the way out: the player
      can reach the landing via goHome() while the pause is running. */
-  showSpotlight();
-  miniRevealBar();   /* fade and fill start on the same paint */
+  miniRevealBar();
   setTimeout(() => {
-    hideSpotlight();   /* first, so both early returns below clear it too */
     if (!miniState || !miniState.done) return;
     if (!document.body.classList.contains('mini-active')) return;
     openModal('mini-done-modal');
@@ -7322,8 +7226,6 @@ window.syncInertPages = syncInertPages;   // the tutorial block is a separate sc
 function goHome() {
   closeModal();        // close any open modal (Reglas, Rangos, Ajustes…) and
   closeDropdowns();    // dropdowns, so they don't linger over the landing/game
-  hideSpotlight();     // and never carry a result scrim onto the landing
-  endResultStage();    // nor a dimmed header
   dailyTimerStop(); saveProgress();
   miniStopTimer(); miniSave();
   document.body.classList.remove('game-active', 'mini-active', 'niebla-game');
