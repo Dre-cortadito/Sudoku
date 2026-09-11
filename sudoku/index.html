@@ -3790,7 +3790,27 @@ function getPuzzleFor(iso, difficulty, mode) {
     const rng = mulberry32(seed);
     const solution = isDiag ? generateDiagonalSolution(rng) : generateSolution(rng);
     // Generate Difícil first (most cells removed; needs uniqueness check).
-    const dificil = generatePuzzle(solution, DIFFICULTY.dificil.givens, rng, isDiag);
+    let dificil = generatePuzzle(solution, DIFFICULTY.dificil.givens, rng, isDiag);
+    // Difícil is best-effort: generatePuzzle stops where uniqueness fails, not
+    // where the target is, so on some days it bottoms out at or above Medio's
+    // target — and addGivens then returns it UNCHANGED, making Medio and Difícil
+    // the same board (19 of the next 180 days at 2026-09-11; 2026-08-30 review,
+    // Urgent #0). Re-dig from a side seed when that happens. The side seed leaves
+    // the main rng stream untouched, so every day that was already fine keeps
+    // exactly the board it has today. Clásico only: Niebla separates difficulty
+    // by fog (NIEBLA_FLOOR) off a shared Fácil base, so it cannot show this bug
+    // and must not be perturbed by the fix.
+    if (!isNiebla && !isDiag) {
+      const countGivens = p => {
+        let n = 0;
+        for (const row of p) for (const v of row) if (v !== 0) n++;
+        return n;
+      };
+      for (let t = 1; t < 8 && countGivens(dificil) >= DIFFICULTY.medio.givens; t++) {
+        const side = mulberry32((seed ^ (0x85EBCA6B * (t + 1))) >>> 0);
+        dificil = generatePuzzle(solution, DIFFICULTY.dificil.givens, side, isDiag);
+      }
+    }
     // Medio and Fácil layer additional givens on top — uniqueness is
     // automatically preserved since adding givens only constrains further.
     const medio = addGivens(dificil, solution, DIFFICULTY.medio.givens, rng);
