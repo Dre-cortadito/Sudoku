@@ -866,36 +866,25 @@
   #mini-rank-bar.mini-approach .rank-goal.is-achieved { opacity: 1; }
   #mini-rank-bar.mini-approach .rank-goal.over-fill { background: var(--rank-goal-track); }
   #mini-rank-bar.mini-approach .rank-goal-chev.no-stem::after { display: block; }
-  /* SUDOKU-WIDE (Stage 1, 2026-09-12 — was Mini-only): the SHAPE is geometry, not
-     animation state. The visible capsule outline is .rank-track-frame — a SIBLING
-     of the track, appended to the bar by build() for BOTH bars — and the track's
-     own border is transparent under .rank-framed, so clipping the track removes
-     nothing visible. 3.5px = the 1.5px border + RANK_PAD, landing the clip exactly
-     on the fill's inset region (a 15px capsule, r=7.5).
+  /* Mini: the SHAPE is geometry, not animation state. The visible capsule
+     outline is .rank-track-frame — a SIBLING of the track, appended to the bar —
+     and the track's own border is transparent under .rank-framed, so clipping
+     the track removes nothing visible. 3.5px = the 1.5px border + RANK_PAD,
+     landing the clip exactly on the fill's inset region (a 15px capsule, r=7.5).
      The fill and the excess therefore carry NO radius of their own at any width
      and are rounded by the capsule only where they actually meet it: a mid-track
      front stays vertical, green begins vertical at the seam, and a full bar fills
      smoothly INTO the cap instead of snapping into a radius. This retires the
      .brimming / .meets-excess / .is-travelling radius rules entirely — there is
      nothing left to time. The hairline is a track child and is trimmed to the
-     fill band by the same clip, which is the intent (ruled 2026-09-09 for Mini,
-     extended to Clasico/Niebla 2026-09-12): it should match the fill area, not
-     overhang it.
-     Measured before extending: .rank-tick is 54% of 22px centred (y 5.05-16.95)
-     and the clip leaves y 3.5-18.5, so no tick is touched; syncScore() inserts
-     the score column as a SIBLING of the track (bar.insertBefore), so the number
-     is outside the clip; #rank-fill has no children and no other id-level rule
-     exists on either element, so #rank-fill (1-0-0) cleanly overrides
-     .rank-fill.meets-excess (0-2-0) below. */
-  #mini-rank-track,
-  #rank-track {
+     fill band by the same clip, which is the intent (ruled 2026-09-09): it should
+     match the fill area, not overhang it. */
+  #mini-rank-track {
     -webkit-clip-path: inset(3.5px round 999px);
             clip-path: inset(3.5px round 999px);
   }
   #mini-rank-fill,
-  #rank-fill,
-  #mini-rank-track .rank-fill-excess,
-  #rank-track .rank-fill-excess { border-radius: 0; }
+  #mini-rank-track .rank-fill-excess { border-radius: 0; }
   /* A tick flips when the FRONT passes it, not when the result is computed.
      .rank-tick carries only an opacity transition, so the colour had nothing to
      animate; miniRevealBar() supplies the per-tick delay. */
