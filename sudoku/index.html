@@ -4806,7 +4806,22 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
        none of that geometry exists. */
     for (let i = 0; i < ticks.length; i++) {
       const c = parseFloat(ticks[i].style.left) || 0;
-      const hide = hairlineOn && Math.abs(c - goalPx) < RANK_TICK_GAP;
+      /* revealResult() holds retoState 'pending' for the whole sweep, so
+         hairlineOn stays true and this tick is suppressed from the first frame
+         to the last. The real state lands only at finish(), and on a WIN the
+         hairline goes, the tick is no longer covered, and it fades in 180ms
+         AFTER the bar has stopped — alone, out of sequence with every other
+         tick. Measured 2026-09-13: ticks flipped at 544/624/702/780/858 during
+         the sweep and 1015/1094 behind the green, then x=939 appeared 200ms
+         after the last motion. So while the rAF loop owns the bar AND the fill
+         has actually passed the marker, nothing is hidden on the marker's
+         account and this tick flips with its neighbours. The second clause is
+         what keeps a MISSED reto untouched: there the fill never reaches
+         goalFrac, so the tick stays hidden under the hairline exactly as
+         before, in the sweep and at rest. _reveal is module-scope and place()
+         is in the same IIFE; the ResizeObserver path sees active === false and
+         is unchanged. */
+      const hide = hairlineOn && !(_reveal.active && st.frac >= st.goalFrac) && Math.abs(c - goalPx) < RANK_TICK_GAP;
       ticks[i].classList.toggle('under-goal', hide);
     }
   }
