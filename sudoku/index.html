@@ -4564,7 +4564,10 @@ function rankFractionForTime(seconds, cutoffs) {
   return 0;
 }
 
-const RANK_TICK_GAP = 6;
+/* Both the hairline and a tick are 2px wide, so only centres closer than 2px
+   actually overlap. Anything larger suppresses a tick that was never covered
+   and leaves a hole in the lattice. Measured 2026-09-14. */
+const RANK_TICK_GAP = 2;
 
 /* One controller per bar: '#rank-bar' (Clásico + Niebla) and '#mini-rank-bar'. */
 function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
