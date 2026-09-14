@@ -907,20 +907,19 @@
   /* While revealResult()'s rAF loop owns the width, the 0.3s transition must not
      trail it — the loop IS the animation. */
   .rank-fill.revealing { transition: none; }
-  /* 9x9 parity with Mini's .mini-approach rule above. revealResult() holds
-     retoState 'pending' for the whole sweep, so the moment the fill crosses the
-     marker .rank-goal.over-fill repaints the hairline --rank-goal-fill (#35180e
-     light, #512b1e dark) and a dark gash flashes between the orange and the
-     green. Mini suppresses exactly this under .mini-approach; revealResult()
-     adds no bar-level class, but .revealing is already on the fill and
-     .rank-goal is a LATER sibling of it (build() order: fill, excess, ticks,
-     goal), so the sweep is addressable without new JS. Holding the line on
-     --rank-goal-track (= --accent) makes it the fill's own colour: it merges
-     invisibly instead of going dark, and the chevron above the capsule still
-     marks the position. Specificity 1-3-0 beats .rank-goal.over-fill at 0-2-0.
-     Drops out by itself when finish() removes .revealing, after which
-     is-achieved hides the hairline anyway. Device finding 2026-09-13. */
-  #rank-track .rank-fill.revealing ~ .rank-goal.over-fill { background: var(--rank-goal-track); }
+  /* 9x9 reveal: once the fill REACHES the reto, hide the interior hairline —
+     do not recolour it. revealResult() holds retoState 'pending' all sweep, so
+     .over-fill would repaint the line --rank-goal-fill and flash a dark gash
+     between the orange and the green; and since .rank-goal is a later sibling
+     of the fill (build() order: fill, excess, ticks, goal) it also paints over
+     the milestone tick sharing that position, which then arrived alone after
+     the bar had settled. Hiding it fixes both, and the CHEVRON above the
+     capsule still marks the target.
+     PAIRS WITH the .under-goal condition in place() (_reveal.active && st.frac
+     >= st.goalFrac); neither half works alone. A MISSED reto never matches —
+     .over-fill needs frac >= goalFrac and the fill never gets there. Mini has
+     its own reveal path (.mini-approach, miniRevealBar()) and is untouched. */
+  #rank-track .rank-fill.revealing ~ .rank-goal.over-fill { opacity: 0; }
   @media (prefers-reduced-motion: reduce) {
     .rank-fill { transition: none; }
     .rank-tick { transition: none; }
