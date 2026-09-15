@@ -826,8 +826,9 @@
      state; the live-play end-cap (scoreless without meets-excess) is untouched. */
   .rank-fill.scoreless.meets-excess { box-shadow: none; }
   /* A FULL bar is the other state this end-cap misreads. At frac 1 the fill's
-     right cap sits RANK_PAD from the capsule's inner edge, so a pale band there
-     reads as the fill bleeding through the perimeter rather than as a position.
+     right cap sits ON the capsule's inner edge (RANK_PAD is 0 since 41208da), so a
+     pale band there reads as the fill bleeding through the perimeter rather than
+     as a position — more so now than when the fill was inset.
      Mini is full from 0 s through its Maestro/a cutoff (75 s) and again on a
      Maestro/a completion, so this is the common state, not an edge. Below full
      the cap is mid-track and the cue does its job — untouched. */
@@ -866,32 +867,26 @@
   #mini-rank-bar.mini-approach .rank-goal.is-achieved { opacity: 1; }
   #mini-rank-bar.mini-approach .rank-goal.over-fill { background: var(--rank-goal-track); }
   #mini-rank-bar.mini-approach .rank-goal-chev.no-stem::after { display: block; }
-  /* SUDOKU-WIDE (Stage 1, 2026-09-12 — was Mini-only): the SHAPE is geometry, not
-     animation state. The visible capsule outline is .rank-track-frame — a SIBLING
-     of the track, appended to the bar by build() for BOTH bars — and the track's
-     own border is transparent under .rank-framed, so clipping the track removes
-     nothing visible. 3.5px = the 1.5px border + RANK_PAD, landing the clip exactly
-     on the fill's inset region (a 15px capsule, r=7.5).
-     The fill and the excess therefore carry NO radius of their own at any width
-     and are rounded by the capsule only where they actually meet it: a mid-track
-     front stays vertical, green begins vertical at the seam, and a full bar fills
-     smoothly INTO the cap instead of snapping into a radius. This retires the
-     .brimming / .meets-excess / .is-travelling radius rules entirely — there is
-     nothing left to time. The hairline is a track child and is trimmed to the
-     fill band by the same clip, which is the intent (ruled 2026-09-09 for Mini,
-     extended to Clasico/Niebla 2026-09-12): it should match the fill area, not
-     overhang it.
-     Measured before extending: .rank-tick is 54% of 22px centred (y 5.05-16.95)
-     and the clip leaves y 3.5-18.5, so no tick is touched; syncScore() inserts
-     the score column as a SIBLING of the track (bar.insertBefore), so the number
-     is outside the clip; #rank-fill has no children and no other id-level rule
-     exists on either element, so #rank-fill (1-0-0) cleanly overrides
-     .rank-fill.meets-excess (0-2-0) below. */
-  #mini-rank-track,
-  #rank-track {
-    -webkit-clip-path: none;
-            clip-path: none;
-  }
+  /* SHAPE — THE CAPSULE CLIPS ITS OWN CONTENTS. .rank-track already carries
+     overflow:hidden + border-radius:999px, and since 41208da (2026-09-15) the fill
+     and the excess fill its padding box exactly (RANK_PAD 0; left/top/bottom 0), so
+     their square corners land on that rounded boundary and are carved away by it.
+     They therefore carry NO radius of their own at any width: a mid-track front
+     stays vertical, green begins vertical at the seam, and a full bar fills smoothly
+     INTO the cap instead of snapping into a radius. This retires the .brimming /
+     .meets-excess / .is-travelling radius rules entirely — there is nothing to time.
+     A clip-path did this job from 2026-09-12 to 2026-09-15, when the fill was inset
+     2px and its corners sat INSIDE the boundary where overflow could never reach
+     them. It was retired with the inset, and should not come back: its 3.5px encoded
+     a border width the engine gets to disagree about — declared 1.5px, computed 1px
+     in Chromium at DPR 3, painted ~1.33 on the device — and it also trimmed the
+     hairline, which spans the full content box. Device-accepted in Safari, both
+     themes, 2026-09-15: interior filled edge to edge, caps rounded, no leak past the
+     outline, Mini and 9x9 identical. See _kit/DESIGN-SYSTEM.md §3.2b.
+     THE RULE BELOW IS LOAD-BEARING. At 1-0-0 it is the only thing keeping
+     .rank-fill.meets-excess (0-2-0) from reviving and rounding the orange/green
+     seam. Removing it does not restore a radius the fill needs — the capsule
+     supplies that — it breaks the seam. */
   #mini-rank-fill,
   #rank-fill,
   #mini-rank-track .rank-fill-excess,
@@ -4492,9 +4487,15 @@ function renderPad() {
    browser colour conversion and later palette tuning. Verified to flip no tick on
    any of the 26 live fill faces before it was adopted. */
 const RANK_CONTRAST_FLOOR = 3.2;
-/* The fill's inset, in px, on all four sides. EVERY x position on the bar is
-   RANK_PAD + fraction * usable, where usable = rankContentWidth(track) - 2*RANK_PAD.
-   Keep in step with `left`/`top`/`bottom` on .rank-fill and .rank-goal. */
+/* The fill's inset, in px, on all four sides — 0 in Sudoku since 41208da, so the
+   fill reaches the capsule's inner edge and the capsule rounds it (see the SHAPE
+   note in the stylesheet). The scale survives the constant changing: EVERY x
+   position on the bar is still RANK_PAD + fraction * usable, where usable =
+   rankContentWidth(track) - 2*RANK_PAD. Keep in step with `left`/`top`/`bottom` on
+   .rank-fill and .rank-goal — and with nothing else: a literal 2 left behind in
+   place() once detached green from orange at the seam.
+   The ESTATE standard is still 2 (Racimo, Palabreo, Flechas). Sudoku is a pilot —
+   _kit/DESIGN-SYSTEM.md §3.2, ruling 2026-09-15. */
 const RANK_PAD = 0;
 /* The capsule's REAL content width, fractional.
    Do NOT use clientWidth here: it is an INTEGER, so it rounds the content width by
@@ -4753,8 +4754,8 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
       ticks[i].style.left = (RANK_PAD + (usable * tickIdx[i]) / st.topIdx) + 'px';
     }
 
-    /* A full bar leaves RANK_PAD on the right exactly as it leaves it on the left.
-       Re-set on every place() so a resize keeps the two gaps equal. */
+    /* A full bar reaches the capsule's inner edge on both sides — RANK_PAD is 0.
+       Re-set on every place() so a resize keeps the geometry exact. */
     const fill = document.getElementById(fillId);
     /* st.frac is the TOTAL fraction; the accent fill stops where the excess
        begins, and the excess (over-target portion) continues from that seam. */
