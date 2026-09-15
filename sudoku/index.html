@@ -806,7 +806,7 @@
     overflow: hidden;
   }
   .rank-fill {
-    position: absolute; left: 2px; top: 2px; bottom: 2px;
+    position: absolute; left: 0; top: 0; bottom: 0;
     border-radius: 999px;
     background: var(--accent);
     display: flex; align-items: center; justify-content: flex-end;
@@ -844,7 +844,7 @@
      fills in --success. Flat left edge — it continues the accent fill from the
      target seam — rounded right end like the fill's own cap. */
   .rank-fill-excess {
-    position: absolute; top: 2px; bottom: 2px;
+    position: absolute; top: 0; bottom: 0;
     border-radius: 0 999px 999px 0;
     background: var(--success);
     pointer-events: none;
@@ -889,8 +889,8 @@
      .rank-fill.meets-excess (0-2-0) below. */
   #mini-rank-track,
   #rank-track {
-    -webkit-clip-path: inset(1px 3.5px round 999px);
-            clip-path: inset(1px 3.5px round 999px);
+    -webkit-clip-path: none;
+            clip-path: none;
   }
   #mini-rank-fill,
   #rank-fill,
@@ -4495,7 +4495,7 @@ const RANK_CONTRAST_FLOOR = 3.2;
 /* The fill's inset, in px, on all four sides. EVERY x position on the bar is
    RANK_PAD + fraction * usable, where usable = rankContentWidth(track) - 2*RANK_PAD.
    Keep in step with `left`/`top`/`bottom` on .rank-fill and .rank-goal. */
-const RANK_PAD = 2;
+const RANK_PAD = 0;
 /* The capsule's REAL content width, fractional.
    Do NOT use clientWidth here: it is an INTEGER, so it rounds the content width by
    up to half a pixel. Scaling the bar by that rounded width draws it as if the
@@ -4761,7 +4761,7 @@ function makeRankBar(barId, trackId, fillId, scoreId, labelId) {
     const orangeFrac = Math.max(0, st.frac - (st.excessFrac || 0));
     if (fill) fill.style.width = (st.frac <= 0.005 ? 0 : orangeFrac * usable) + 'px';
     if (exEl) {
-      exEl.style.left  = (2 + orangeFrac * usable) + 'px';
+      exEl.style.left  = (RANK_PAD + orangeFrac * usable) + 'px';
       exEl.style.width = Math.max(0, (st.excessFrac || 0) * usable) + 'px';
     }
 
