@@ -1499,7 +1499,7 @@
      only 2.58:1 there. The lift belongs to the dark GAMEPLAY surface
      (body[data-theme="black"].mini-active), which is unchanged; it does not
      belong on this white card. */
-  #mini-done-modal { --accent: #A83254; --accent-deep: #862843; }
+  #mini-done-modal, #mini-reto-modal, #mini-goal-modal { --accent: #A83254; --accent-deep: #862843; }
 
   /* Niebla's finish prompt wears Niebla's fog blue, the way Mini's wears
      frambuesa above. .celebration hard-codes the terracota --accent so the
@@ -2445,6 +2445,143 @@
   .mini-rank-badge.is-top { color: var(--accent); }   /* orange only at Maestro/a */
   .mini-reto-line { font-size: 13px; color: var(--ink-soft); margin: 2px 0 0; }
   .mini-reto-line.met { color: var(--success); font-weight: 700; }
+  /* Mini result + celebration lines (2026-09-27 prototype). Text colours are
+     picked for >= 4.5:1 on the forced-white celebration card. */
+  .mini-done-date { font-size: 13px; color: #5f5852; margin: 0 0 4px; }
+  .mini-done-best { font-size: 14px; color: #1a1614; margin: 6px 0 0; }
+  .mini-best-note { font-size: 13px; color: #1a1614; font-weight: 700; margin: 2px 0 0; }
+  .mini-done-aids { font-size: 14px; color: #1a1614; margin: 12px 0 0; }
+  #mini-done-modal .mini-reto-line { font-size: 14px; color: #1a1614; margin: 4px 0 0; }
+  #mini-done-modal .btn-row { margin-top: 18px; }
+  #mini-done-modal:focus, #mini-reto-modal:focus, #mini-goal-modal:focus { outline: none; }
+  /* ===== FULL-PAGE ALTERNATIVE (2026-09-28): the three Mini result pages replace the game view
+     below the site header. No dimming, no board behind, no backdrop to tap. ===== */
+  body.mini-fullpage .modal-overlay { background: var(--bg); align-items: flex-start; padding: 28px 16px 48px; }
+  body[data-theme="black"].mini-fullpage .modal-overlay { background: var(--bg); }
+  body.mini-fullpage .modal-overlay .mini-page-card { max-width: 480px; max-height: none; margin: 0 auto; padding: 40px 28px 32px;
+    box-shadow: none; border: 1px solid #ece7df; min-height: min(520px, calc(100vh - 150px)); }
+  body.mini-fullpage .mini-page-card[style*="display: block"] { display: flex !important; flex-direction: column; justify-content: center; }   /* content centred in the page */
+  body.mini-fullpage .mini-page-card .modal-close { display: none; }          /* explicit Cerrar buttons instead */
+  body.mini-fullpage .mini-page-card .btn-row { margin-top: 32px; flex-direction: column; align-items: center; gap: 12px; }
+  body.mini-fullpage .mini-page-card .btn-row button { min-width: 200px; }
+  body.mini-fullpage .mini-page-card .mini-exit { background: transparent; border: 0; text-decoration: underline; text-underline-offset: 3px; color: #1a1614; min-height: 44px; }
+  body.mini-fullpage #mini-done-modal .mini-lead { margin-top: 24px; padding: 18px 8px; }
+  body.mini-fullpage #mini-done-modal .mini-list { margin-top: 20px; }
+  body.mini-fullpage #mini-reto-modal .mini-reto-box { margin-top: 24px; padding: 20px 16px; }
+  /* ===== ROUND 13 (2026-09-28): unboxed full page. The page itself is the surface (light or dark
+     with the theme); a centred column, type and spacing carry the hierarchy; hairlines only. ===== */
+  body.mini-fullpage .mini-page-card { --r-ink: #1a1614; --r-soft: #5f5852; --r-line: #e6ddd3; --r-acc: #A83254; }
+  body[data-theme="black"].mini-fullpage .mini-page-card { --r-ink: #f3eee4; --r-soft: #b4aba1; --r-line: #3a322c; --r-acc: #E8829F; }
+  body.mini-fullpage .modal-overlay .mini-page-card { background: transparent !important; border: 0 !important; border-radius: 0; box-shadow: none;
+    max-width: 400px; padding: 12px 4px 24px; color: var(--r-ink) !important; }
+  body.mini-fullpage .mini-page-card :is(h2, p, li, span, div) { color: var(--r-ink) !important; }
+  body.mini-fullpage .mini-page-card :is(.mini-done-date, .mini-stat-lbl, .mini-row-k, .mini-streak-lbl) { color: var(--r-soft) !important; }
+  body.mini-fullpage #mini-reto-modal .mini-reto-cheer, body.mini-fullpage #mini-reto-modal .mini-reto-cheer span { color: var(--r-soft) !important; }
+  body.mini-fullpage .mini-page-card :is(.mini-done-rank, .mini-row-flag, .mini-meta-val, .mini-sorbo, .mini-streak-num) { color: var(--r-acc) !important; }
+  body.mini-fullpage #mini-reto-modal .mini-goal-meta .mini-meta-val { color: var(--r-acc) !important; }
+  /* titles: page 1 and page 2 share one hierarchy — date, then a large serif heading */
+  body.mini-fullpage .mini-page-card .mini-card-head { padding-top: 0; }
+  body.mini-fullpage .mini-page-card .mini-done-date { font-size: 14px; margin: 0 0 6px; }
+  body.mini-fullpage .mini-page-card h2.mini-title { font-family: var(--font-display); font-size: 34px; font-weight: 700; line-height: 1.15; margin: 0; position: static; width: auto; height: auto; clip: auto; overflow: visible; white-space: normal; }
+  body.mini-fullpage .mini-page-card .mini-sorbo { font-family: var(--font-display); font-style: italic; font-size: 20px; font-weight: 700; margin: 8px 0 0; }
+  body.mini-fullpage .mini-sorbo[hidden], body.mini-fullpage .mini-done-date[hidden] { display: none; }
+  /* page 1: time and rank, no tile — a hairline between them */
+  body.mini-fullpage #mini-done-modal .mini-lead { background: none; border-radius: 0; padding: 0; margin-top: 30px; gap: 0; flex-wrap: nowrap; }
+  body.mini-fullpage #mini-done-modal .mini-lead[hidden] { display: none; }
+  body.mini-fullpage .mini-lead .mini-stat-cell { padding: 2px 22px; }
+  body.mini-fullpage .mini-lead .mini-stat-cell + .mini-stat-cell { border-left: 1px solid var(--r-line); }
+  body.mini-fullpage .mini-lead .mini-stat-num { font-size: 32px; margin-top: 4px; }
+  body.mini-fullpage .mini-lead .mini-stat-lbl { font-size: 12px; white-space: nowrap; }
+  @media (max-width: 359px) { body.mini-fullpage .mini-lead .mini-stat-cell { padding: 2px 16px; } }
+  /* page 1 list: no box; one short hairline divides it from the lead */
+  body.mini-fullpage #mini-done-modal .mini-list { border: 0; border-radius: 0; overflow: visible; max-width: 240px; margin: 26px auto 0; padding-top: 18px; border-top: 1px solid var(--r-line); font-size: 16px; }
+  body.mini-fullpage #mini-done-modal .mini-lead[hidden] + .mini-list { border-top: 0; padding-top: 0; }
+  body.mini-fullpage .mini-list .mini-row { padding: 3px 0; background: none; }
+  body.mini-fullpage .mini-list .mini-row + .mini-row { border-top: 0; margin-top: 4px; }
+  body.mini-fullpage .mini-row-flag { font-size: 13px; margin-top: 2px; }
+  /* page 2 details: no box */
+  body.mini-fullpage #mini-reto-modal .mini-reto-box { background: none; border-radius: 0; padding: 0; margin: 28px 0 0; }
+  body.mini-fullpage #mini-reto-modal .mini-reto-status { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin: 0 0 10px; line-height: 1.2; }
+  body.mini-fullpage #mini-reto-modal .mini-out { display: inline; font-size: inherit; margin: 0; }
+  body.mini-fullpage #mini-reto-modal .mini-goal-meta { font-size: 17px; }
+  body.mini-fullpage #mini-reto-modal .mini-reto-cheer { font-size: 15px; margin-top: 14px; }
+  body.mini-fullpage .mini-streak-line { max-width: 220px; margin: 26px auto 0; padding-top: 16px; border-top: 1px solid var(--r-line);
+    display: flex; align-items: baseline; justify-content: center; gap: 10px; }
+  body.mini-fullpage .mini-streak-line[hidden] { display: none; }
+  body.mini-fullpage .mini-streak-lbl { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  body.mini-fullpage .mini-streak-num { font-family: var(--font-display); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* buttons: Continuar / Compartir stay frambuesa; Cerrar follows the page ink */
+  body.mini-fullpage .mini-page-card .btn-row button:not(.primary) { background: transparent; border-color: var(--r-ink); color: var(--r-ink); }
+  body.mini-fullpage .mini-page-card .btn-row button.mini-exit { border-color: transparent; }
+  /* page 3: share page — same hierarchy as pages 1 and 2 (large serif title), one supporting line */
+  body.mini-fullpage #mini-goal-modal .mini-share-lead { font-size: 16px; line-height: 1.4; margin: 12px 0 0; }
+  /* page dots (round 14): which of the three pages is showing */
+  .mini-steps { display: none; }
+  body.mini-fullpage .mini-page-card .mini-steps { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 26px 0 0; }
+  body.mini-fullpage .mini-page-card .mini-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--r-dot, #948b80); transition: width .2s ease; }
+  body.mini-fullpage .mini-page-card .mini-dot.is-on { width: 22px; border-radius: 4px; background: var(--r-acc); }
+  body[data-theme="black"].mini-fullpage .mini-page-card { --r-dot: #6b625a; }
+  @media (prefers-reduced-motion: reduce) { body.mini-fullpage .mini-page-card .mini-dot { transition: none; } }
+  /* round 16: your time above Meta on page 2 */
+  body.mini-fullpage #mini-reto-modal .mini-reto-time { margin: 0 0 4px; }
+  body.mini-fullpage #mini-reto-modal .mini-time-val { font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* result pages: header menus that cannot respond are hidden; Home stays */
+  body.mini-fullpage .page-header .header-nav > :not(#header-home) { visibility: hidden; }
+  /* Compact result card (2026-09-27, shared-pattern proposal): dominant title,
+     one small rank/record line, aids line, tinted block with the numbers and the
+     reto status. Every text colour below is >= 5.8:1 on the #f7f2ec tint. */
+  #mini-done-modal .mini-card-head h2 { margin: 2px 0 0; }
+  /* Stats window (2026-09-27 flow correction): result + rank lead, short list, then the
+     played date's target and reto outcome. No cup here; the cup belongs to the Racha window. */
+  #mini-done-modal .mini-card-head { padding-top: 6px; }
+  .mini-lead { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 28px; margin: 14px 0 0;
+               padding: 12px 8px; background: #f7f2ec; border-radius: 12px; }   /* beige tile behind time + rank, as in the original Mini (.goal-stats) */
+  .mini-lead[hidden] { display: none; }
+  /* Short data list: one row per supported item, divided, left-aligned. */
+  .mini-list { list-style: none; padding: 0; margin: 16px 0 0; text-align: left; font-size: 15px; color: #1a1614;
+               line-height: 1.4; border: 1px solid #e6ddd3; border-radius: 12px; overflow: hidden; }
+  .mini-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; padding: 10px 14px; }
+  .mini-list { text-align: center; }   /* details box contents centred (2026-09-27) */
+  .mini-row-aids { justify-content: center; }
+  .mini-row-aids .mini-row-v { font-weight: 400; }   /* Pista ×N / Sin ayudas in regular weight */
+  .mini-row-record { justify-content: center; }
+  .mini-row-rec { white-space: nowrap; }   /* "Tu récord: 1:33" stays together, left-aligned */
+  .mini-row-record .mini-row-v { color: #1a1614; }   /* value bold and neutral */
+  .mini-row-flag { flex-basis: 100%; text-align: center; font-size: 12px; font-weight: 700; color: var(--accent); }   /* new-best note, attached to the record */
+  .mini-row-flag[hidden] { display: none; }
+  .mini-row + .mini-row { border-top: 1px solid #e6ddd3; }
+  .mini-row[hidden] { display: none; }
+  .mini-row-k { color: #5f5852; }
+  .mini-row-v { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .mini-row-note { font-size: 13px; font-weight: 700; background: #f7f2ec; }
+  #mini-done-modal .mini-row-note.mini-best-note { margin: 0; }
+  .mini-stat { background: #f7f2ec; border-radius: 12px; padding: 12px 14px; margin: 12px 0 0; }
+  .mini-stat[hidden] { display: none; }
+  .mini-stat-row { display: flex; justify-content: center; gap: 28px; }
+  .mini-stat-cell { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+  .mini-stat-cell[hidden] { display: none; }
+  .mini-stat-lbl { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5f5852; }
+  .mini-stat-lbl.mini-acc { color: var(--accent); }
+  .mini-stat-num { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1.15;
+                   color: #1a1614; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #mini-done-modal .mini-stat .mini-reto-line { margin: 8px 0 0; }
+  .mini-done-rank { font-style: normal; color: var(--accent); }   /* rank in the Mini accent; the time stays neutral */
+  .mini-t-ok  { color: #1b6b35; }   /* supported, at or below target */
+  .mini-t-bad { color: #b3261e; }   /* supported, over target */
+  .mini-acc   { color: var(--accent); }
+  #mini-done-modal .btn-row button, #mini-reto-modal .btn-row button, #mini-goal-modal .btn-row button { min-height: 44px; }   /* the container takes focus; buttons keep their ring */
+  /* Page 2 — Reto del día. Confetti (proven win only) runs behind the page in the side gutters
+     only (miniConfetti) and stops when this page closes. */
+  #mini-reto-modal { position: relative; z-index: 1; }
+  .mini-confetti { z-index: 0 !important; }
+  #mini-reto-modal .mini-out { display: block; font-family: var(--font-display); font-size: 24px; font-weight: 700; line-height: 1.2; margin-top: 2px; white-space: nowrap; }   /* outcome on its own line, bold, kept together */
+  .mini-reto-box { background: #f7f2ec; border-radius: 12px; padding: 14px; margin: 16px 0 0; }
+  .mini-reto-box[hidden], #mini-reto-modal p[hidden] { display: none; }
+  #mini-reto-modal .mini-reto-status { font-size: 16px; font-weight: 400; margin: 0 0 8px; }
+  #mini-reto-modal .mini-goal-meta { font-size: 16px; margin: 0; color: #1a1614; }
+  #mini-reto-modal .mini-reto-cheer { font-size: 14px; line-height: 1.4; margin: 10px 0 0; color: #5f5852 !important; }   /* quieter than the outcome */
+  #mini-reto-modal .mini-cheer-line { display: block; white-space: nowrap; }   /* one sentence per line */
+  #mini-reto-modal .mini-goal-meta .mini-meta-val { font-weight: 700; color: var(--accent); }
 
   /* ============================================================
      MINI — DESKTOP: the same 3-column treatment as Normal/Niebla
@@ -3010,7 +3147,7 @@
       <h4>Cómo subir de rango</h4>
       <p>⏱️ <strong style="color:var(--accent)">Menos tiempo</strong> · cada rango pide un reloj más bajo</p>
       <p>🎯 <strong style="color:var(--accent)">Bate el reto</strong> · termina bajo el objetivo para tu racha</p>
-      <p class="aside-note">No hay puntos ni penalizaciones: solo el cronómetro.</p>
+      <p class="aside-note">No hay puntos. Cada error suma 10 s y cada pista suma 30 s.</p>
     </div>
   </aside>
 
@@ -3392,22 +3529,61 @@
     </div>
   </div>
 
-  <div class="modal celebration" id="mini-done-modal" data-modal-content style="display:none">
+  <div class="modal celebration mini-page-card" id="mini-done-modal" data-modal-content style="display:none" role="region" aria-labelledby="mini-done-title" tabindex="-1">
     <button class="modal-close" data-close>×</button>
-    <div class="big-emoji"><img class="goal-brand-mark" id="mini-done-mark" alt="Cortadito" /></div>
-    <h2>¡Buen sorbo!</h2>
-    <p class="goal-sub">Resolviste el Mini de hoy.</p>
-    <div class="mini-rank-badge" id="mini-done-rank">—</div>
-    <div class="goal-stats">
-      <div class="goal-stat"><span class="goal-stat-value" id="mini-done-time">0:00</span><span class="goal-stat-label">Tu tiempo</span></div>
-      <div class="goal-stat"><span class="goal-stat-value" id="mini-done-best">0:00</span><span class="goal-stat-label">Tu récord</span></div>
+    <div class="mini-card-head">
+      <p class="mini-done-date" id="mini-done-date"></p>
+      <h2 id="mini-done-title" class="mini-title">¡Mini resuelto!</h2>
     </div>
-    <p class="mini-reto-line" id="mini-done-reto"></p>
-    <p class="goal-body" id="mini-done-note">Un sorbo rápido, bien resuelto.</p>
+    <div class="mini-lead" id="mini-done-lead" hidden>
+      <div class="mini-stat-cell"><span class="mini-stat-lbl">Tu tiempo</span><span class="mini-stat-num" id="mini-done-time-num"></span></div>
+      <div class="mini-stat-cell"><span class="mini-stat-lbl">Rango</span><span class="mini-stat-num mini-done-rank" id="mini-done-rank"></span></div>
+    </div>
+    <ul class="mini-list" id="mini-done-list">
+      <li class="mini-row mini-row-aids" id="mini-done-aids" hidden><span class="mini-row-v" id="mini-done-aids-val"></span></li>
+      <li class="mini-row mini-row-record" id="mini-done-best-row"><span class="mini-row-rec"><span class="mini-row-k">Tu récord:</span> <span class="mini-row-v" id="mini-done-best"></span></span><span class="mini-row-flag" id="mini-done-note" hidden>¡Tu mejor tiempo hasta ahora!</span></li>
+    </ul>
     <div class="btn-row">
-      <button class="primary" id="mini-share">Compartir</button>
+      <button class="primary" id="mini-continue">Continuar</button>
+      <button data-close class="mini-exit">Cerrar</button>
+    </div>
+    <div class="mini-steps" role="img" aria-label="Página 1 de 3"><span class="mini-dot is-on"></span><span class="mini-dot"></span><span class="mini-dot"></span></div>
+  </div>
+
+  <!-- Page 2 of 3 — Reto del día -->
+  <div class="modal celebration mini-page-card" id="mini-reto-modal" data-modal-content style="display:none" role="region" aria-labelledby="mini-reto-title" tabindex="-1">
+    <button class="modal-close" data-close>×</button>
+    <div class="mini-card-head">
+      <p class="mini-done-date" id="mini-reto-date" hidden></p>
+      <h2 id="mini-reto-title" class="mini-title">Reto del día</h2>
+      <p class="mini-sorbo" id="mini-reto-sorbo" hidden>¡Buen sorbo!</p>
+    </div>
+    <div class="mini-reto-box" id="mini-reto-box" hidden>
+      <p class="mini-reto-status" id="mini-goal-status" hidden></p>
+      <p class="mini-goal-meta mini-reto-time" id="mini-reto-time" hidden></p>
+      <p class="mini-goal-meta" id="mini-goal-meta" hidden></p>
+      <p class="mini-reto-cheer" id="mini-reto-cheer"></p>
+    </div>
+    <p class="mini-streak-line" id="mini-reto-streak-cell" hidden><span class="mini-streak-lbl">Racha de reto</span> <span class="mini-streak-num" id="mini-reto-streak"></span></p>
+    <div class="btn-row">
+      <button class="primary" id="mini-reto-continue">Continuar</button>
+      <button data-close class="mini-exit">Cerrar</button>
+    </div>
+    <div class="mini-steps" role="img" aria-label="Página 2 de 3"><span class="mini-dot"></span><span class="mini-dot is-on"></span><span class="mini-dot"></span></div>
+  </div>
+
+  <!-- Page 3 of 3 — Tu resultado (share) -->
+  <div class="modal celebration mini-page-card" id="mini-goal-modal" data-modal-content style="display:none" role="region" aria-labelledby="mini-goal-title" tabindex="-1">
+    <button class="modal-close" data-close>×</button>
+    <div class="mini-card-head">
+      <h2 id="mini-goal-title" class="mini-title">Tu resultado</h2>
+      <p class="mini-share-lead">¡Comparte cómo te fue en este Mini!</p>
+    </div>
+    <div class="btn-row">
+      <button class="primary" id="mini-goal-share">Compartir</button>
       <button data-close>Cerrar</button>
     </div>
+    <div class="mini-steps" role="img" aria-label="Página 3 de 3"><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot is-on"></span></div>
   </div>
 
   <div class="modal" id="switcher-modal" data-modal-content style="display:none">
@@ -5734,7 +5910,9 @@ function resolveModalId(id) {
 }
 function openModal(id) {
   id = resolveModalId(id);
+  if (MINI_DIALOGS.indexOf(openModalId) >= 0 && id !== openModalId) miniNext = null;
   openModalId = id;
+  miniFullpage(MINI_DIALOGS.indexOf(id) >= 0);
   // Hide all
   document.querySelectorAll('[data-modal-content]').forEach(el => el.style.display = 'none');
   const el = document.getElementById(id);
@@ -5751,6 +5929,8 @@ function openModal(id) {
   if (id === 'rangos-modal') refreshRangos();
   if (id === 'mini-rangos-modal') refreshMiniRangos();
   syncTriggers();
+  if (MINI_DIALOGS.indexOf(id) >= 0) miniTrapOpen(id);
+  else if (_miniTrap) miniTrapRelease(true);
 }
 // Mark each nav trigger whose panel is currently open, so its link shows the
 // "open" color and returns to normal the instant the panel closes.
@@ -5761,6 +5941,9 @@ function syncTriggers() {
   });
 }
 function closeModal() {
+  const _wasMini = MINI_DIALOGS.indexOf(openModalId) >= 0;
+  if (_wasMini) miniFullpage(false);
+  if (openModalId === 'mini-reto-modal') document.querySelectorAll('.mini-confetti').forEach(c => c.remove());
   overlay.classList.remove('open');
   openModalId = null;
   syncTriggers();
@@ -5772,7 +5955,62 @@ function closeModal() {
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
+  if (_wasMini && miniNext && document.body.classList.contains('mini-active')) {
+    const next = miniNext; miniNext = null; next();   // Continuar: focus moves straight into the next window
+  } else { miniNext = null; if (_wasMini) miniTrapRelease(false); }
 }
+/* ---- Mini result + celebration windows: focus stays inside while open ----
+   Only the three Mini result windows; every other window keeps its existing behaviour.
+   Opening moves focus into the window, the rest of the page becomes inert
+   (no pointer or keyboard interaction), Tab/Shift+Tab wrap inside, Escape
+   closes, and closing returns focus to where the player was. */
+const MINI_DIALOGS = ['mini-done-modal', 'mini-reto-modal', 'mini-goal-modal'];
+/* Full-page alternative: the result pages sit in the overlay area below the header. */
+function miniFullpage(on) {
+  document.body.classList.toggle('mini-fullpage', !!on);
+  if (on) { const h = document.querySelector('.page-header'); const b = h ? h.getBoundingClientRect().bottom : 0; overlay.style.top = Math.max(0, Math.round(b)) + 'px'; }
+  else overlay.style.top = '';
+}
+let _miniTrap = null;   // { returnTo, inerted: [] }
+function miniTrapOpen(id) {
+  const dlg = document.getElementById(id); if (!dlg) return;
+  if (!_miniTrap) {
+    const ae = document.activeElement;
+    _miniTrap = { returnTo: (ae && ae !== document.body) ? ae : null, inerted: [] };
+    Array.from(document.body.children).forEach(function (el) {
+      if (el === overlay || el.tagName === 'SCRIPT' || el.hasAttribute('inert')) return;
+      if (el.classList && el.classList.contains('page-header')) {   /* full page: Home stays reachable */
+        el.querySelectorAll('.title-block, .header-date, .header-nav > *').forEach(function (c) {
+          if (c.id === 'header-home' || c.hasAttribute('inert')) return; c.setAttribute('inert', ''); _miniTrap.inerted.push(c); });
+        return;
+      }
+      el.setAttribute('inert', ''); _miniTrap.inerted.push(el);
+    });
+  }
+  try { dlg.focus({ preventScroll: true }); } catch (e) { dlg.focus(); }
+}
+function miniTrapRelease(keepFocus) {
+  if (!_miniTrap) return;
+  _miniTrap.inerted.forEach(function (el) { el.removeAttribute('inert'); });
+  const back = _miniTrap.returnTo; _miniTrap = null;
+  syncInertPages();                        // re-apply the page's own inert rule
+  if (!keepFocus && back && back.isConnected && !back.closest('[inert]')) {
+    try { back.focus({ preventScroll: true }); } catch (e) {}
+  }
+}
+document.addEventListener('keydown', function (e) {
+  if (!_miniTrap || MINI_DIALOGS.indexOf(openModalId) < 0) return;
+  const dlg = document.getElementById(openModalId); if (!dlg) return;
+  if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeModal(); return; }
+  if (e.key !== 'Tab') return;
+  const f = Array.from(dlg.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    .filter(function (x) { return !x.disabled && !x.hidden && x.offsetParent !== null; });
+  const _home = document.getElementById('header-home'); if (_home && _home.offsetParent !== null) f.unshift(_home);   /* Home is part of the page's tab order */
+  if (!f.length) { e.preventDefault(); return; }
+  const first = f[0], last = f[f.length - 1], a = document.activeElement, inside = dlg.contains(a) || a === _home;
+  if (e.shiftKey) { if (!inside || a === first || a === dlg) { e.preventDefault(); last.focus(); } }
+  else if (!inside || a === last) { e.preventDefault(); first.focus(); }
+});
 // Returning from another app/tab can leave the page scrolled so the rank bar
 // slips under the fixed header (until you refresh). Re-pin to the top whenever
 // we become visible again, in several passes (iOS restores scroll late).
@@ -5799,7 +6037,7 @@ window.addEventListener('scroll', () => {
   if (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop) pinToTop();
 }, { passive: true });
 overlay.addEventListener('click', (e) => {
-  if (e.target === overlay || e.target.matches('[data-close]')) closeModal();
+  if (e.target.matches('[data-close]') || (e.target === overlay && !document.body.classList.contains('mini-fullpage'))) closeModal();
 });
 document.querySelectorAll('[data-modal]').forEach(btn => {
   btn.addEventListener('click', (e) => {
@@ -6450,7 +6688,7 @@ function renderStains() {
 function bestMiniTime() {
   try {
     const s = parseInt(localStorage.getItem(STORAGE_PREFIX + '-mini-best') || '0', 10);
-    return s ? miniFmt(s) : null;
+    return s ? miniFmtTime(s) : null;
   } catch (e) { return null; }
 }
 // Restart the blink on ALL tabs at once so the non-selected ones stay in sync
@@ -6500,7 +6738,7 @@ function setLandingTab(tab) {
     eyebrow.textContent = 'Sudoku';
     tagline.textContent = 'Un sorbo. Tres minutos.';
     retoLbl.textContent = 'Reto del día';
-    retoVal.textContent = '≤ ' + miniFmt(miniRetoForDate(state.iso));
+    retoVal.textContent = '≤ ' + miniFmtTime(miniRetoForDate(state.iso));
     diffRow.style.display  = 'none';
     document.getElementById('landing-mini-diff-row').style.display = '';
     diffDesc.style.display = '';
@@ -6652,6 +6890,65 @@ function miniGeneratePuzzle(solution, targetGivens, rng) {
 
 function miniProgressKey(iso) { return STORAGE_PREFIX + '-mini-' + iso; }
 function miniFmt(s) { const m = Math.floor(s / 60); return m + ':' + String(s % 60).padStart(2, '0'); }
+/* ---- Mini presentation helpers (2026-09-27 decisions). miniFmt above stays
+   as it is: Clásico and Niebla use it too. Nothing below changes a record,
+   streak, target or penalty calculation. ---- */
+function miniFmtTime(s) {                        /* M13: m:ss below 1 h, h:mm:ss from 1 h */
+  s = Math.max(0, Math.floor(s));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+  return h > 0 ? h + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0')
+               : m + ':' + String(x).padStart(2, '0');
+}
+const MINI_MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];   /* M12 */
+function miniValidIso(iso) {                     /* a real calendar date, not just the pattern */
+  if (typeof iso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
+  const d = isoToDate(iso);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') === iso;
+}
+function miniShortDate(iso) { const d = isoToDate(iso); return d.getDate() + ' ' + MINI_MES[d.getMonth()] + ' ' + d.getFullYear(); }
+function miniValidSecs(v) { return typeof v === 'number' && Number.isFinite(v) && v >= 0; }   /* 0 is valid */
+/* Unknown time (display only; nothing saved is rewritten): a time flagged unknown, or a
+   COMPLETED run whose saved time is exactly 0:00 (Dre, 2026-09-29 — a 0:00 finish is not
+   achievable, so it is shown and shared as an unknown time). An unfinished run may still
+   read 0:00 while its clock starts. */
+function miniElapsedUnknown() {
+  return !!miniState && (miniState.elapsedKnown === false || (!!miniState.done && miniState.elapsed === 0));
+}
+function miniTimeKnown() { return !!miniState && !miniElapsedUnknown() && miniValidSecs(miniState.elapsed); }
+/* 'achieved' | 'failed' | null — null means the status line is omitted. */
+function miniRunStatus() {
+  if (!miniState || !miniState.done || !miniTimeKnown()) return null;
+  if (!miniValidIso(miniState.iso)) return null;
+  const target = miniRetoForDate(miniState.iso);
+  if (!miniValidSecs(target)) return null;
+  return miniState.elapsed <= target ? 'achieved' : 'failed';
+}
+const MINI_STATUS_TEXT = { achieved: '📌 ✅ Reto del día: logrado', failed: '📌 ❌ Reto del día: no alcanzado' };
+function miniTimeTargetLine() {
+  const meta = miniValidIso(miniState.iso) ? 'Meta: ≤ ' + miniFmtTime(miniRetoForDate(miniState.iso)) : '';
+  if (!miniTimeKnown()) return meta;            /* never present a fallback zero as a time */
+  const t = 'Tu tiempo: ' + miniFmtTime(miniState.elapsed);
+  return meta ? t + ' · ' + meta : t;
+}
+/* '🧠 Sin ayudas' | '💡 Pista ×N' | '💡 Pista' (used, total unknown) | null (unknown → omit) */
+function miniAidsText() {
+  if (!miniState) return null;
+  const n = miniState.hintCount;
+  if (miniState.hintsKnown !== false && Number.isInteger(n) && n >= 0) return n === 0 ? '🧠 Sin ayudas' : '💡 Pista ×' + n;
+  return miniState.hintUsed ? '💡 Pista' : null;   /* unknown total: used → "💡 Pista", otherwise omitted */
+}
+function miniLink() {
+  return 'https://cortadito.games/sudoku/?modo=mini' + (miniState && miniValidIso(miniState.iso) ? '#' + miniState.iso : '');
+}
+let miniNext = null;   /* next window of the 3-window flow, set ONLY by a Continuar button; nothing is saved */
+let miniRetoInfo = null;   /* { retoStreak } for the current completion; read by page 2 */
+function miniRenderStatus(el, status) {
+  if (!el) return;
+  el.textContent = '';
+  if (!status) return;
+  const add = (txt, cls) => { const s = document.createElement('span'); if (cls) s.className = cls; s.textContent = txt; el.appendChild(s); };
+  add(status === 'achieved' ? '✅ ' : '❌ ', 'mini-st-icon'); add(status === 'achieved' ? 'Logrado' : 'No alcanzado', 'mini-out');   /* round 13: the page title carries "Reto del día"; share text keeps MINI_STATUS_TEXT */
+}
 
 // ----- Mini ranking + reto (its own rules, but the SAME rank ladder as
 //       Diario so the names are standard everywhere — awarded by solve time
@@ -6712,6 +7009,8 @@ function initMini() {
     selected: null, notesMode: false, history: [],
     elapsed: 0, startedAt: null, timer: null, done: false,
     started: false, hintCount: 0, mistakes: 0,   // cumulative wrong numbers entered (for the share)
+    hintsKnown: true, elapsedKnown: true,           // provenance of the two values (display only)
+    hintUsed: false,                                // a hint demonstrably used (display only)
   };
   try {
     const saved = JSON.parse(localStorage.getItem(miniProgressKey(iso)) || 'null');
@@ -6723,6 +7022,12 @@ function initMini() {
       miniState.started = !!saved.started || miniState.elapsed > 0 || miniState.done;
       miniState.hintCount = saved.hintCount || 0;
       miniState.mistakes = saved.mistakes || 0;
+      /* Provenance: a count or time that was not saved as a valid value stays
+         UNKNOWN across saves and reloads; the fallback 0 above is kept for the
+         existing calculations but is never displayed as a verified value. */
+      miniState.hintsKnown = saved.hintsKnown !== false && Number.isInteger(saved.hintCount) && saved.hintCount >= 0;
+      miniState.elapsedKnown = saved.elapsedKnown !== false && miniValidSecs(saved.elapsed);
+      miniState.hintUsed = saved.hintUsed === true;
       for (let r = 0; r < MINI_N; r++) for (let c = 0; c < MINI_N; c++) {
         const v = miniState.values[r][c];
         if (puzzle[r][c] === 0 && v !== 0 && v !== solution[r][c]) miniState.errors[r + ',' + c] = true;
@@ -6736,12 +7041,15 @@ function miniSave() {
     localStorage.setItem(miniProgressKey(miniState.iso), JSON.stringify({
       values: miniState.values, notes: miniState.notes, elapsed: miniState.elapsed,
       done: miniState.done, started: miniState.started, hintCount: miniState.hintCount,
-      mistakes: miniState.mistakes
+      mistakes: miniState.mistakes,
+      ...(miniState.hintsKnown === false ? { hintsKnown: false } : {}),
+      ...(miniState.hintsKnown === false && miniState.hintUsed ? { hintUsed: true } : {}),
+      ...(miniState.elapsedKnown === false ? { elapsedKnown: false } : {})
     }));
   } catch (e) {}
 }
 function miniStopTimer() { if (miniState && miniState.timer) { clearInterval(miniState.timer); miniState.timer = null; } }
-function miniUpdateTimer() { const el = document.getElementById('mini-timer'); if (el && miniState) el.textContent = miniFmt(miniState.elapsed); renderMiniDesktopPanels(); }
+function miniUpdateTimer() { const el = document.getElementById('mini-timer'); if (el && miniState) el.textContent = miniTimeKnown() ? miniFmtTime(miniState.elapsed) : '–:––'; renderMiniDesktopPanels(); }
 function miniStartTimer() {
   if (!miniState || miniState.done) { miniUpdateTimer(); return; }
   miniStopTimer();
@@ -6913,6 +7221,7 @@ function miniHint() {
     miniState.elapsed += 30;                         // time penalty
     if (miniState.startedAt) miniState.startedAt -= 30000;
     miniState.hintCount = (miniState.hintCount || 0) + 1;
+    miniState.hintUsed = true;                       // evidence of use, even if the stored total is invalid
     miniState.selected = { r, c };
     flash('Revelado (+30s)', 'bonus');
     miniUpdateTimer(); miniRenderBoard(); miniRenderPad(); miniSave();
@@ -6927,14 +7236,14 @@ function refreshMiniRangos() {
       const row = document.createElement('div'); row.className = 'rank-row';
       const name = document.createElement('span'); name.className = 'name'; name.textContent = RANK_NAMES[c.idx];
       const t = document.createElement('span'); t.className = 'score';
-      t.textContent = (c.max === Infinity) ? 'más lento' : '≤ ' + miniFmt(c.max);
+      t.textContent = (c.max === Infinity) ? 'más lento' : '≤ ' + miniFmtTime(c.max);
       row.appendChild(name); row.appendChild(t); list.appendChild(row);
     }
   }
   const retoEl = document.getElementById('mini-rangos-reto');
   /* Same rule as the 9x9 panel: the tick means WON, and a missed target says so
      rather than reading as merely pending. */
-  if (retoEl && miniState) retoEl.textContent = '≤ ' + miniFmt(miniRetoForDate(miniState.iso)) + RETO_MARK[miniRetoState()];
+  if (retoEl && miniState) retoEl.textContent = '≤ ' + miniFmtTime(miniRetoForDate(miniState.iso)) + RETO_MARK[miniRetoState()];
 }
 /* (the old rank-index memo is gone: the bar is built once and updated in
    place, so there is nothing to gate a rebuild on) */
@@ -6965,6 +7274,7 @@ const MINI_CUTOFF_SECS = (function () {
    curIdx >= goalIdx disagreed with the modal at the boundary — on a 105 s
    target a 105 s run is a met reto that the bucket called not-done. */
 function miniRetoState() {
+  if (miniElapsedUnknown()) return 'pending';   /* unknown time (incl. a completed 0:00) settles nothing */
   const elapsed = miniState ? (miniState.elapsed || 0) : 0;
   const iso     = (miniState && miniState.iso) ? miniState.iso : state.iso;
   const target  = miniRetoForDate(iso);
@@ -6991,7 +7301,7 @@ function miniRenderRankBar(force) {
   const target  = miniRetoForDate(iso);
   const goalFrac = rankFractionForTime(target, MINI_CUTOFF_SECS);
   const retoState = miniRetoState();
-  const revealed = !!(miniState && miniState.done);
+  const revealed = !!(miniState && miniState.done && !miniElapsedUnknown());
   const bar = document.getElementById('mini-rank-bar');
   if (!revealed) {
     _miniBar.render({
@@ -7038,10 +7348,10 @@ function miniRenderStart() {
   const ov = document.getElementById('mini-start');
   const tgt = document.getElementById('mini-start-target');
   if (tgt) {
-    tgt.textContent = 'Objetivo de hoy · ';
+    tgt.textContent = 'Meta: ';
     const tm = document.createElement('span');
     tm.className = 'mini-start-target-time';
-    tm.textContent = '≤ ' + miniFmt(miniRetoForDate(miniState.iso));
+    tm.textContent = '≤ ' + miniFmtTime(miniRetoForDate(miniState.iso));
     tgt.appendChild(tm);
   }
   if (ov) ov.hidden = miniState.started || miniState.done;
@@ -7154,44 +7464,54 @@ function miniCheckDone() {
   miniSave();
   const t = miniState.elapsed;
   let best = parseInt(localStorage.getItem(MINI_BEST_KEY) || '0', 10);
-  const isNewBest = !best || t < best;
+  /* A record is only ever saved from a known time (2026-09-27 fix): an unknown time
+     (fallback zero) never becomes a saved 0:00 best. Known times: unchanged rule. */
+  const isNewBest = miniTimeKnown() && (!best || t < best);
   if (isNewBest) { best = t; try { localStorage.setItem(MINI_BEST_KEY, String(t)); } catch (e) {} }
-  const timeEl = document.getElementById('mini-done-time'); if (timeEl) timeEl.textContent = miniFmt(t);
-  const bestEl = document.getElementById('mini-done-best'); if (bestEl) bestEl.textContent = miniFmt(best);
-  // Rank (standard ladder, by time)
+  // Daily reto (target time). The reto streak is awarded only for an evidence-backed win:
+  // for a known time this is the same t <= target comparison; an unknown time (fallback
+  // zero) no longer earns it (2026-09-27 correction).
+  const target = miniRetoForDate(miniState.iso);
+  const met = miniRunStatus() === 'achieved';
+  const streak = met ? miniRecordRetoMet(miniState.iso) : 0;
+  /* ---- rendering (2026-09-27 layout) ---- */
+  const known = miniTimeKnown();
+  const status = miniRunStatus();
+  const show = (el, on) => { if (el) el.hidden = !on; };
+  const dateEl = document.getElementById('mini-done-date');
+  if (dateEl) { const ok = miniValidIso(miniState.iso); dateEl.textContent = ok ? formatLongDate(miniState.iso) : ''; show(dateEl, ok); }
   const rankEl = document.getElementById('mini-done-rank');
   if (rankEl) {
     rankEl.textContent = miniRankName(t);
-    rankEl.classList.toggle('is-top', miniRankName(t) === RANK_NAMES[RANK_NAMES.length - 1]);   // orange only at Maestro/a
+    rankEl.classList.toggle('is-top', miniRankName(t) === RANK_NAMES[RANK_NAMES.length - 1]);   // every rank uses the Mini accent (2026-09-27 polish)
   }
-  // Daily reto (target time)
-  const target = miniRetoForDate(miniState.iso);
-  const met = t <= target;
-  const retoEl = document.getElementById('mini-done-reto');
-  if (retoEl) {
-    retoEl.classList.toggle('met', met);
-    if (met) {
-      const streak = miniRecordRetoMet(miniState.iso);
-      retoEl.textContent = '¡Reto del día logrado! (≤ ' + miniFmt(target) + ')' + (streak > 1 ? ' · Racha ' + streak : '');
-    } else {
-      retoEl.textContent = 'No alcanzaste el reto de hoy (≤ ' + miniFmt(target) + ')' + (miniState.hintCount ? ' · pista usada' : '');
-    }
+  show(document.getElementById('mini-done-lead'), known);   // no time and no rank from an unknown time
+  if (!known) {   /* unknown time (incl. a completed 0:00): no rank text kept even in the hidden lead, and the
+                     game-view timer reads "–:––" instead of the last tick */
+    if (rankEl) { rankEl.textContent = ''; rankEl.classList.remove('is-top'); }
+    const tmEl = document.getElementById('mini-timer'); if (tmEl) tmEl.textContent = '–:––';
   }
-  const note = document.getElementById('mini-done-note');
-  if (note) note.textContent = isNewBest ? '¡Tu mejor tiempo hasta ahora!' : 'Un sorbo rápido, bien resuelto.';
-  // Reuse the Normal goal modal's Cortadito cup, but recolour it to Mini's
-  // green so the finish prompt wears Mini's identity (Normal keeps terracota).
-  const _gm = document.querySelector('#goal-modal .goal-brand-mark');
-  const _mm = document.getElementById('mini-done-mark');
-  if (_gm && _mm) setMiniCup(_mm, _gm.getAttribute('src'));
+  /* Record: this run's time when it set one; otherwise the saved record; none saved → "–:––". */
+  const bestEl = document.getElementById('mini-done-best');
+  if (bestEl) bestEl.textContent = isNewBest ? miniFmtTime(t) : (best > 0 ? miniFmtTime(best) : '–:––');
+  show(document.getElementById('mini-done-note'), isNewBest);
+  const aids = miniAidsText();
+  const aidsVal = document.getElementById('mini-done-aids-val'); if (aidsVal) aidsVal.textContent = aids || '';
+  show(document.getElementById('mini-done-aids'), !!aids);
+  /* Lead: the result (time, green/red only from the evidence-backed status) beside the rank. */
+  const tNum = document.getElementById('mini-done-time-num');
+  if (tNum) { tNum.textContent = known ? miniFmtTime(t) : ''; tNum.className = 'mini-stat-num'; }   /* neutral: the reto verdict is saved for window 2 */
+  /* Target and reto outcome are revealed on page 2 (openMiniReto). */
+  miniRetoInfo = { retoStreak: met ? streak : null };   /* reto streak shown only when this run proved a win */
+  /* Only Continuar advances; ×, Escape, tapping outside and going home close the flow. */
+  miniNext = null;
   /* Same dwell the 9x9 reveal uses. Re-check state on the way out: the player
      can reach the landing via goHome() while the pause is running. */
-  miniRevealBar();
+  if (known) miniRevealBar();
   setTimeout(() => {
     if (!miniState || !miniState.done) return;
     if (!document.body.classList.contains('mini-active')) return;
-    openModal('mini-done-modal');
-    launchConfetti(miniRankIndexForTime(miniState.elapsed||0) === 9 ? 120 : 85);
+    openModal('mini-done-modal');   /* confetti now belongs to the ¡Buen sorbo! window only */
   /* Wait out the fill, then hold. Reduced motion runs no fill, so it waits the
      hold alone — dwell kept, animation time skipped (ruled 2026-09-09). */
   }, (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : MINI_FILL_MS) + SETTLE_MS);
@@ -7244,6 +7564,93 @@ function renderMiniStain() {
   if (tl) layer.appendChild(tl);
   if (br) layer.appendChild(br);
 }
+/* Page 2 — Reto del día. Proven met → "¡Buen sorbo!" line + achieved status + your time + target
+   (+ Racha de reto) + confetti; proven missed → missed status + your time + target;
+   unknown time → target only, no outcome. */
+function openMiniReto() {
+  if (!miniState || !document.body.classList.contains('mini-active')) return;
+  const status = miniRunStatus();
+  const met = status === 'achieved';
+  const pr = miniRetoInfo || { retoStreak: null };
+  const dateOk = miniValidIso(miniState.iso);
+  /* One common title for every case; ¡Buen sorbo! is a supporting line for a proven win only. */
+  const head = document.getElementById('mini-reto-title');
+  head.textContent = 'Reto del día'; head.classList.remove('mini-sr');
+  const rDate = document.getElementById('mini-reto-date');
+  if (rDate) { rDate.textContent = dateOk ? formatLongDate(miniState.iso) : ''; rDate.hidden = !dateOk; }
+  const sorbo = document.getElementById('mini-reto-sorbo'); if (sorbo) sorbo.hidden = !met;
+  const stEl = document.getElementById('mini-goal-status');
+  miniRenderStatus(stEl, status); stEl.hidden = !status;
+  const mEl = document.getElementById('mini-goal-meta'); mEl.textContent = '';
+  if (dateOk) { mEl.appendChild(document.createTextNode('Meta: ')); const v = document.createElement('span'); v.className = 'mini-meta-val'; v.textContent = '≤ ' + miniFmtTime(miniRetoForDate(miniState.iso)); mEl.appendChild(v); }
+  mEl.hidden = !dateOk;
+  /* Round 16: the player's own time right above the target, so the two can be compared.
+     Only a known time is shown — an unknown time is never presented as 0:00. */
+  const tEl = document.getElementById('mini-reto-time'); tEl.textContent = '';
+  const tKnown = miniTimeKnown();
+  if (tKnown) { tEl.appendChild(document.createTextNode('Tu tiempo: ')); const tv = document.createElement('span'); tv.className = 'mini-time-val'; tv.textContent = miniFmtTime(miniState.elapsed); tEl.appendChild(tv); }
+  tEl.hidden = !tKnown;
+  const rs = document.getElementById('mini-reto-streak-cell');
+  rs.hidden = !(met && Number.isInteger(pr.retoStreak) && pr.retoStreak > 0);
+  document.getElementById('mini-reto-streak').textContent = rs.hidden ? '' : String(pr.retoStreak);
+  /* Encouragement: one sentence per line, never broken mid-sentence. */
+  const cheerEl = document.getElementById('mini-reto-cheer'); cheerEl.textContent = '';
+  (met ? ['¡Sigue así!', 'Mañana vamos por otro.'] : status === 'failed' ? ['¡No pasa nada!', 'Mañana vamos por ese reto.'] : ['¡Nos vemos en el próximo reto!'])
+    .forEach((s, i) => { if (i) cheerEl.appendChild(document.createTextNode(' ')); const sp = document.createElement('span'); sp.className = 'mini-cheer-line'; sp.textContent = s; cheerEl.appendChild(sp); });
+  document.getElementById('mini-reto-box').hidden = false;
+  openModal('mini-reto-modal');
+  if (met) miniConfetti(miniRankIndexForTime(miniState.elapsed || 0) === 9 ? 120 : 85);   /* win only; side gutters only */
+}
+/* Page 2 celebration — Mini only. Confetti falls ONLY in the two side gutters beside the result
+   column, below the site header: never over the date, title, ¡Buen sorbo!, result lines, motivation,
+   Racha de reto, buttons or page dots. Every piece is drawn through a clip of those two gutters, so
+   nothing can stray into the column. Narrow screens get proportionally fewer pieces; with less than
+   24 px of free gutter there is no confetti. The shared launchConfetti() (other results) is unchanged. */
+function miniConfettiSafeBands() {
+  const page = document.getElementById('mini-reto-modal'); if (!page) return null;
+  const rects = [];
+  const walker = document.createTreeWalker(page, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (!n.textContent.trim() || !n.parentElement || n.parentElement.offsetParent === null) continue;
+    const r = document.createRange(); r.selectNodeContents(n); Array.from(r.getClientRects()).forEach(x => { if (x.width && x.height) rects.push(x); });
+  }
+  page.querySelectorAll('.btn-row button, .mini-dot, .mini-streak-line').forEach(e => { if (e.offsetParent !== null) rects.push(e.getBoundingClientRect()); });
+  if (!rects.length) return null;
+  const PAD = 12, W = window.innerWidth;
+  const left = Math.min(...rects.map(r => r.left)) - PAD, right = Math.max(...rects.map(r => r.right)) + PAD;
+  const top = Math.ceil(overlay.getBoundingClientRect().top);   // below the site header
+  return { W, top, left: Math.max(0, Math.floor(left)), right: Math.min(W, Math.ceil(right)), gutter: Math.max(0, Math.min(Math.floor(left), W - Math.ceil(right))) };
+}
+function miniConfetti(n) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const b = miniConfettiSafeBands(); if (!b || b.gutter < 24) return;   // too little room: no confetti
+  n = Math.max(8, Math.round((n || 85) * Math.min(1, b.gutter / 60)));
+  const colors = ['#d9633b', '#548C4C', '#e8b84b', '#c94f3b', '#2f8f5b', '#e08a4a'];
+  const cv = document.createElement('canvas'); cv.className = 'confetti-box mini-confetti';
+  const W = b.W, H = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  overlay.insertBefore(cv, overlay.firstChild);
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  ctx.beginPath(); ctx.rect(0, b.top, b.left, H - b.top); ctx.rect(b.right, b.top, W - b.right, H - b.top); ctx.clip();   // the two gutters only
+  const P = [];
+  for (let i = 0; i < n; i++) { const onLeft = i % 2 === 0, x0 = onLeft ? 0 : b.right, w0 = onLeft ? b.left : W - b.right;
+    P.push({ x: x0 + 4 + Math.random() * Math.max(1, w0 - 8), y: b.top - 20 - Math.random() * H * 0.3, w: 5 + Math.random() * 4, h: 7 + Math.random() * 7,
+      vx: (Math.random() - 0.5) * 0.6, vy: 2.2 + Math.random() * 3, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.32, c: colors[(Math.random() * colors.length) | 0] }); }
+  const t0 = performance.now();
+  (function frame(t) {
+    if (!cv.isConnected) return;
+    const dt = t - t0; ctx.clearRect(0, 0, W, H); let alive = false;
+    const a = dt > 2200 ? Math.max(0, 1 - (dt - 2200) / 700) : 1;
+    for (const p of P) { p.x += p.vx; p.y += p.vy; p.vy += 0.045; p.rot += p.vr; if (p.y < H + 24) alive = true;
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore(); }
+    if (alive && dt < 3200) requestAnimationFrame(frame); else cv.remove();
+  })(t0);
+}
+/* Page 3 — Tu resultado: the share page. No streak here (the games-wide play streak is a later release). */
+function openMiniGoal() {
+  if (!miniState || !document.body.classList.contains('mini-active')) return;
+  openModal('mini-goal-modal');
+}
 // Desktop-only: fill the Mini side panels + date row (mirrors renderDesktopPanels
 // for Normal). Mini is time-based, so the "reto" is a target time, the ladder
 // shows the time cutoff per rank, and "current/reached" follow the pace rank.
@@ -7256,14 +7663,14 @@ function renderMiniDesktopPanels() {
   const reto = document.getElementById('mini-aside-reto');
   if (!reto) return;                         // panels not in the DOM
   const target = miniRetoForDate(miniState.iso);
-  reto.textContent = '≤ ' + miniFmt(target);
+  reto.textContent = '≤ ' + miniFmtTime(target);
   const sub = document.getElementById('mini-aside-reto-sub');
-  if (sub) sub.innerHTML = 'Llega a <strong style="color:var(--ink)">' + miniRankName(target) + '</strong> o mejor para completar la racha de hoy.';
+  if (sub) sub.innerHTML = 'Llega a <strong style="color:var(--ink)">' + miniRankName(target) + '</strong> o mejor para avanzar en tu racha.';
   const t = miniState.elapsed || 0;
   /* Result-based, like the Normal panels: no provisional PLAYER rank before the
      round is finished. The day's TARGET rank above is not the player's rank and
      stays visible in every state. */
-  const revealed = !!miniState.done && !_reveal.active;
+  const revealed = !!miniState.done && !miniElapsedUnknown() && !_reveal.active;
   const rankLine = document.getElementById('mini-aside-rank-line');
   if (rankLine) rankLine.innerHTML = revealed
     ? 'Vas por <strong style="color:var(--accent)">' + miniRankName(t) + '</strong>'
@@ -7279,7 +7686,7 @@ function renderMiniDesktopPanels() {
       row.className = 'aside-rank-row' + (i <= curIdx ? ' reached' : '') + (i === curIdx ? ' current' : '');
       const name = document.createElement('span'); name.className = 'aside-rank-name'; name.textContent = RANK_NAMES[i];
       const tm = document.createElement('span'); tm.className = 'aside-rank-pts';
-      tm.textContent = (maxByIdx[i] === Infinity) ? '—' : ('≤ ' + miniFmt(maxByIdx[i]));
+      tm.textContent = (maxByIdx[i] === Infinity) ? '—' : ('≤ ' + miniFmtTime(maxByIdx[i]));
       row.appendChild(name); row.appendChild(tm);
       ranks.appendChild(row);
     }
@@ -7299,6 +7706,7 @@ function launchMini() {
   saveSession();
 }
 function exitMini() {
+  miniNext = null;
   miniStopTimer(); miniSave();
   document.body.classList.remove('mini-active');
   syncInertPages();
@@ -7319,6 +7727,7 @@ window.syncInertPages = syncInertPages;   // the tutorial block is a separate sc
 
 // Home — return to the landing from any game. Stops/saves both games' state.
 function goHome() {
+  miniNext = null;   // cancel any pending next window BEFORE closeModal() can open it
   closeModal();        // close any open modal (Reglas, Rangos, Ajustes…) and
   closeDropdowns();    // dropdowns, so they don't linger over the landing/game
   dailyTimerStop(); saveProgress();
@@ -7328,25 +7737,16 @@ function goHome() {
   saveSession();   // remember we're on the landing now
 }
 function buildMiniShareText() {
-  // Same order as the 9×9 share: full Spanish date, then mode, then achievement, then the rest.
-  const dateStr = formatLongDate(state.iso);
-  if (!miniState || !miniState.done) {
-    const tgt = miniState ? ` (≤ ${miniFmt(miniRetoForDate(miniState.iso))})` : '';
-    return `${dateStr}\n\n🧩 Sudoku 🐣 Mini\n⏳ Todavía sin terminar\n🎯 Reto del día${tgt}\n\nhttps://cortadito.games/sudoku`;
-  }
-  const t = miniState.elapsed;
-  const target = miniRetoForDate(miniState.iso);
-  const met = t <= target;
-  const m = miniState.mistakes || 0;
-  const mLine = m === 0 ? '✏️ Sin errores' : `✏️ ${m} ${m === 1 ? 'error' : 'errores'}`;
-  // At the top rank the 👑 headline REPLACES the 🏆 Rango line (same
-  // suppression as the 9×9 share); reto uses the standard ✅/📌 tokens.
-  const isMaestro = miniRankIndexForTime(t) === RANK_NAMES.length - 1;
-  const rankLine = isMaestro ? '👑 ¡Maestro/a del sudoku!' : `🏆 Rango: ${miniRankName(t)}`;
-  const retoLine = met
-    ? `✅ ¡Reto del día logrado! (≤ ${miniFmt(target)})`
-    : `📌 Reto del día (≤ ${miniFmt(target)})`;
-  return `${dateStr}\n\n🧩 Sudoku 🐣 Mini\n${rankLine}\n⏱️ ${miniFmt(t)}\n${retoLine}\n${mLine}\n\nhttps://cortadito.games/sudoku`;
+  /* 1A + 2A (2026-09-26), M7–M12: compact consecutive lines, Mini's own date. */
+  if (!miniState) return '';
+  const iso = miniState.iso;
+  const lines = [miniValidIso(iso) ? 'Sudoku Mini · ' + miniShortDate(iso) : 'Sudoku Mini'];
+  const tt = miniTimeTargetLine(); if (tt) lines.push(tt);
+  const aids = miniAidsText(); if (aids) lines.push(aids);        // compact line, no heading
+  if (miniState.done) { const st = miniRunStatus(); if (st) lines.push(MINI_STATUS_TEXT[st]); }
+  else lines.push('⏳ Todavía sin terminar');                        // unfinished: never a verdict
+  lines.push(miniLink());
+  return lines.join('\n');
 }
 async function shareMini() {
   await shareTextStandard(buildMiniShareText());
@@ -7363,7 +7763,17 @@ document.getElementById('mini-notes').addEventListener('click', () => {
 document.getElementById('mini-hint').addEventListener('click', miniHint);
 document.getElementById('mini-rank-bar').addEventListener('click', () => openModal('mini-rangos-modal'));
 document.getElementById('mini-start-btn').addEventListener('click', miniBegin);
-document.getElementById('mini-share').addEventListener('click', () => { shareMini(); });
+document.getElementById('mini-continue').addEventListener('click', () => {
+  if (openModalId !== 'mini-done-modal') return;
+  miniNext = openMiniReto;    /* page 1 → page 2 */
+  closeModal();
+});
+document.getElementById('mini-reto-continue').addEventListener('click', () => {
+  if (openModalId !== 'mini-reto-modal') return;
+  miniNext = openMiniGoal;    /* page 2 → page 3 */
+  closeModal();
+});
+document.getElementById('mini-goal-share').addEventListener('click', () => { shareMini(); });
 
 // ---------- BOOT ----------
 // ---------- SESSION — remember screen + difficulty/mode across reloads ----------
@@ -7391,7 +7801,7 @@ function boot() {
   try {
     const _brandSrc = document.querySelector('#goal-modal .goal-brand-mark')?.getAttribute('src');
     if (_brandSrc) {
-      ['maestro-mark', 'mini-done-mark'].forEach(id => {
+      ['maestro-mark'].forEach(id => {
         const el = document.getElementById(id);
         if (el && !el.getAttribute('src')) el.setAttribute('src', _brandSrc);
       });
