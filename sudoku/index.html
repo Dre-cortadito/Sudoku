@@ -6,7 +6,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
 <title>Sudoku — Cortadito News</title>
-<meta name="description" content="Un acertijo diario de números de Cortadito News. ¿Qué patrón encontrarás hoy? Tres juegos cada día: Clásico, Niebla y Mini.">
+<!-- Niebla en pausa (2026-09-28). Original: "…Tres juegos cada día: Clásico, Niebla y Mini." -->
+<meta name="description" content="Un acertijo diario de números de Cortadito News. ¿Qué patrón encontrarás hoy? Dos juegos cada día: Clásico y Mini.">
 <style>
   /* Disable mobile double-tap-to-zoom everywhere (keeps pinch-zoom for
      accessibility). Lowest specificity, so per-element touch-action rules
@@ -2280,6 +2281,9 @@
   .stain.s-landing-br { bottom: -18px; right: -38px; width: 228px; height: 228px; }
   /* Keep landing content + game chrome above the stain layer. */
   .landing-inner { position: relative; z-index: 1; }
+  /* Niebla en pausa (2026-09-28): aviso neutral en el inicio. Vacío = no ocupa sitio. */
+  .landing-notice { margin: 0 auto 14px; max-width: 32ch; text-align: center; font-size: 14px; line-height: 1.4; color: var(--ink); }
+  .landing-notice:empty { display: none; }
   .info-bar, .rank-bar, .board-wrap, .pad-wrap { position: relative; z-index: 1; }
 
   /* ---- ¡Buen sorbo! brand mark (replaces the emoji in the goal
@@ -2805,6 +2809,7 @@
       <button class="landing-tab active" id="tab-diario" data-tab="diario" role="tab">Clásico</button>
       <button class="landing-tab" id="tab-niebla" data-tab="niebla" role="tab">Niebla</button>
     </div>
+    <p class="landing-notice" id="landing-notice" role="status"></p>
     <div class="landing-head">
     <div class="landing-logo-row">
       <svg class="landing-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="rotate(-28 22 22)"><ellipse cx="22" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 23.5 Q 22 18.25 33.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(14 60 22)"><ellipse cx="60" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 23.5 Q 60 18.25 71.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-18 98 22)"><ellipse cx="98" cy="22" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 23.5 Q 98 18.25 109.25 22.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(22 22 60)"><ellipse cx="22" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 61.5 Q 22 56.25 33.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(0 60 60)"><ellipse cx="60" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent-2)"/><path d="M 48.75 61.5 Q 60 56.25 71.25 60.5" style="fill:none;stroke:var(--accent);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-22 98 60)"><ellipse cx="98" cy="60" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 61.5 Q 98 56.25 109.25 60.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-14 22 98)"><ellipse cx="22" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 10.75 99.5 Q 22 94.25 33.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(24 60 98)"><ellipse cx="60" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 48.75 99.5 Q 60 94.25 71.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g><g transform="rotate(-30 98 98)"><ellipse cx="98" cy="98" rx="13.75" ry="9.375" style="fill:var(--accent)"/><path d="M 86.75 99.5 Q 98 94.25 109.25 98.5" style="fill:none;stroke:var(--accent-2);stroke-width:2.125;stroke-linecap:round"/></g></svg>
@@ -3146,7 +3151,7 @@
 
     <h3>Rangos</h3>
     <p>Hay diez rangos, desde <em>Debutante</em> hasta <strong class="hl-accent">Maestro/a</strong>. Cuantas menos ayudas uses, más alto terminas. Toca la barra de rangos arriba para ver toda la escalera.</p>
-    <p class="muted">¿Buscas más reto? <strong>Niebla</strong> es su propio juego, con el tablero casi todo cubierto. Elígelo en la pantalla de inicio.</p>
+    <!-- Niebla en pausa (2026-09-28): <p class="muted">¿Buscas más reto? <strong>Niebla</strong> es su propio juego, con el tablero casi todo cubierto. Elígelo en la pantalla de inicio.</p> -->
   </div>
 
   <div class="modal" id="niebla-reglas-modal" data-modal-content style="display:none">
@@ -3281,7 +3286,7 @@
   <div class="modal" id="rangos-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">Rangos</h2>
-    <p class="blurb">Tu puntaje parte de <strong style="color: var(--accent)">42 puntos</strong>, el máximo. Las ayudas descuentan; en Niebla, también los números mal colocados. Si conservas los 42 puntos, terminas en Maestro/a. Los umbrales son fijos: no dependen de la dificultad.</p>
+    <p class="blurb">Tu puntaje parte de <strong style="color: var(--accent)">42 puntos</strong>, el máximo. Las ayudas descuentan<!-- Niebla en pausa (2026-09-28): ; en Niebla, también los números mal colocados -->. Si conservas los 42 puntos, terminas en Maestro/a. Los umbrales son fijos: no dependen de la dificultad.</p>
     <ul class="blurb rangos-costs">
       <li><strong>Verificar una celda</strong> — 2 puntos</li>
       <li><strong>Verificar todo el tablero</strong> — 8 puntos</li>
@@ -3348,8 +3353,11 @@
   <div class="modal" id="about-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2>Sobre Sudoku</h2>
+    <!-- Niebla en pausa (2026-09-28). Originales:
     <p>Un acertijo diario de <strong>Cortadito News</strong>. Cada día, tres juegos para elegir: <strong>Clásico</strong>, <strong>Niebla</strong> y <strong>Mini</strong>.</p>
-    <p>El Sudoku normal es lógica pura. Niebla esconde casi todo el tablero —y algunas pistas— y lo vas descubriendo a medida que resuelves; las pistas visibles siempre bastan para resolverlo sin adivinar. El Mini es un 6 × 6 rápido, contra el reloj.</p>
+    <p>El Sudoku normal es lógica pura. Niebla esconde casi todo el tablero —y algunas pistas— y lo vas descubriendo a medida que resuelves; las pistas visibles siempre bastan para resolverlo sin adivinar. El Mini es un 6 × 6 rápido, contra el reloj.</p> -->
+    <p>Un acertijo diario de <strong>Cortadito News</strong>. Cada día, dos juegos para elegir: <strong>Clásico</strong> y <strong>Mini</strong>.</p>
+    <p>El Sudoku normal es lógica pura. El Mini es un 6 × 6 rápido, contra el reloj.</p>
     <p class="muted">¡Lo esencial en un sorbo!</p>
   </div>
 
@@ -6243,6 +6251,7 @@ document.querySelectorAll('[data-landing-mode]').forEach(btn => {
 });
 
 document.getElementById('landing-play').addEventListener('click', () => {
+  _holdNieblaSession = false; nieblaNotice(false);   // Niebla en pausa: el jugador eligió otro modo
   try{ setTimeout(()=>{ if(document.body.classList.contains('game-active')||document.body.classList.contains('mini-active')) history.pushState({v:'game'},'',location.pathname+location.search); },0); }catch(e){}   // so Back returns to the landing
   // Mini tab active → launch the 6×6 espresso shot instead of the Daily.
   if (document.body.classList.contains('mini-landing')) { launchMini(); return; }
@@ -6452,7 +6461,22 @@ function syncTabBlink() {
   void document.body.offsetWidth;                 // force reflow
   tabs.forEach(t => { t.style.animation = ''; });  // re-apply from CSS, all in phase
 }
+/* ===== NIEBLA EN PAUSA (Dre, 2026-09-28) =====
+   Niebla no se muestra ni se abre. El motor, sus reglas y todo su progreso
+   guardado quedan intactos: nada aquí lee para jugar ni escribe una clave de
+   Niebla. Un enlace viejo o una sesión guardada en Niebla abren Clásico con un
+   aviso. El puntero de sesión guardado en Niebla no se reescribe en una visita
+   pasiva ni al recargar; cambia solo cuando el jugador pulsa Jugar.
+   Para reanudar: NIEBLA_PAUSED = false (y la tarjeta del hub + gate.js). */
+const NIEBLA_PAUSED = true;
+const NIEBLA_NOTICE = 'Niebla no está disponible por ahora.';
+let _holdNieblaSession = false;   // true mientras el puntero guardado sea de Niebla y el jugador no haya elegido jugar
+function nieblaNotice(on) {
+  const el = document.getElementById('landing-notice');
+  if (el) el.textContent = on ? NIEBLA_NOTICE : '';
+}
 function setLandingTab(tab) {
+  if (NIEBLA_PAUSED && tab === 'niebla') tab = 'diario';
   const isMini   = tab === 'mini';
   const isNiebla = tab === 'niebla';
   document.getElementById('tab-mini').classList.toggle('active', isMini);
@@ -6530,6 +6554,12 @@ window.addEventListener('load', function () {
     var map = { clasico: 'diario', diario: 'diario', mini: 'mini', niebla: 'niebla' };
     var tab = map[m.toLowerCase()];
     if (!tab) return;
+    if (NIEBLA_PAUSED && tab === 'niebla') {   // enlace viejo a Niebla → Clásico + aviso (nunca un tablero de Niebla)
+      tab = 'diario';
+      nieblaNotice(true);
+      var keepHash = /^#\d{4}-\d{2}-\d{2}$/.test(location.hash) ? location.hash : '';
+      try { history.replaceState(history.state, '', location.pathname + '?modo=clasico' + keepHash); } catch (e3) {}
+    }
     // Always show the landing for the chosen mode — never jump straight into the game.
     document.body.classList.remove('game-active');
     document.body.classList.remove('mini-active');
@@ -7345,6 +7375,7 @@ function curScreen() {
   return 'landing';
 }
 function saveSession() {
+  if (_holdNieblaSession) return;   // Niebla en pausa: conservar el puntero guardado (D-N4)
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify({
       screen: curScreen(), difficulty: state.difficulty, mode: state.mode
@@ -7381,13 +7412,22 @@ function boot() {
   // Restore the last session's difficulty/mode BEFORE building the puzzle.
   let sess = null;
   try { sess = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
+  // Niebla en pausa: una sesión guardada en Niebla nunca arranca su tablero ni
+  // su reloj. Se abre Clásico (inicio); si el jugador estaba DENTRO de Niebla,
+  // con el aviso. El puntero guardado no se reescribe (D-N4).
+  let _nieblaResume = false;
+  if (NIEBLA_PAUSED && sess && sess.mode === 'niebla') {
+    _holdNieblaSession = true;
+    _nieblaResume = sess.screen === 'normal';
+    sess = { screen: sess.screen === 'mini' ? 'mini' : 'landing', mode: 'clasico' };   // copia en memoria; sin dificultad de Niebla
+  }
   if (sess) {
     if (sess.difficulty && DIFFICULTY[sess.difficulty]) state.difficulty = sess.difficulty;
     if (sess.mode && MODES[sess.mode]) state.mode = sess.mode;
   }
   // Seed the per-game difficulty pref from the restored session so the tab
   // re-opens on exactly what was last played for that mode.
-  saveDiffPref(state.mode, state.difficulty);
+  if (!_holdNieblaSession) saveDiffPref(state.mode, state.difficulty);
 
   goalShown = !!localStorage.getItem(goalKey());
   maestroShown = !!localStorage.getItem(maestroKey());
@@ -7407,6 +7447,7 @@ function boot() {
   if (sess && sess.screen === 'mini') initialTab = 'mini';
   else if (sess && sess.screen === 'normal') initialTab = (sess.mode === 'niebla') ? 'niebla' : 'diario';
   setLandingTab(initialTab);
+  if (_nieblaResume) nieblaNotice(true);
 
   // Drop the player back into whatever they were on, so a refresh stays put.
   if (sess && sess.screen === 'mini') {
