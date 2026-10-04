@@ -2522,6 +2522,34 @@
   body.mini-fullpage .mini-page-card .mini-dot.is-on { width: 22px; border-radius: 4px; background: var(--r-acc); }
   body[data-theme="black"].mini-fullpage .mini-page-card { --r-dot: #6b625a; }
   @media (prefers-reduced-motion: reduce) { body.mini-fullpage .mini-page-card .mini-dot { transition: none; } }
+  /* ===== MINI result pages — candidate mini1 (2026-10-02): the shared result-page frame as live
+     Palabreo 7633e85. Fixed date row at the top of the page area (24 px under the header), title
+     16 px under the date on every page, a scrolling middle, buttons and page dots pinned at the
+     bottom (12 px above the buttons, 18 px between buttons and dots). Only the middle scrolls on a
+     short screen; a hairline appears over the footer when it does. Page 3's Cerrar is the shared
+     text-link button. Colours, content, confetti and the Continuar chain are unchanged. ===== */
+  body.mini-fullpage .modal-overlay { padding: 0 16px; overflow: hidden; align-items: stretch; }
+  body.mini-fullpage .modal-overlay .mini-page-card { max-width: 400px; width: 100%; min-height: 0; height: 100%; box-sizing: border-box;
+    padding: 24px 0 calc(24px + env(safe-area-inset-bottom, 0px)); }
+  body.mini-fullpage .mini-page-card[style*="display: block"] { display: flex !important; flex-direction: column; justify-content: flex-start; }
+  body.mini-fullpage .mini-page-card .mini-fdate { flex: 0 0 auto; margin: 0 !important; line-height: 1.55; min-height: 1.55em; }
+  body.mini-fullpage .mini-page-card .mini-fdate[hidden] { display: block; visibility: hidden; }   /* keeps the row so every page lines up */
+  body.mini-fullpage .mini-fbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column; padding: 16px 0; box-sizing: border-box; }
+  body.mini-fullpage .mini-fbody:focus-visible { outline: 2px solid var(--r-ink); outline-offset: -2px; }
+  body.mini-fullpage .mini-fspace { flex: 1 1 0; min-height: 0; }
+  body.mini-fullpage .mini-fspace-top { flex: 0 0 0px; }
+  body.mini-fullpage .mini-fcontent { flex: 0 0 auto; }
+  body.mini-fullpage .mini-ffoot { flex: 0 0 auto; padding-top: 12px; }
+  body.mini-fullpage .mini-fbody.is-scroll + .mini-ffoot { border-top: 1px solid var(--r-line); }
+  body.mini-fullpage .mini-page-card .btn-row { margin-top: 0; }
+  body.mini-fullpage #mini-done-modal .mini-card-head { padding-top: 0; }
+  body.mini-fullpage #mini-done-modal .mini-card-head h2 { margin: 0; }   /* page 1's title 16 px under the date, as pages 2–3 and Palabreo */
+  body.mini-fullpage .mini-page-card .mini-steps { margin: 18px 0 0; }
+  body.mini-fullpage .mini-page-card .btn-row button { font-size: 14px; font-weight: 600; min-height: 44px; min-width: 200px; padding: 10px 24px; border-radius: 999px; }
+  body.mini-fullpage .mini-page-card .btn-row button.mini-exit { background: transparent; border: 0; border-color: transparent; color: var(--r-ink) !important; text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-height: 560px) { body.mini-fullpage .modal-overlay .mini-page-card { padding-top: 16px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); } body.mini-fullpage .mini-page-card .mini-steps { margin-top: 12px; } }
+  @media (min-width: 880px) { body.mini-fullpage .modal-overlay { padding: 0 16px; } }
   /* round 16: your time above Meta on page 2 */
   body.mini-fullpage #mini-reto-modal .mini-reto-time { margin: 0 0 4px; }
   body.mini-fullpage #mini-reto-modal .mini-time-val { font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -3531,8 +3559,9 @@
 
   <div class="modal celebration mini-page-card" id="mini-done-modal" data-modal-content style="display:none" role="region" aria-labelledby="mini-done-title" tabindex="-1">
     <button class="modal-close" data-close>×</button>
+    <p class="mini-done-date mini-fdate" id="mini-done-date"></p>
+    <div class="mini-fbody"><div class="mini-fspace mini-fspace-top"></div><div class="mini-fcontent">
     <div class="mini-card-head">
-      <p class="mini-done-date" id="mini-done-date"></p>
       <h2 id="mini-done-title" class="mini-title">¡Mini resuelto!</h2>
     </div>
     <div class="mini-lead" id="mini-done-lead" hidden>
@@ -3543,18 +3572,22 @@
       <li class="mini-row mini-row-aids" id="mini-done-aids" hidden><span class="mini-row-v" id="mini-done-aids-val"></span></li>
       <li class="mini-row mini-row-record" id="mini-done-best-row"><span class="mini-row-rec"><span class="mini-row-k">Tu récord:</span> <span class="mini-row-v" id="mini-done-best"></span></span><span class="mini-row-flag" id="mini-done-note" hidden>¡Tu mejor tiempo hasta ahora!</span></li>
     </ul>
+    </div><div class="mini-fspace mini-fspace-bot"></div></div>
+    <div class="mini-ffoot">
     <div class="btn-row">
       <button class="primary" id="mini-continue">Continuar</button>
       <button data-close class="mini-exit">Cerrar</button>
     </div>
     <div class="mini-steps" role="img" aria-label="Página 1 de 3"><span class="mini-dot is-on"></span><span class="mini-dot"></span><span class="mini-dot"></span></div>
+    </div>
   </div>
 
   <!-- Page 2 of 3 — Reto del día -->
   <div class="modal celebration mini-page-card" id="mini-reto-modal" data-modal-content style="display:none" role="region" aria-labelledby="mini-reto-title" tabindex="-1">
     <button class="modal-close" data-close>×</button>
+    <p class="mini-done-date mini-fdate" id="mini-reto-date" hidden></p>
+    <div class="mini-fbody"><div class="mini-fspace mini-fspace-top"></div><div class="mini-fcontent">
     <div class="mini-card-head">
-      <p class="mini-done-date" id="mini-reto-date" hidden></p>
       <h2 id="mini-reto-title" class="mini-title">Reto del día</h2>
       <p class="mini-sorbo" id="mini-reto-sorbo" hidden>¡Buen sorbo!</p>
     </div>
@@ -3565,25 +3598,33 @@
       <p class="mini-reto-cheer" id="mini-reto-cheer"></p>
     </div>
     <p class="mini-streak-line" id="mini-reto-streak-cell" hidden><span class="mini-streak-lbl">Racha de reto</span> <span class="mini-streak-num" id="mini-reto-streak"></span></p>
+    </div><div class="mini-fspace mini-fspace-bot"></div></div>
+    <div class="mini-ffoot">
     <div class="btn-row">
       <button class="primary" id="mini-reto-continue">Continuar</button>
       <button data-close class="mini-exit">Cerrar</button>
     </div>
     <div class="mini-steps" role="img" aria-label="Página 2 de 3"><span class="mini-dot"></span><span class="mini-dot is-on"></span><span class="mini-dot"></span></div>
+    </div>
   </div>
 
   <!-- Page 3 of 3 — Tu resultado (share) -->
   <div class="modal celebration mini-page-card" id="mini-goal-modal" data-modal-content style="display:none" role="region" aria-labelledby="mini-goal-title" tabindex="-1">
     <button class="modal-close" data-close>×</button>
+    <p class="mini-done-date mini-fdate" id="mini-goal-date" hidden></p>
+    <div class="mini-fbody"><div class="mini-fspace mini-fspace-top"></div><div class="mini-fcontent">
     <div class="mini-card-head">
       <h2 id="mini-goal-title" class="mini-title">Tu resultado</h2>
       <p class="mini-share-lead">¡Comparte cómo te fue en este Mini!</p>
     </div>
+    </div><div class="mini-fspace mini-fspace-bot"></div></div>
+    <div class="mini-ffoot">
     <div class="btn-row">
       <button class="primary" id="mini-goal-share">Compartir</button>
-      <button data-close>Cerrar</button>
+      <button data-close class="mini-exit">Cerrar</button>
     </div>
     <div class="mini-steps" role="img" aria-label="Página 3 de 3"><span class="mini-dot"></span><span class="mini-dot"></span><span class="mini-dot is-on"></span></div>
+    </div>
   </div>
 
   <div class="modal" id="switcher-modal" data-modal-content style="display:none">
@@ -5929,7 +5970,7 @@ function openModal(id) {
   if (id === 'rangos-modal') refreshRangos();
   if (id === 'mini-rangos-modal') refreshMiniRangos();
   syncTriggers();
-  if (MINI_DIALOGS.indexOf(id) >= 0) miniTrapOpen(id);
+  if (MINI_DIALOGS.indexOf(id) >= 0) { el.querySelectorAll('.mini-fbody').forEach(b => { b.scrollTop = 0; }); miniSyncScroll(); miniTrapOpen(id); }
   else if (_miniTrap) miniTrapRelease(true);
 }
 // Mark each nav trigger whose panel is currently open, so its link shows the
@@ -7649,8 +7690,21 @@ function miniConfetti(n) {
 /* Page 3 — Tu resultado: the share page. No streak here (the games-wide play streak is a later release). */
 function openMiniGoal() {
   if (!miniState || !document.body.classList.contains('mini-active')) return;
+  const gDate = document.getElementById('mini-goal-date');   /* mini1: the fixed date row, as pages 1 and 2 */
+  if (gDate) { const ok = miniValidIso(miniState.iso); gDate.textContent = ok ? formatLongDate(miniState.iso) : ''; gDate.hidden = !ok; }
   openModal('mini-goal-modal');
 }
+/* mini1: the middle of a result page scrolls on a short screen; mark it (hairline over the footer) and make
+   it keyboard-reachable only when it actually scrolls. */
+function miniSyncScroll() {
+  document.querySelectorAll('.mini-page-card .mini-fbody').forEach(b => {
+    const s = b.offsetParent !== null && b.scrollHeight > b.clientHeight + 1;
+    b.classList.toggle('is-scroll', s);
+    if (s) { b.setAttribute('tabindex', '0'); b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Resultado'); }
+    else { b.removeAttribute('tabindex'); b.removeAttribute('role'); b.removeAttribute('aria-label'); }
+  });
+}
+window.addEventListener('resize', () => { if (document.body.classList.contains('mini-fullpage')) miniSyncScroll(); });
 // Desktop-only: fill the Mini side panels + date row (mirrors renderDesktopPanels
 // for Normal). Mini is time-based, so the "reto" is a target time, the ladder
 // shows the time cutoff per rank, and "current/reached" follow the pace rank.
@@ -7741,10 +7795,12 @@ function buildMiniShareText() {
   if (!miniState) return '';
   const iso = miniState.iso;
   const lines = [miniValidIso(iso) ? 'Sudoku Mini · ' + miniShortDate(iso) : 'Sudoku Mini'];
+  lines.push('');   /* mini1 (2026-10-02): blank lines between the heading, the result lines and the link, as Palabreo's message */
   const tt = miniTimeTargetLine(); if (tt) lines.push(tt);
   const aids = miniAidsText(); if (aids) lines.push(aids);        // compact line, no heading
   if (miniState.done) { const st = miniRunStatus(); if (st) lines.push(MINI_STATUS_TEXT[st]); }
   else lines.push('⏳ Todavía sin terminar');                        // unfinished: never a verdict
+  lines.push('');
   lines.push(miniLink());
   return lines.join('\n');
 }
