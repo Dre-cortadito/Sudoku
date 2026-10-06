@@ -7640,7 +7640,8 @@ function openMiniReto() {
     .forEach((s, i) => { if (i) cheerEl.appendChild(document.createTextNode(' ')); const sp = document.createElement('span'); sp.className = 'mini-cheer-line'; sp.textContent = s; cheerEl.appendChild(sp); });
   document.getElementById('mini-reto-box').hidden = false;
   openModal('mini-reto-modal');
-  if (met) miniConfetti(miniRankIndexForTime(miniState.elapsed || 0) === 9 ? 120 : 85);   /* win only; side gutters only */
+  /* fs1 (Dre, 2026-10-06, Games-wide): a met Reto del día gets the game's full-screen burst (launchConfetti), over everything, every width — not the gutter canvas */
+  if (met) launchConfetti(miniRankIndexForTime(miniState.elapsed || 0) === 9 ? 120 : 85);   /* win only */
 }
 /* Page 2 celebration — Mini only. Confetti falls ONLY in the two side gutters beside the result
    column, below the site header: never over the date, title, ¡Buen sorbo!, result lines, motivation,
