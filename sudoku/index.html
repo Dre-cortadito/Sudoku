@@ -2956,6 +2956,12 @@
 #tut-ov .tut-rank-fill-label{position:relative;display:block;text-align:left;margin:7px 0 0;font-size:13px;font-weight:700;color:var(--ink)}
 #tut-ov .tut-rank-demo *{animation:none!important;transition:none!important}
 </style>
+
+<!-- CG-MASCOT-HEAD BEGIN -->
+<link rel="stylesheet" href="/sudoku/_mascot/20261013-nine-abd/mascot.css">
+<script defer src="/sudoku/_mascot/20261013-nine-abd/daily-selector.js"></script>
+<script defer src="/sudoku/_mascot/20261013-nine-abd/mascot.js"></script>
+<!-- CG-MASCOT-HEAD END -->
 </head>
 <body data-theme="white">
 
@@ -5967,6 +5973,10 @@ function resolveModalId(id) {
 function openModal(id) {
   id = resolveModalId(id);
   if (MINI_DIALOGS.indexOf(openModalId) >= 0 && id !== openModalId) miniNext = null;
+
+/* CG-MASCOT-ONLY BEGIN */
+const cgWasSameModal=overlay.classList.contains('open') && openModalId===id;
+/* CG-MASCOT-ONLY END */
   openModalId = id;
   miniFullpage(MINI_DIALOGS.indexOf(id) >= 0);
   // Hide all
@@ -5974,6 +5984,15 @@ function openModal(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.style.display = 'block';
+/* CG-MASCOT-ONLY BEGIN */
+if(id==='mini-done-modal'){
+ if(window.CGMascot && window.DailyMascot) CGMascot.render({host:"#mini-done-modal .mini-fcontent",mode:'sudoku-mini',day:todayISO(),eligible:!!miniState && miniState.done && miniTimeKnown(),scope:el,freeze:cgWasSameModal,onLayout:miniSyncScroll});
+}else if(['complete-modal','goal-modal','maestro-modal'].includes(id)){
+ const cgClassic=state.mode==='clasico' && state.completed && !document.body.classList.contains('mini-active');
+ if(window.CGMascot && window.DailyMascot) CGMascot.render({host:'#'+id,mode:'sudoku-clasico',day:todayISO(),eligible:cgClassic,scope:el,freeze:cgWasSameModal,before:':scope > .btn-row'});
+}
+/* CG-MASCOT-ONLY END */
+
   overlay.classList.add('open');
   overlay.classList.toggle('center-modal', id === 'verify-prompt-modal');  // short prompt → centered
   overlay.scrollTop = 0;             // always open the modal scrolled to its top
