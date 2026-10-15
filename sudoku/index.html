@@ -2962,6 +2962,72 @@
 <script defer src="/sudoku/_mascot/20261014-stamp-roll/daily-selector.js"></script>
 <script defer src="/sudoku/_mascot/20261014-stamp-roll/mascot.js"></script>
 <!-- CG-MASCOT-HEAD END -->
+<style>
+  /* ===== Sudoku Clásico result pages (candidate cl3): the shared three-page frame as live Palabreo
+     (7633e85) — fixed date row, title 16 px under it on every page, scrolling middle, bottom-pinned
+     buttons and dots. Clásico's own terracota: text accents darkened for the light page (cl2's
+     #ad4a26, 5.55:1 on white), fills = the game's accent as its existing primary buttons. ===== */
+  .pr-flow { display: none; }
+  body.pr-open { overflow: hidden; }
+  body.pr-open .pr-flow { display: block; position: fixed; left: 0; right: 0; top: var(--pr-top, 56px); bottom: 0; z-index: 9000;
+    background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 16px; box-sizing: border-box; outline: none; }
+  body.pr-open .page-header .header-nav > :not(#header-home) { visibility: hidden; }
+  .pr-flow { line-height: 1.55; --r-ink: #1a1614; --r-soft: #5f5852; --r-line: #e6ddd3; --r-dot: #948b80; --r-acc: #ad4a26; --r-fill: #d9633b; --r-fill-ink: #1a1614; }   /* cl3 rev 2 (Dre, 2026-10-01): dark text on the existing terracotta button (4.96:1; white was 3.62:1) */
+  body[data-theme="black"] .pr-flow { --r-ink: #f3eee4; --r-soft: #b4aba1; --r-line: #3a322c; --r-dot: #6b625a; --r-acc: #ef7d57; --r-fill: #ef7d57; --r-fill-ink: #1a1614; }
+  .pr-page { display: none; position: relative; z-index: 1; max-width: 400px; margin: 0 auto; padding: 24px 0 calc(24px + env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--r-ink); outline: none; }
+  .pr-page.is-on { display: flex; flex-direction: column; height: 100%; min-height: 0; box-sizing: border-box; }
+  .pr-page > .pr-date { flex: 0 0 auto; margin: 0; }
+  .pr-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column; padding: 16px 0; box-sizing: border-box; }
+  .pr-body:focus-visible { outline: 2px solid var(--r-ink); outline-offset: -2px; }
+  .pr-space { flex: 1 1 0; min-height: 0; }
+  .pr-space-top { flex: 0 0 0px; }
+  .pr-content { flex: 0 0 auto; }
+  .pr-foot { flex: 0 0 auto; padding-top: 12px; }
+  .pr-body.is-scroll + .pr-foot { border-top: 1px solid var(--r-line); }
+  @media (max-height: 560px) { .pr-page { padding-top: 16px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); } .pr-steps { margin-top: 12px; } }
+  .pr-flow .confetti-box { position: fixed; z-index: 0; }
+  .pr-date { font-family: var(--font-ui); font-size: 14px; color: var(--r-soft); margin: 0 0 6px; }
+  .pr-title { font-family: var(--font-display); font-size: 34px; font-weight: 700; line-height: 1.15; margin: 0; color: var(--r-ink); }
+  .pr-sorbo { font-family: var(--font-display); font-style: italic; font-size: 20px; font-weight: 700; margin: 8px 0 0; color: var(--r-acc); }
+  .pr-sorbo[hidden], .pr-row[hidden], .pr-list[hidden], .pr-streak-line[hidden], .pr-status[hidden] { display: none; }
+  .pr-lead { display: flex; justify-content: center; align-items: stretch; margin: 30px 0 0; flex-wrap: nowrap; }
+  .pr-stat { padding: 2px 22px; display: flex; flex-direction: column; align-items: center; }
+  .pr-stat + .pr-stat { border-left: 1px solid var(--r-line); }
+  @media (max-width: 359px) { .pr-stat { padding: 2px 16px; } }
+  .pr-stat-lbl { font-family: var(--font-ui); font-size: 12px; font-weight: 700; line-height: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--r-soft); white-space: nowrap; }
+  .pr-stat-num { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.15; margin-top: 4px; color: var(--r-ink); white-space: nowrap; }
+  .pr-stat-num.pr-acc { color: var(--r-acc); }
+  .pr-list { max-width: 240px; line-height: 1.4; margin: 26px auto 0; padding-top: 18px; border-top: 1px solid var(--r-line); }
+  .pr-row { font-family: var(--font-ui); font-size: 16px; line-height: 1.4; padding: 3px 0; color: var(--r-ink); }
+  .pr-row + .pr-row { margin-top: 4px; }
+  .pr-k { color: var(--r-soft); }
+  .pr-v { font-weight: 700; color: var(--r-ink); }
+  .pr-v.pr-acc { color: var(--r-acc); }
+  .pr-row > .pr-v:only-child { font-weight: 400; }
+  .pr-status { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1.2; margin: 28px 0 10px; color: var(--r-ink); }
+  .pr-meta { font-family: var(--font-ui); font-size: 17px; margin: 0 0 4px; color: var(--r-ink); }
+  .pr-meta b { font-weight: 700; }
+  .pr-meta .pr-acc { color: var(--r-acc); }
+  .pr-cheer { font-family: var(--font-ui); font-size: 15px; line-height: 1.4; margin: 14px 0 0; color: var(--r-soft); }
+  .pr-cheer-line { display: block; white-space: nowrap; }
+  .pr-streak-line { max-width: 220px; width: fit-content; font-size: 14px; margin: 26px auto 0; padding-top: 16px; border-top: 1px solid var(--r-line); display: flex; justify-content: center; align-items: baseline; gap: 10px; }
+  .pr-streak-lbl { font-family: var(--font-ui); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--r-soft); }
+  .pr-streak-num { font-family: var(--font-display); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--r-acc); }
+  .pr-share-lead { font-family: var(--font-ui); font-size: 16px; line-height: 1.4; margin: 12px 0 0; color: var(--r-ink); }
+  .pr-btns { margin-top: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .pr-btn { font-family: var(--font-ui); font-size: 14px; font-weight: 600; min-height: 44px; min-width: 200px; padding: 10px 24px; border-radius: 999px; cursor: pointer;
+    background: var(--r-fill); color: var(--r-fill-ink); border: 1.5px solid var(--r-fill); }
+  .pr-exit { font-family: var(--font-ui); font-size: 14px; font-weight: 600; min-height: 44px; min-width: 200px; padding: 10px 24px; border-radius: 999px; background: transparent; border: 0; cursor: pointer;
+    color: var(--r-ink); text-decoration: underline; text-underline-offset: 3px; }
+  .pr-btn, .pr-exit { transition: transform 0.1s ease, opacity 0.15s ease; }
+  .pr-btn:active, .pr-exit:active { transform: scale(0.97); }
+  .pr-btn:focus-visible, .pr-exit:focus-visible { outline: 2px solid var(--r-ink); outline-offset: 3px; }
+  .pr-steps { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 18px 0 0; }
+  .pr-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--r-dot); transition: width .2s ease; }
+  .pr-dot.is-on { width: 22px; border-radius: 4px; background: var(--r-fill); }
+  @media (prefers-reduced-motion: reduce) { .pr-dot { transition: none; } }
+</style>
 </head>
 <body data-theme="white">
 
@@ -3061,6 +3127,52 @@
   </nav>
 </header>
 <div class="header-spacer"></div>
+
+<!-- ===== Sudoku Clásico result pages (candidate cl3) — the shared frame as live Palabreo ===== -->
+<div class="pr-flow" id="pr-flow" tabindex="-1">
+  <section class="pr-page" id="pr-done" role="dialog" aria-modal="true" aria-labelledby="pr-done-title" tabindex="-1">
+    <p class="pr-date" id="pr-done-date"></p>
+    <div class="pr-body"><div class="pr-space pr-space-top"></div><div class="pr-content">
+      <h2 class="pr-title" id="pr-done-title">¡Sudoku completo!</h2>
+      <div class="pr-lead">
+        <div class="pr-stat"><span class="pr-stat-lbl">Puntos</span><span class="pr-stat-num" id="pr-done-pts"></span></div>
+        <div class="pr-stat"><span class="pr-stat-lbl">Rango</span><span class="pr-stat-num pr-acc" id="pr-done-rank"></span></div>
+      </div>
+      <div class="pr-list" id="pr-done-list"></div>
+    </div><div class="pr-space pr-space-bot"></div></div>
+    <div class="pr-foot">
+      <div class="pr-btns"><button class="pr-btn" id="pr-continue" type="button">Continuar</button><button class="pr-exit" type="button" data-pr-close>Cerrar</button></div>
+      <div class="pr-steps" role="img" aria-label="Página 1 de 3"><span class="pr-dot is-on"></span><span class="pr-dot"></span><span class="pr-dot"></span></div>
+    </div>
+  </section>
+  <section class="pr-page" id="pr-reto" role="dialog" aria-modal="true" aria-labelledby="pr-reto-title" tabindex="-1">
+    <p class="pr-date" id="pr-reto-date"></p>
+    <div class="pr-body"><div class="pr-space pr-space-top"></div><div class="pr-content">
+      <h2 class="pr-title" id="pr-reto-title">Reto del día</h2>
+      <p class="pr-sorbo" id="pr-reto-sorbo" hidden>¡Buen sorbo!</p>
+      <p class="pr-status" id="pr-reto-status"></p>
+      <p class="pr-meta" id="pr-reto-pts"></p>
+      <p class="pr-meta" id="pr-reto-meta"></p>
+      <p class="pr-cheer" id="pr-reto-cheer"></p>
+      <div class="pr-streak-line" id="pr-reto-streak-line" hidden><span class="pr-streak-lbl">Racha de reto</span><span class="pr-streak-num" id="pr-reto-streak"></span></div>
+    </div><div class="pr-space pr-space-bot"></div></div>
+    <div class="pr-foot">
+      <div class="pr-btns"><button class="pr-btn" id="pr-reto-continue" type="button">Continuar</button><button class="pr-exit" type="button" data-pr-close>Cerrar</button></div>
+      <div class="pr-steps" role="img" aria-label="Página 2 de 3"><span class="pr-dot"></span><span class="pr-dot is-on"></span><span class="pr-dot"></span></div>
+    </div>
+  </section>
+  <section class="pr-page" id="pr-share" role="dialog" aria-modal="true" aria-labelledby="pr-share-title" tabindex="-1">
+    <p class="pr-date" id="pr-share-date"></p>
+    <div class="pr-body"><div class="pr-space pr-space-top"></div><div class="pr-content">
+      <h2 class="pr-title" id="pr-share-title">Tu resultado</h2>
+      <p class="pr-share-lead" id="pr-share-lead">¡Comparte cómo te fue en este Sudoku!</p>
+    </div><div class="pr-space pr-space-bot"></div></div>
+    <div class="pr-foot">
+      <div class="pr-btns"><button class="pr-btn" id="pr-share-btn" type="button">Compartir</button><button class="pr-exit" type="button" data-pr-close>Cerrar</button></div>
+      <div class="pr-steps" role="img" aria-label="Página 3 de 3"><span class="pr-dot"></span><span class="pr-dot"></span><span class="pr-dot is-on"></span></div>
+    </div>
+  </section>
+</div>
 
 <!-- ============ PAGE ============ -->
 <div class="page">
@@ -3465,6 +3577,40 @@
     <p class="stats-footer">Tu progreso y las estadísticas de este panel se guardan en este navegador y no se sincronizan entre dispositivos. Cortadito también recibe datos de uso y resúmenes de resultados vinculados a un identificador aleatorio persistente de este navegador. Borrar los datos del sitio borra tu registro local; no elimina los datos ya enviados.</p>
   </div>
 
+<div class="modal" id="mini-stats-modal" data-modal-content style="display:none" role="dialog" aria-labelledby="mini-stats-title">
+  <button class="modal-close" data-close aria-label="Cerrar">×</button>
+  <h2 class="modal-title" id="mini-stats-title">Estadísticas — Mini</h2>
+  <div class="stats-section">
+    <h3>Partida actual</h3>
+    <p class="stats-note" id="mini-stat-day"></p>
+    <div class="stats-row">
+      <div class="stat-block"><div class="stat-value" id="mini-stat-time">–:––</div><div class="stat-label">Tu tiempo</div></div>
+      <div class="stat-block"><div class="stat-value accent" id="mini-stat-rank">—</div><div class="stat-label">Rango</div></div>
+    </div>
+    <p id="mini-stat-state"></p>
+    <p id="mini-stat-aids"></p>
+  </div>
+  <div class="stats-section">
+    <h3>Tu récord</h3>
+    <div class="stat-value" id="mini-stat-best">–:––</div>
+  </div>
+  <div class="stats-section">
+    <h3>Reto del día</h3>
+    <div class="stats-row">
+      <div class="stat-block"><div class="stat-value" id="mini-stat-target">—</div><div class="stat-label">Tiempo objetivo</div></div>
+    </div>
+    <p id="mini-stat-reto"></p>
+  </div>
+  <div class="stats-section">
+    <h3>Racha de reto</h3>
+    <div class="stat-value accent" id="mini-stat-streak">—</div>
+    <p class="stats-note" id="mini-stat-streak-date"></p>
+  </div>
+  <!-- Existing unchanged statistics disclosure. -->
+  <p class="stats-footer">Tu progreso y las estadísticas de este panel se guardan en este navegador y no se sincronizan entre dispositivos. Cortadito también recibe datos de uso y resúmenes de resultados vinculados a un identificador aleatorio persistente de este navegador. Borrar los datos del sitio borra tu registro local; no elimina los datos ya enviados.</p>
+</div>
+
+
   <div class="modal" id="rangos-modal" data-modal-content style="display:none">
     <button class="modal-close" data-close>×</button>
     <h2 class="modal-title">Rangos</h2>
@@ -3590,8 +3736,7 @@
       <div class="mini-stat-cell"><span class="mini-stat-lbl">Rango</span><span class="mini-stat-num mini-done-rank" id="mini-done-rank"></span></div>
     </div>
     <ul class="mini-list" id="mini-done-list">
-      <li class="mini-row mini-row-aids" id="mini-done-aids" hidden><span class="mini-row-v" id="mini-done-aids-val"></span></li>
-      <li class="mini-row mini-row-record" id="mini-done-best-row"><span class="mini-row-rec"><span class="mini-row-k">Tu récord:</span> <span class="mini-row-v" id="mini-done-best"></span></span><span class="mini-row-flag" id="mini-done-note" hidden>¡Tu mejor tiempo hasta ahora!</span></li>
+      <li class="mini-row mini-row-summary"><span id="mini-done-aids" class="mini-summary-aids" hidden><span class="mini-row-v" id="mini-done-aids-val"></span><span class="mini-summary-sep"> / </span></span><span class="mini-row-rec" id="mini-done-best-row"><span class="mini-row-k">Tu récord:</span> <span class="mini-row-v" id="mini-done-best"></span></span></li>
     </ul>
     </div><div class="mini-fspace mini-fspace-bot"></div></div>
     <div class="mini-ffoot">
@@ -5706,16 +5851,16 @@ function finalizeWin() {
       maestroShown = true;
       localStorage.setItem(maestroKey(), '1');
       localStorage.setItem(completeKey(), '1');
-      showMaestroModal();
+      if (state.mode === 'niebla') showMaestroModal(); else prOpen('maestro');
     } else if (sc >= state.reto && !localStorage.getItem(goalKey())) {
       goalShown = true;
       localStorage.setItem(goalKey(), '1');
       localStorage.setItem(completeKey(), '1');
-      showGoalModal();
+      if (state.mode === 'niebla') showGoalModal(); else prOpen('goal');
     } else if (!localStorage.getItem(completeKey())) {
       completeShown = true;
       localStorage.setItem(completeKey(), '1');
-      showCompleteModal();
+      if (state.mode === 'niebla') showCompleteModal(); else prOpen('complete');
     }
   };
   revealResult(sc, celebrate);   /* both modes: the result presents itself, then the toast */
@@ -5964,6 +6109,7 @@ function resolveModalId(id) {
   // matches the selected tab.
   if (cl.contains('mini-active') || cl.contains('mini-landing')) {
     if (id === 'reglas-modal') return 'mini-reglas-modal';
+    if (id === 'stats-modal') return 'mini-stats-modal';
     if (id === 'rangos-modal') return 'mini-rangos-modal';
   } else if (cl.contains('niebla-game') || cl.contains('niebla-landing')) {
     if (id === 'reglas-modal') return 'niebla-reglas-modal';
@@ -6001,6 +6147,7 @@ if(id==='mini-done-modal'){
   // landing screen, where body isn't otherwise overflow-locked. (Racimo pattern.)
   document.body.style.overflow = 'hidden';
   if (id === 'stats-modal') refreshStats();
+  if (id === 'mini-stats-modal') refreshMiniStats();
   if (id === 'rangos-modal') refreshRangos();
   if (id === 'mini-rangos-modal') refreshMiniRangos();
   syncTriggers();
@@ -6125,6 +6272,27 @@ document.querySelectorAll('[data-modal]').forEach(btn => {
     else openModal(btn.dataset.modal);
   });
 });
+
+/* Presentation only: read Mini's existing state/record/streak; never save or award. */
+function refreshMiniStats(){
+ const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+ const exists=!!miniState,done=exists&&miniState.done===true,known=exists&&miniTimeKnown(),iso=exists&&miniValidIso(miniState.iso)?miniState.iso:null;
+ set('mini-stat-day',iso?formatLongDate(iso):'Fecha no disponible');
+ set('mini-stat-state',!exists?'Sin partida':done?'Completado':miniState.started?'En juego':'Sin empezar');
+ set('mini-stat-time',known?miniFmtTime(miniState.elapsed):'–:––');
+ set('mini-stat-rank',done&&known?miniRankName(miniState.elapsed):'—');
+ set('mini-stat-aids',exists?(miniAidsText()||'Sin datos'):'Sin datos');
+ let best=null;try{const raw=localStorage.getItem(MINI_BEST_KEY);if(typeof raw==='string'&&/^\d+$/.test(raw)){const n=Number(raw);if(Number.isSafeInteger(n)&&n>0)best=n;}}catch(e){}
+ set('mini-stat-best',best===null?'–:––':miniFmtTime(best));
+ const status=exists?miniRunStatus():null,target=iso?miniRetoForDate(iso):null;
+ set('mini-stat-target',miniValidSecs(target)?'≤ '+miniFmtTime(target):'—');
+ set('mini-stat-reto',status==='achieved'?'Logrado':status==='failed'?'No alcanzado':!exists?'Sin partida':!done?'Pendiente':!known?'Sin tiempo registrado':'Sin datos de reto');
+ let history=null;try{const raw=localStorage.getItem(MINI_STREAK_KEY);history=raw===null?{count:0,last:''}:JSON.parse(raw);}catch(e){}
+ const validHistory=history&&typeof history==='object'&&!Array.isArray(history)&&Number.isSafeInteger(history.count)&&history.count>=0;
+ const last=validHistory&&miniValidIso(history.last)?history.last:null;
+ set('mini-stat-streak',validHistory&&(history.count===0||last)?String(history.count):'—');
+ set('mini-stat-streak-date',last?'Último reto logrado: '+formatLongDate(last)+'.':validHistory&&history.count===0?'Todavía no hay un reto logrado registrado.':'Fecha no disponible.');
+}
 
 function refreshStats() {
   document.getElementById('stat-today-rank').textContent = RANK_NAMES[currentRankIndex()];
@@ -6441,7 +6609,7 @@ document.getElementById('btn-undo').addEventListener('click', undo);
 
 // ---------- KEYBOARD ----------
 document.addEventListener('keydown', (e) => {
-  if (overlay.classList.contains('open')) return;
+  if (overlay.classList.contains('open') || document.body.classList.contains('pr-open')) return;
   if (document.body.classList.contains('mini-active')) return;   // Mini is touch-driven
   if (state.selected === null) return;
   if (/^[1-9]$/.test(e.key)) { placeNumber(parseInt(e.key, 10)); return; }
@@ -6465,6 +6633,118 @@ document.getElementById('info-bar').addEventListener('click', () => openModal('s
 document.getElementById('goal-share').addEventListener('click', () => { shareResult(); closeModal(); });
 document.getElementById('maestro-share').addEventListener('click', () => { shareResult(); closeModal(); });
 document.getElementById('complete-share').addEventListener('click', () => { shareResult(); closeModal(); });
+/* ============================ SUDOKU CLÁSICO RESULT PAGES (candidate cl3) ============================
+   Resultado → Reto del día → Compartir on the shared frame (as live Palabreo 7633e85): only Continuar
+   moves on; Cerrar and Escape return to the game; Back closes the pages with the rest of the game
+   (the existing popstate handler); Home stays reachable. Page content = candidate 2's Clásico choices
+   (Dre, 2026-09-29): "¡Perfecto!"/"¡Sudoku completo!" (the complete-window title rule), Puntos · Rango,
+   Dificultad, the finish time, the ✨ badges as the share text lists them, no aids line; page 2 the reto
+   status from retoStateFor(), points and target, ¡Buen sorbo! on a win, the Maestro/a line on a Maestro/a
+   run, the existing reto streak on a win, side-margin confetti on a win only; page 3 sends the unchanged
+   buildShareText(). Everything is READ from the game's own state — nothing here scores or saves. */
+const PR_IDS = ['pr-done', 'pr-reto', 'pr-share'];
+let prStep = -1, prTrap = null, prWin = null, prOutcome = null;
+function prSyncScroll() { document.querySelectorAll('#pr-flow .pr-body').forEach(b => { const s = b.offsetParent !== null && b.scrollHeight > b.clientHeight + 1;
+  b.classList.toggle('is-scroll', s); if (s) { b.setAttribute('tabindex', '0'); b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Resultado'); }
+  else { b.removeAttribute('tabindex'); b.removeAttribute('role'); b.removeAttribute('aria-label'); } }); }
+window.addEventListener('resize', () => { if (document.body.classList.contains('pr-open')) prSyncScroll(); });
+function prRow(k, v, acc) { const r = document.createElement('div'); r.className = 'pr-row';
+  if (k) { const a = document.createElement('span'); a.className = 'pr-k'; a.textContent = k + ' '; r.appendChild(a); }
+  const b = document.createElement('span'); b.className = 'pr-v' + (acc ? ' pr-acc' : ''); b.textContent = v; r.appendChild(b); return r; }
+function prBadges() {
+  const b = [];
+  if ((state.checkCount || 0) === 0) b.push('Sin verificar');
+  if ((state.hintCount || 0) === 0) b.push('Sin pistas');
+  if (isSinDescender()) b.push('Sin descender');
+  return b.length ? '✨ ' + b.join(' · ') : '';
+}
+function prFill() {
+  const sc = score(), idx = currentRankIndex(), status = retoStateFor(), met = status === 'achieved', maestro = prOutcome === 'maestro';
+  const clean = (state.checkCount || 0) === 0, noHint = (state.hintCount || 0) === 0;
+  const date = formatLongDate(state.iso);
+  ['pr-done-date', 'pr-reto-date', 'pr-share-date'].forEach(id => { document.getElementById(id).textContent = date; });
+  /* page 1 — Resultado */
+  document.getElementById('pr-done-title').textContent = maestro ? '¡Maestro/a del sudoku!' : (clean && noHint) ? '¡Perfecto!' : '¡Sudoku completo!';
+  document.getElementById('pr-done-pts').textContent = String(sc);
+  document.getElementById('pr-done-rank').textContent = RANK_NAMES[idx];
+  const L = document.getElementById('pr-done-list'); L.textContent = '';
+  L.appendChild(prRow('Dificultad:', DIFFICULTY[realDifficulty()].label));
+  const tl = finishTimeLine(); if (tl) L.appendChild(prRow('', tl));
+  const bd = prBadges(); if (bd) L.appendChild(prRow('', bd));
+  /* page 2 — Reto del día */
+  const sorbo = document.getElementById('pr-reto-sorbo');
+  sorbo.textContent = '¡Buen sorbo!';
+  sorbo.hidden = !(met || maestro);
+  const st = document.getElementById('pr-reto-status');
+  st.textContent = status === 'achieved' ? '✅ Logrado' : status === 'failed' ? '❌ No alcanzado' : '';
+  st.hidden = !st.textContent;
+  const pv = document.getElementById('pr-reto-pts'); pv.textContent = 'Tus puntos: '; const pb = document.createElement('b'); pb.textContent = sc + ' pts'; pv.appendChild(pb);
+  const mv = document.getElementById('pr-reto-meta'); mv.textContent = 'Meta: '; const mb = document.createElement('b'); mb.className = 'pr-acc'; mb.textContent = state.reto + ' pts'; mv.appendChild(mb);
+  const ch = document.getElementById('pr-reto-cheer'); ch.textContent = '';
+  (maestro ? ['Llegaste al rango más alto.']
+    : met ? ['¡Sigue así!', 'Mañana, vamos por otro.'] : status === 'failed' ? ['¡No pasa nada!', 'Mañana lo consigues.'] : ['¡Nos vemos en el próximo reto!'])
+    .forEach((s, i) => { if (i) ch.appendChild(document.createTextNode(' ')); const sp = document.createElement('span'); sp.className = 'pr-cheer-line'; sp.textContent = s; ch.appendChild(sp); });
+  const streak = lifetime && Number.isInteger(lifetime.retoStreak) ? lifetime.retoStreak : 0;
+  document.getElementById('pr-reto-streak').textContent = String(streak);
+  document.getElementById('pr-reto-streak-line').hidden = !(met && streak > 0);
+  return { met, maestro };
+}
+function prShow(i) {
+  prStep = i;
+  PR_IDS.forEach((id, k) => { document.getElementById(id).classList.toggle('is-on', k === i); });
+  const fl = document.getElementById('pr-flow'); fl.scrollTop = 0; const bd = document.querySelector('#' + PR_IDS[i] + ' .pr-body'); if (bd) bd.scrollTop = 0; prSyncScroll();
+  const pg = document.getElementById(PR_IDS[i]); try { pg.focus({ preventScroll: true }); } catch (e) { pg.focus(); }
+  document.querySelectorAll('#pr-flow .confetti-box').forEach(c => c.remove());
+}
+function prOpen(outcome) {
+  if (!state.completed || !document.body.classList.contains('game-active') || document.body.classList.contains('pr-open')) return;
+  prOutcome = outcome;
+  const r = prFill();
+  const h = document.querySelector('.page-header'); const b = h ? h.getBoundingClientRect().bottom : 0;
+  document.body.style.setProperty('--pr-top', Math.max(0, Math.round(b)) + 'px');
+  closeModal(); closeDropdowns();
+  document.body.classList.add('pr-open');
+  if (!prTrap) { const ae = document.activeElement; prTrap = { back: (ae && ae !== document.body) ? ae : null, inerted: [] };
+    Array.from(document.body.children).forEach(el => {
+      if (el.id === 'pr-flow' || el.tagName === 'SCRIPT' || el.hasAttribute('inert')) return;
+      if (el.classList && el.classList.contains('page-header')) { el.querySelectorAll('.title-block, .header-date, .header-nav > *').forEach(c => { if (c.id === 'header-home' || c.hasAttribute('inert')) return; c.setAttribute('inert', ''); prTrap.inerted.push(c); }); return; }
+      el.setAttribute('inert', ''); prTrap.inerted.push(el); }); }
+  prShow(0);
+  prWin = r;
+  if(window.CGMascot && window.DailyMascot) CGMascot.render({host:'#pr-done .pr-content',mode:'sudoku-clasico',day:todayISO(),eligible:!!state.completed,scope:document.getElementById('pr-flow'),freeze:false,onLayout:prSyncScroll});
+}
+function prNext() {
+  if (prStep === 0) { prShow(1); if (prWin && prWin.met) launchConfetti(prWin.maestro ? 120 : 90); }
+  else if (prStep === 1) { prShow(2); }
+}
+function prClose() {
+  if (!document.body.classList.contains('pr-open')) return;
+  document.querySelectorAll('#pr-flow .confetti-box').forEach(c => c.remove());
+  PR_IDS.forEach(id => document.getElementById(id).classList.remove('is-on'));
+  document.body.classList.remove('pr-open'); prStep = -1;
+  if(window.CGMascot) CGMascot.clear(document.getElementById('pr-flow'));
+  if (prTrap) { prTrap.inerted.forEach(el => el.removeAttribute('inert')); const back = prTrap.back; prTrap = null;
+    if (back && back.isConnected && !back.closest('[inert]')) { try { back.focus({ preventScroll: true }); } catch (e) {} } }
+}
+document.addEventListener('keydown', function (e) {
+  if (!document.body.classList.contains('pr-open')) return;
+  const pg = document.getElementById(PR_IDS[prStep]); if (!pg) return;
+  if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); e.stopPropagation(); prClose(); return; }
+  if (e.key !== 'Tab') return;
+  const f = Array.from(pg.querySelectorAll('.pr-body[tabindex="0"], button')).filter(x => !x.disabled && x.offsetParent !== null);
+  const home = document.getElementById('header-home'); if (home && home.offsetParent !== null) f.push(home);
+  if (!f.length) { e.preventDefault(); return; }
+  e.preventDefault();
+  const i = f.indexOf(document.activeElement);
+  const k = i < 0 ? (e.shiftKey ? f.length - 1 : 0) : (i + (e.shiftKey ? -1 : 1) + f.length) % f.length;
+  f[k].focus();
+}, true);
+document.getElementById('pr-continue').addEventListener('click', prNext);
+document.getElementById('pr-reto-continue').addEventListener('click', prNext);
+document.getElementById('pr-share-btn').addEventListener('click', () => { shareResult(); });   /* the unchanged share text; the page stays open, as Mini */
+document.querySelectorAll('[data-pr-close]').forEach(b => b.addEventListener('click', prClose));
+window.addEventListener('popstate', function(){prClose();syncInertPages();});   /* Back: the existing handler returns to the landing; the pages close with it */
+
 document.getElementById('more-share').addEventListener('click', () => {
   closeDropdowns();
   // Route by the active screen: on the Mini board, share the Mini result —
@@ -8305,4 +8585,101 @@ function cgSnapshotStreaks(rows) {
   try{ window.matchMedia(MQ).addEventListener('change', apply); }catch(e){}
 })();
 </script>
+
+<!-- CANONICAL RESULT PREVIEW: isolated, not a release -->
+<style>
+/* Preserve the existing fixed-date / scrolling-middle / pinned-footer design. */
+[data-cg-canonical-frame]{position:fixed!important;left:0!important;right:auto!important;top:var(--cg-frame-top)!important;width:var(--cg-frame-width)!important;height:var(--cg-frame-height)!important;bottom:auto!important;overflow:hidden!important;box-sizing:border-box;}
+/* Existing stamp's existing short-screen size, chosen when full size would not fit. */
+.cg-daily-mascot[data-cg-compact]{width:96px;height:96px;margin-top:16px;}
+/* Trenza rank: established readable yellow text tone from the result standard.
+   The game's #D99F3B fill/stamp palette remains unchanged (2.34:1 on white).
+   Dark uses the existing resolved game accent, #e1b466. */
+.pr-flow.pr-waffle #pr-done-rank{--cg-trenza-rank-ink:#8A5A10;color:var(--cg-trenza-rank-ink);}
+body[data-theme="black"] .pr-flow.pr-waffle #pr-done-rank{color:var(--accent);}
+/* Allow enlarged text/long facts to occupy additional middle rows, keeping actions fixed. */
+#pr-flow .pr-lead,.mini-page-card .mini-lead{flex-wrap:wrap;row-gap:12px;}
+#pr-flow .pr-stat,.mini-page-card .mini-stat-cell{min-width:0;max-width:100%;}
+#pr-flow .pr-stat-num,.mini-page-card .mini-stat-num{white-space:normal;overflow-wrap:anywhere;}
+#pr-flow .pr-title,.mini-page-card .mini-title{overflow-wrap:anywhere;}
+#pr-flow .pr-status,#pr-flow .pr-meta,#pr-flow .pr-cheer-line,.mini-page-card .mini-cheer-line,.mini-page-card .mini-out{white-space:normal;overflow-wrap:anywhere;}
+#modal-overlay .mini-page-card .mini-cheer-line,#modal-overlay .mini-page-card .mini-out{white-space:normal;overflow-wrap:anywhere;}
+/* Owner: assistance and actual record share a secondary line, with natural wrapping. */
+#mini-done-list .mini-row-summary{display:block;text-align:center;white-space:normal;}
+#mini-done-list .mini-summary-aids{font-weight:400;}
+#mini-done-list .mini-summary-aids[hidden]{display:none;}
+#mini-done-list .mini-summary-aids .mini-row-v{font-weight:400;}
+#mini-done-list .mini-row-rec{white-space:normal;}
+/* Preserve type/date/title/footer positions; recover unused internal gaps before scrolling. */
+#pr-flow [data-cg-tight] .pr-lead,#modal-overlay .mini-page-card[data-cg-tight] .mini-lead{margin-top:16px;}
+#pr-flow [data-cg-tight] .pr-list,#modal-overlay .mini-page-card[data-cg-tight] .mini-list{margin-top:12px;padding-top:12px;}
+#pr-flow [data-cg-tight] .cg-daily-mascot[data-cg-compact],#modal-overlay .mini-page-card[data-cg-tight] .cg-daily-mascot[data-cg-compact]{margin-top:8px;}
+#pr-flow [data-cg-tight] .pr-body,#modal-overlay .mini-page-card[data-cg-tight] .mini-fbody{padding-bottom:8px;}
+</style>
+<script>
+(function(){'use strict';
+const phone=matchMedia('(max-width: 879.98px), (max-aspect-ratio: 2/3) and (pointer: coarse)');let layer=null,queued=false;
+const observedContent=new WeakSet(),contentResize=new ResizeObserver(schedule);
+function visible(e){return !!e&&e.getClientRects().length&&getComputedStyle(e).display!=='none';}
+function clear(){if(!layer)return;layer.removeAttribute('data-cg-canonical-frame');['--cg-frame-top','--cg-frame-width','--cg-frame-height'].forEach(k=>layer.style.removeProperty(k));layer=null;}
+function fit(){queued=false;const body=document.body;let next=null;
+ if(body.classList.contains('pr-open'))next=document.getElementById('pr-flow');
+ else if(body.classList.contains('mini-fullpage'))next=document.getElementById('modal-overlay');
+ if(next&&phone.matches){if(layer&&layer!==next)clear();layer=next;layer.setAttribute('data-cg-canonical-frame','');const h=document.querySelector('.page-header'),z=parseFloat(getComputedStyle(body).zoom)||1,v=visualViewport,top=Math.max(0,Math.round(h?h.getBoundingClientRect().bottom:0)),bottom=v&&Math.abs(v.scale-1)<.01?v.offsetTop+v.height:innerHeight,w=v&&Math.abs(v.scale-1)<.01?v.width:document.documentElement.clientWidth;
+ for(const [k,n]of [['--cg-frame-top',top/z],['--cg-frame-width',w/z],['--cg-frame-height',Math.max(0,bottom-top)/z]])if(layer.style.getPropertyValue(k)!==n+'px')layer.style.setProperty(k,n+'px');
+ }else clear();
+ const pages=[...document.querySelectorAll('#pr-flow .pr-page.is-on,#modal-overlay.open .mini-page-card')].filter(visible);
+ for(const p of pages){const b=p.querySelector('.pr-body,.mini-fbody'),c=p.querySelector('.pr-content,.mini-fcontent'),f=c?.querySelector('.cg-daily-mascot');if(!b||!c)continue;
+ p.removeAttribute('data-cg-tight');
+ if(!observedContent.has(c)){observedContent.add(c);contentResize.observe(c);}
+ if(f&&!f.hidden){
+ f.removeAttribute('data-cg-compact');
+ const z=parseFloat(getComputedStyle(body).zoom)||1,bs=getComputedStyle(b),available=b.clientHeight-parseFloat(bs.paddingTop)-parseFloat(bs.paddingBottom);
+ p.toggleAttribute('data-cg-tight',c.getBoundingClientRect().height/z>available+.5);
+ }
+ const scroll=b.scrollHeight>b.clientHeight+1;b.classList.toggle('is-scroll',scroll);if(scroll){b.setAttribute('tabindex','0');b.setAttribute('role','region');b.setAttribute('aria-label','Resultado');}else{b.removeAttribute('tabindex');b.removeAttribute('role');b.removeAttribute('aria-label');}
+ }
+}
+function schedule(){if(!queued){queued=true;requestAnimationFrame(fit);}}
+if(document.fonts){document.fonts.ready.then(schedule);document.fonts.addEventListener('loadingdone',schedule);}
+new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden']});window.addEventListener('resize',schedule);window.addEventListener('orientationchange',schedule);phone.addEventListener('change',schedule);if(visualViewport){visualViewport.addEventListener('resize',schedule);visualViewport.addEventListener('scroll',schedule);}window.cgFitResultStamp=schedule;schedule();
+})();
+</script>
+
+<!-- GAMES PRESENTATION AUDIT V2: isolated, unpublished -->
+<style>
+/* Only on-accent text changes. Native tutorial fill/type/geometry are untouched. */
+.tut-ov .tut-next{color:var(--cg-tutorial-ink,#ffffff);}
+/* Reuse the existing statistics frame, scale and palette; allow large text to wrap. */
+#mini-stats-modal .stat-value{overflow-wrap:anywhere;}
+#mini-stats-modal .modal-title{overflow-wrap:anywhere;}
+#mini-stats-modal .stats-note{margin:-2px 0 10px;font-size:12px;color:var(--ink-soft);font-style:italic;}
+#mini-stats-modal .stats-footer{margin:22px 0 0;font-size:12px;color:var(--ink-soft);font-style:italic;line-height:1.55;}
+</style>
+<script>
+(function(){'use strict';
+const ov=document.getElementById('tut-ov'),button=document.getElementById('tut-next');if(!ov||!button)return;
+let queued=false;
+function rgb(value){const a=value.match(/[\d.]+/g);if(!a)return null;return a.slice(0,3).map(Number).map(n=>value.startsWith('color(')?n*255:n);}
+function luminance(a){return a.map(n=>n/255).map(n=>n<=.04045?n/12.92:Math.pow((n+.055)/1.055,2.4)).reduce((v,n,i)=>v+n*[.2126,.7152,.0722][i],0);}
+function contrast(a,b){const x=luminance(a),y=luminance(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
+function sync(){queued=false;if(!ov.classList.contains('open'))return;const bg=rgb(getComputedStyle(button).backgroundColor);if(!bg)return;const choices=[['#ffffff',[255,255,255]],['#1a1614',[26,22,20]],['#0c0f0f',[12,15,15]]];const ink=(choices.find(x=>contrast(x[1],bg)>=4.5)||choices[2])[0];if(button.style.getPropertyValue('--cg-tutorial-ink')!==ink)button.style.setProperty('--cg-tutorial-ink',ink);}
+function schedule(){if(!queued){queued=true;requestAnimationFrame(sync);}}
+const observer=new MutationObserver(schedule);
+observer.observe(document.body,{attributes:true,attributeFilter:['data-theme','class','style']});
+observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','style']});
+observer.observe(ov,{attributes:true,attributeFilter:['class','style']});
+schedule();
+})();
+</script>
+
+<!-- OWNER VISUAL CORRECTIONS V3: isolated, unpublished -->
+<style>
+/* Established release asset size; scrolling never substitutes a smaller stamp. */
+#pr-flow .cg-daily-mascot,#modal-overlay .cg-daily-mascot{width:232px;height:232px;max-width:100%;}
+/* Recover secondary whitespace while preserving type, dates and action geometry. */
+#pr-flow [data-cg-tight] .pr-lead,#modal-overlay .mini-page-card[data-cg-tight] .mini-lead{margin-top:16px;}
+#pr-flow [data-cg-tight] .pr-list,#modal-overlay .mini-page-card[data-cg-tight] .mini-list{margin-top:12px;padding-top:12px;}
+#pr-flow [data-cg-tight] .cg-daily-mascot,#modal-overlay .mini-page-card[data-cg-tight] .cg-daily-mascot{margin-top:12px;}
+</style>
 </body></html>
